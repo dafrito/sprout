@@ -1,16 +1,19 @@
 ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = src tests
+SUBDIRS = src t
 
 pkgdata_DATA = \
 	emit.m4
 
 export RPMDIR ?= $$HOME/rpmbuild
 
+run:
+	cd src && ./emit
+
 checkdebug: $(TESTS)
-	cd tests && gdb .libs/lt-runtest
+	cd t && gdb .libs/lt-runtest
 
 checkvalgrind:
-	cd tests && valgrind -v --leak-check=full .libs/lt-runtest
+	cd t && valgrind -v --leak-check=full .libs/lt-runtest
 
 debug: $(TESTS)
 	cd src && gdb emit

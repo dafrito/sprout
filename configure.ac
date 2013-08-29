@@ -21,14 +21,15 @@ LT_INIT
 AC_PROG_LIBTOOL
 
 # Check for compiler characteristics.
+AC_LANG([C++])
 AC_HEADER_STDBOOL
 AC_TYPE_SIZE_T
+AX_CXX_COMPILE_STDCXX_11([noext],[AM_CXXFLAGS])
+AC_SUBST(AM_CXXFLAGS)
 
 # Check for Boost
 AX_BOOST_BASE
 AX_BOOST_UNIT_TEST_FRAMEWORK
 
-AC_LANG([C++])
-
-AC_CONFIG_FILES([emit.m4 Makefile src/Makefile tests/Makefile rpm.spec])
+AC_CONFIG_FILES([emit.m4 Makefile src/Makefile include/Makefile t/Makefile rpm.spec])
 AC_OUTPUT
