@@ -1,0 +1,92 @@
+# ===========================================================================
+#    @PACKAGE_URL@
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_HAVE_EMIT
+#
+# DESCRIPTION
+#
+#   Test for @PACKAGE_NAME@
+#
+#   This macro calls:
+#
+#     AC_SUBST(EMIT_INCLUDE)
+#     AC_SUBST(EMIT_LIBS)
+#
+#   And sets:
+#
+#     HAVE_EMIT
+#
+# LICENSE
+#
+#   Copyright (c) 2013 Aaron Faanes <@PACKAGE_BUGREPORT@>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+AC_DEFUN([AX_HAVE_EMIT],
+[
+	AC_ARG_WITH([emit],
+    AS_HELP_STRING([--with-emit], [use @PACKAGE_NAME@]),
+    [
+      if test x"$withval" = "xno"; then
+        want_emit="no";
+      else
+        want_emit="yes";
+      fi
+    ],
+    [want_emit="yes"]
+  )
+
+  if test x"$want_emit" = "xyes"; then
+    AC_MSG_CHECKING([for emit])
+
+    # Ensure we have a suitable C++ compiler
+    AC_REQUIRE([AC_PROG_CC])
+
+    ax_emit_saved_CPPFLAGS="$CPPFLAGS"
+    ax_emit_INCLUDE=""
+    CPPFLAGS="$CPPFLAGS $ax_emit_INCLUDE"
+    export CPPFLAGS
+
+    ax_emit_saved_LIBS="$LIBS"
+    ax_emit_LIBS=""
+    LIBS="$LIBS $ax_emit_LIBS"
+    export LIBS
+
+    AC_LANG_PUSH([C++])
+    AC_COMPILE_IFELSE([
+      AC_LANG_PROGRAM(
+        [[@%:@include <emit/Bootstrapper.hpp]],
+        [[
+          Bootstrapper bs;
+          return 0;
+        ]]
+      )],
+      ax_have_emit=yes,
+      ax_have_emit=no
+    )
+    AC_LANG_POP([C++])
+
+    AC_MSG_RESULT([$ax_have_emit])
+    if test x"$ax_have_emit" = "xyes"; then
+      AC_DEFINE(HAVE_EMIT,,[define if emit is available])
+      EMIT_INCLUDE="$ax_emit_INCLUDE"
+      dnl This doesn't yet test the location of this project
+      EMIT_LIBS="$ax_emit_LIBS -l@PACKAGE_NAME@"
+    else
+      AC_MSG_ERROR([Could not find emit])
+      EMIT_INCLUDE=""
+      EMIT_LIBS=""
+    fi
+    AC_SUBST(EMIT_INCLUDE)
+    AC_SUBST(EMIT_LIBS)
+
+    CPPFLAGS="$ax_emit_saved_CPPFLAGS"
+    LIBS="$ax_emit_saved_LIBS"
+  fi;
+])

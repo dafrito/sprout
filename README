@@ -1,0 +1,16 @@
+TODO one-line description
+
+# Installation
+
+Installing this project from scratch involves the following:
+
+autoreconf -i
+./configure
+make
+make check
+make install
+
+The project depends on the autotools, so you'll need to have automake, autoconf,
+and libtool available.
+
+vim: set tw=80 :
