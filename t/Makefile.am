@@ -16,4 +16,5 @@ runtest_SOURCES = \
 	exactmatch.cpp \
 	multiple.cpp \
 	alternative.cpp \
+	sequence.cpp \
 	main.cpp

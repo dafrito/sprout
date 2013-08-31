@@ -1,0 +1,58 @@
+#ifndef SPROUT_SEQUENCERULE_HEADER
+#define SPROUT_SEQUENCERULE_HEADER
+
+#include <vector>
+#include <algorithm>
+
+#include "Cursor"
+#include "Result"
+
+namespace sprout {
+
+template <class Rule>
+class SequenceRule
+{
+public:
+    typedef typename Rule::token_type token_type;
+    typedef typename Rule::input_type input_type;
+
+private:
+    typedef typename Rule::token_type Token;
+    typedef typename Rule::input_type Input;
+
+private:
+    std::vector<Rule> _rules;
+
+public:
+    template <class Container>
+    SequenceRule(const Container& rules) :
+        _rules(rules)
+    {
+    }
+
+    const Result<Token> _eof;
+    const Result<Token>& end() const
+    {
+        return _eof;
+    }
+
+    template <class Iterator>
+    const Result<Token> parse(Cursor<Iterator>& iter) const
+    {
+        std::vector<Token> aggregate;
+        for (auto rule : _rules) {
+            auto tokens = rule.parse(iter);
+            if (tokens == rule.end()) {
+                return end();
+            }
+            std::copy(tokens, rule.end(), std::back_inserter(aggregate));
+        }
+        return Result<Token>(aggregate);
+    }
+};
+
+} // namespace sprout
+
+#endif // SPROUT_SEQUENCERULE_HEADER
+
+// vim: set ft=cpp ts=4 sw=4 :
