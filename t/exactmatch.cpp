@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(checkBadMatch)
 
     std::stringstream str("Dog");
     auto cursor = makeCursor<char>(str);
-    BOOST_CHECK(!rule.parse(cursor));
+    BOOST_CHECK(rule.end() == rule.parse(cursor));
 }
 
 BOOST_AUTO_TEST_CASE(checkPreemptedMatch)
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(checkPreemptedMatch)
 
     std::stringstream str("Ca");
     auto cursor = makeCursor<char>(str);
-    BOOST_CHECK(!rule.parse(cursor));
+    BOOST_CHECK(rule.end() == rule.parse(cursor));
 }
 
 BOOST_AUTO_TEST_CASE(checkMatchWithTrailing)
@@ -105,8 +105,10 @@ BOOST_AUTO_TEST_CASE(rulesCanBeNested)
     auto cursor = makeCursor<char>(str);
     auto tokens = rule.parse(cursor);
 
-    Cursor<decltype(tokens)> tokenCursor(tokens);
+    Cursor<decltype(tokens)> tokenCursor(tokens, rule.end());
     BOOST_CHECK_EQUAL(std::string("Animal"), *tokenCursor);
+    tokenCursor++;
+    BOOST_CHECK(!tokenCursor);
 }
 
 // vim: set ts=4 sw=4 :

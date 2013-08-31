@@ -44,13 +44,14 @@ public:
         _token = token;
     }
 
-    Token* end() const
+    const Token* end() const
     {
-        return nullptr;
+        auto eof = &_token;
+        return ++eof;
     }
 
     template <class Iterator>
-    Token* parse(Cursor<Iterator>& iter)
+    const Token* parse(Cursor<Iterator>& iter) const
     {
         auto mark = iter;
         int i = 0;
