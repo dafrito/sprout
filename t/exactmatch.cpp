@@ -95,4 +95,18 @@ BOOST_AUTO_TEST_CASE(checkIteratorAtFirstElementIfMatchFails)
     BOOST_CHECK(!cursor);
 }
 
+BOOST_AUTO_TEST_CASE(rulesCanBeNested)
+{
+    ExactMatchRule<char, std::string> rule;
+    rule.setTarget("Cat");
+    rule.setToken("Animal");
+
+    std::stringstream str("Cat");
+    auto cursor = makeCursor<char>(str);
+    auto tokens = rule.parse(cursor);
+
+    Cursor<decltype(tokens)> tokenCursor(tokens);
+    BOOST_CHECK_EQUAL(std::string("Animal"), *tokenCursor);
+}
+
 // vim: set ts=4 sw=4 :
