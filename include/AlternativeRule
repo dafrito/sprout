@@ -45,9 +45,7 @@ public:
                 continue;
             }
             std::vector<Token> aggregate;
-            for ( ; tokens != rule.end(); ++tokens) {
-                aggregate.push_back(*tokens);
-            }
+            std::copy(tokens, rule.end(), std::back_inserter(aggregate));
             return Result<Token>(aggregate);
         }
         return end();
