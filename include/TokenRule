@@ -41,7 +41,7 @@ struct AnyTokenMatcher
     }
 };
 
-template <class Input, class Token, class Matcher = OrderedTokenMatcher>
+template <class Input, class Token, class Matcher>
 class TokenRule
 {
 public:
@@ -118,6 +118,12 @@ public:
         return end();
     }
 };
+
+template <class Input, class Token>
+using OrderedTokenRule = TokenRule<Input, Token, OrderedTokenMatcher>;
+
+template <class Input, class Token>
+using AnyTokenRule = TokenRule<Input, Token, AnyTokenMatcher>;
 
 } // namespace sprout
 

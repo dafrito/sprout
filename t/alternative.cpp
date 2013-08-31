@@ -6,21 +6,21 @@
 
 using namespace sprout;
 
-AlternativeRule<TokenRule<char, std::string>> createAltRule()
+AlternativeRule<OrderedTokenRule<char, std::string>> createAltRule()
 {
-    TokenRule<char, std::string> a;
+    OrderedTokenRule<char, std::string> a;
     a.setTarget("Cat");
     a.setToken("Heathen");
 
-    TokenRule<char, std::string> b;
+    OrderedTokenRule<char, std::string> b;
     b.setTarget("Dog");
     b.setToken("Civilized");
 
-    TokenRule<char, std::string> c;
+    OrderedTokenRule<char, std::string> c;
     c.setTarget("Calf");
     c.setToken("Cow");
 
-    std::vector<TokenRule<char, std::string>> rules { a, b, c };
+    std::vector<OrderedTokenRule<char, std::string>> rules { a, b, c };
     return AlternativeRule<decltype(a)>(rules);
 }
 

@@ -9,7 +9,7 @@ using namespace sprout;
 
 BOOST_AUTO_TEST_CASE(checkDirectMatch)
 {
-    TokenRule<char, std::string> rule;
+    OrderedTokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 
@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(checkDirectMatch)
 
 BOOST_AUTO_TEST_CASE(checkBadMatch)
 {
-    TokenRule<char, std::string> rule;
+    OrderedTokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 
@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(checkBadMatch)
 
 BOOST_AUTO_TEST_CASE(checkPreemptedMatch)
 {
-    TokenRule<char, std::string> rule;
+    OrderedTokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(checkPreemptedMatch)
 
 BOOST_AUTO_TEST_CASE(checkMatchWithTrailing)
 {
-    TokenRule<char, std::string> rule;
+    OrderedTokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(checkMatchWithTrailing)
 
 BOOST_AUTO_TEST_CASE(checkIteratorAtNextElementWhenMatchIsGood)
 {
-    TokenRule<char, std::string> rule;
+    OrderedTokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(checkIteratorAtNextElementWhenMatchIsGood)
 
 BOOST_AUTO_TEST_CASE(checkIteratorAtFirstElementIfMatchFails)
 {
-    TokenRule<char, std::string> rule;
+    OrderedTokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(checkIteratorAtFirstElementIfMatchFails)
 
     BOOST_CHECK_EQUAL('C', *cursor);
 
-    TokenRule<char, std::string> calfRule;
+    OrderedTokenRule<char, std::string> calfRule;
     calfRule.setTarget("Calf");
     calfRule.setToken("Part");
 
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(checkIteratorAtFirstElementIfMatchFails)
 
 BOOST_AUTO_TEST_CASE(rulesCanBeNested)
 {
-    TokenRule<char, std::string> rule;
+    OrderedTokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 

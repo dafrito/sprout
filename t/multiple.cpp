@@ -7,7 +7,7 @@ using namespace sprout;
 
 BOOST_AUTO_TEST_CASE(matchASingleMultiple)
 {
-    TokenRule<char, std::string> rule;
+    OrderedTokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 
@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(matchASingleMultiple)
 
 BOOST_AUTO_TEST_CASE(matchMultiple)
 {
-    TokenRule<char, std::string> rule;
+    OrderedTokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(matchMultiple)
 
 BOOST_AUTO_TEST_CASE(matchMultipleWithANonMatch)
 {
-    TokenRule<char, std::string> rule;
+    OrderedTokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 
