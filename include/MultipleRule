@@ -1,0 +1,58 @@
+#ifndef SPROUT_MULTIPLERULE_HEADER
+#define SPROUT_MULTIPLERULE_HEADER
+
+#include <vector>
+#include <algorithm>
+
+#include "Cursor"
+#include "Result"
+
+namespace sprout {
+
+template <class Rule>
+class MultipleRule
+{
+public:
+    typedef typename Rule::token_type token_type;
+    typedef typename Rule::input_type input_type;
+
+private:
+    typedef typename Rule::token_type Token;
+    typedef typename Rule::input_type Input;
+
+    Rule rule;
+
+public:
+    MultipleRule(Rule& rule) :
+        rule(rule)
+    {
+    }
+
+    const Result<Token> _eof;
+    const Result<Token>& end() const
+    {
+        return _eof;
+    }
+
+    template <class Iterator>
+    const Result<Token> parse(Cursor<Iterator>& iter) const
+    {
+        std::vector<Token> aggregate;
+        while (true) {
+            auto tokens = rule.parse(iter);
+            if (tokens == rule.end()) {
+                break;
+            }
+            for ( ; tokens != rule.end(); ++tokens) {
+                aggregate.push_back(*tokens);
+            }
+        }
+        return Result<Token>(aggregate);
+    }
+};
+
+} // namespace sprout
+
+#endif // SPROUT_MULTIPLERULE_HEADER
+
+// vim: set ft=cpp ts=4 sw=4 :

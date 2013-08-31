@@ -1,2 +1,7 @@
 nobase_pkginclude_HEADERS = \
-	ExactMatchRule
+	StreamIterator \
+	Result \
+	Cursor \
+	ExactMatchRule \
+	AlternativeRule \
+	MultipleRule

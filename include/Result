@@ -1,0 +1,131 @@
+#ifndef SPROUT_RESULT_HEADER
+#define SPROUT_RESULT_HEADER
+
+#include <vector>
+#include <iterator>
+
+namespace sprout {
+
+template <class Token>
+class Result : public std::iterator<std::input_iterator_tag, Token>
+{
+    std::shared_ptr<std::vector<Token>> _data;
+    int _pos;
+
+public:
+    Result() :
+        _data(),
+        _pos(0)
+    {
+    }
+
+    Result(const std::vector<Token>& tokens) :
+        _data(new std::vector<Token>(tokens)),
+        _pos(0)
+    {
+    }
+
+    int pos() const
+    {
+        return _pos;
+    }
+
+    operator bool() const
+    {
+        return _data && !_data->empty() && _pos < _data->size();
+    }
+
+    Token operator*() const
+    {
+        if (!_data) {
+            throw std::runtime_error("An empty result must not be dereferenced");
+        }
+        if (_pos >= _data->size()) {
+            throw std::runtime_error("Position must not be dereferenced out of range");
+        }
+        return (*_data)[_pos];
+    }
+
+    Result<Token>& operator++()
+    {
+        ++_pos;
+        return *this;
+    }
+
+    Result<Token> operator++(int)
+    {
+        Result<Token> tmp(*this);
+        ++(*this);
+        return tmp;
+    }
+
+    Result<Token>& operator+=(const int delta)
+    {
+        _pos += delta;
+        return *this;
+    }
+
+    Result<Token>& operator-=(const int delta)
+    {
+        return *this += -delta;
+    }
+
+    Result<Token> operator+(const int delta) const
+    {
+        Result<Token> tmp(*this);
+        tmp += delta;
+        return tmp;
+    }
+
+    Result<Token> operator-(const int delta) const
+    {
+        Result<Token> tmp(*this);
+        tmp -= delta;
+        return tmp;
+    }
+
+    template <class T>
+    bool operator<(const Result<T>& other) const
+    {
+        return _data == other._data && pos() < other.pos();
+    }
+
+    template <class T>
+    bool operator>(const Result<T>& other) const
+    {
+        return _data == other._data && pos() > other.pos();
+    }
+
+    template <class T>
+    bool operator<=(const Result<T>& other) const
+    {
+        return _data == other._data && pos() <= other.pos();
+    }
+
+    template <class T>
+    bool operator>=(const Result<T>& other) const
+    {
+        return _data == other._data && pos() >= other.pos();
+    }
+
+    template <class T>
+    bool operator==(const Result<T>& other) const
+    {
+        if (!*this && !other) {
+            return true;
+        }
+        return _data == other._data && pos() == other.pos();
+    }
+
+    template <class T>
+    bool operator!=(const Result<T>& other) const
+    {
+        return !(*this == other);
+    }
+};
+
+} // namespace sprout
+
+#endif // SPROUT_RESULT_HEADER
+
+// vim: set ft=cpp ts=4 sw=4 :

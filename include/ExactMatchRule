@@ -11,6 +11,11 @@ namespace sprout {
 template <class Input, class Token>
 class ExactMatchRule
 {
+public:
+    typedef Input input_type;
+    typedef Token token_type;
+
+private:
     std::vector<Input> _target;
     Token _token;
 

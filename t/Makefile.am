@@ -14,4 +14,6 @@ runtest_SOURCES = \
 	cursor.cpp \
 	iterator.cpp \
 	exactmatch.cpp \
+	multiple.cpp \
+	alternative.cpp \
 	main.cpp
