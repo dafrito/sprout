@@ -23,7 +23,7 @@ private:
     Rule rule;
 
 public:
-    MultipleRule(Rule& rule) :
+    MultipleRule(const Rule& rule) :
         rule(rule)
     {
     }

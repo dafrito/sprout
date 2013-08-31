@@ -28,7 +28,7 @@ private:
     Rule rule;
 
 public:
-    DiscardRule(Rule& rule) :
+    DiscardRule(const Rule& rule) :
         rule(rule)
     {
     }
