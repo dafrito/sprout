@@ -1,13 +1,13 @@
-lib_LTLIBRARIES = libemit.la
-libemit_la_CPPFLAGS = -I$(top_srcdir)/include
-libemit_la_LIBADD =
-libemit_la_LDFLAGS = -version-info 0:0:0
+lib_LTLIBRARIES = libsprout.la
+libsprout_la_CPPFLAGS = @QT_CXXFLAGS@ -I$(top_srcdir)/include
+libsprout_la_LIBADD = @QT_LIBS@
+libsprout_la_LDFLAGS = -version-info 0:0:0
 
-libemit_la_SOURCES = ExactMatchRule.cpp 
+libsprout_la_SOURCES =
 
-bin_PROGRAMS = emit
-emit_CPPFLAGS = $(libemit_la_CPPFLAGS)
-emit_LDADD = libemit.la $(libemit_la_LIBADD)
+bin_PROGRAMS = sprout
+sprout_CPPFLAGS = $(libsprout_la_CPPFLAGS)
+sprout_LDADD = libsprout.la $(libsprout_la_LIBADD)
 
-emit_SOURCES = \
+sprout_SOURCES = \
 	main.cpp

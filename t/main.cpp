@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE emit
+#define BOOST_TEST_MODULE sprout
 #include "init.hpp"
 
 // TODO Put any global fixtures here

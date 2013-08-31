@@ -2,12 +2,12 @@ ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = src t
 
 pkgdata_DATA = \
-	emit.m4
+	sprout.m4
 
 export RPMDIR ?= $$HOME/rpmbuild
 
 run:
-	cd src && ./emit
+	cd src && ./sprout
 
 checkdebug: $(TESTS)
 	cd t && gdb .libs/lt-runtest
@@ -16,17 +16,17 @@ checkvalgrind:
 	cd t && valgrind -v --leak-check=full .libs/lt-runtest
 
 debug: $(TESTS)
-	cd src && gdb emit
+	cd src && gdb sprout
 
 valgrind:
-	cd src && valgrind -v --leak-check=full --trace-children=yes emit
+	cd src && valgrind -v --leak-check=full --trace-children=yes sprout
 
 # This is a common typo for me
 cehck: check
 .PHONY: cehck
 
 RPMFLAGS ?= --ba
-SRCRPM=emit-@PACKAGE_VERSION@-@PACKAGE_RELEASE@.src.rpm
+SRCRPM=sprout-@PACKAGE_VERSION@-@PACKAGE_RELEASE@.src.rpm
 
 rpm: $(SRCRPM)
 $(SRCRPM): rpm.spec $(DISTFILES)
@@ -40,7 +40,7 @@ $(SRCRPM): rpm.spec $(DISTFILES)
 		[ -e `basename $$filename` ] || ln -s $$filename; \
 	done
 	rm -f $@
-	ln -s $(RPMDIR)/SRPMS/emit-@PACKAGE_VERSION@-@PACKAGE_RELEASE@`rpmbuild -E '%{?dist}' rpm.spec`.src.rpm $@
+	ln -s $(RPMDIR)/SRPMS/sprout-@PACKAGE_VERSION@-@PACKAGE_RELEASE@`rpmbuild -E '%{?dist}' rpm.spec`.src.rpm $@
 .PHONY: rpm
 
 $(RPMDIR):

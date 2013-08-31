@@ -1,24 +1,20 @@
 #include <iostream>
+#include <iterator>
 #include <sstream>
 #include <cassert>
 
 int main(int argc, char* argv[])
 {
     std::stringstream str;
+    str << "Cat";
 
-    str << "Notime";
+    std::istream_iterator<char> eos;
+    std::istream_iterator<char> i(str);
 
     char a, b;
-    str >> a >> b;
+    a = *i++;
+    b = *i++;
     std::cout << a << b << std::endl;
-    str.putback(b);
-    str.putback(a);
-
-    assert(str.good());
-
-    char c;
-    str >> a >> b >> c;
-    std::cout << a << b << c << std::endl;
 
     return 0;
 }

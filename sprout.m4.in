@@ -1,0 +1,92 @@
+# ===========================================================================
+#    @PACKAGE_URL@
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_HAVE_SPROUT
+#
+# DESCRIPTION
+#
+#   Test for @PACKAGE_NAME@
+#
+#   This macro calls:
+#
+#     AC_SUBST(SPROUT_INCLUDE)
+#     AC_SUBST(SPROUT_LIBS)
+#
+#   And sets:
+#
+#     HAVE_SPROUT
+#
+# LICENSE
+#
+#   Copyright (c) 2013 Aaron Faanes <@PACKAGE_BUGREPORT@>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+AC_DEFUN([AX_HAVE_SPROUT],
+[
+	AC_ARG_WITH([sprout],
+    AS_HELP_STRING([--with-sprout], [use @PACKAGE_NAME@]),
+    [
+      if test x"$withval" = "xno"; then
+        want_sprout="no";
+      else
+        want_sprout="yes";
+      fi
+    ],
+    [want_sprout="yes"]
+  )
+
+  if test x"$want_sprout" = "xyes"; then
+    AC_MSG_CHECKING([for sprout])
+
+    # Ensure we have a suitable C++ compiler
+    AC_REQUIRE([AC_PROG_CC])
+
+    ax_sprout_saved_CPPFLAGS="$CPPFLAGS"
+    ax_sprout_INCLUDE=""
+    CPPFLAGS="$CPPFLAGS $ax_sprout_INCLUDE"
+    export CPPFLAGS
+
+    ax_sprout_saved_LIBS="$LIBS"
+    ax_sprout_LIBS=""
+    LIBS="$LIBS $ax_sprout_LIBS"
+    export LIBS
+
+    AC_LANG_PUSH([C++])
+    AC_COMPILE_IFELSE([
+      AC_LANG_PROGRAM(
+        [[@%:@include <sprout/Bootstrapper.hpp]],
+        [[
+          Bootstrapper bs;
+          return 0;
+        ]]
+      )],
+      ax_have_sprout=yes,
+      ax_have_sprout=no
+    )
+    AC_LANG_POP([C++])
+
+    AC_MSG_RESULT([$ax_have_sprout])
+    if test x"$ax_have_sprout" = "xyes"; then
+      AC_DEFINE(HAVE_SPROUT,,[define if sprout is available])
+      SPROUT_INCLUDE="$ax_sprout_INCLUDE"
+      dnl This doesn't yet test the location of this project
+      SPROUT_LIBS="$ax_sprout_LIBS -l@PACKAGE_NAME@"
+    else
+      AC_MSG_ERROR([Could not find sprout])
+      SPROUT_INCLUDE=""
+      SPROUT_LIBS=""
+    fi
+    AC_SUBST(SPROUT_INCLUDE)
+    AC_SUBST(SPROUT_LIBS)
+
+    CPPFLAGS="$ax_sprout_saved_CPPFLAGS"
+    LIBS="$ax_sprout_saved_LIBS"
+  fi;
+])

@@ -1,0 +1,244 @@
+#ifndef SPROUT_CURSOR_HEADER
+#define SPROUT_CURSOR_HEADER
+
+#include <cassert>
+
+#include "StreamIterator"
+
+namespace sprout {
+
+template <class Iterator>
+class CursorData
+{
+    Iterator _iter;
+    Iterator _end;
+
+public:
+    // Get the type of data by testing the dereference operator.
+    // For iterators in the STL, this should be equivalent to their
+    // value_type typedef.
+    typedef
+        typename std::remove_const<
+        typename std::remove_reference<
+        decltype(*_end)
+        >::type
+        >::type Data;
+
+private:
+    std::vector<Data> _buffer;
+    int _head;
+
+public:
+    CursorData(Iterator& begin, Iterator& end) :
+        _iter(begin),
+        _end(end),
+        _head(0)
+    {
+    }
+
+    int head() const
+    {
+        return _head;
+    }
+
+    int tail() const
+    {
+        return head() - buffered();
+    }
+
+    int buffered() const
+    {
+        return _buffer.size();
+    }
+
+    bool atEnd()
+    {
+        return _iter == _end;
+    }
+
+    bool hasTokens()
+    {
+        return !atEnd();
+    }
+
+    std::string state() const
+    {
+        std::stringstream str;
+        str << "[tail: " << tail() << ", head: " << head() << "]";
+        return str.str();
+    }
+
+    Data get(int pos)
+    {
+        if (pos < 0) {
+            std::stringstream str;
+            str << "pos must be non-negative, but I was given " << pos << ". " << state();
+            throw std::range_error(str.str());
+        }
+        if (pos < tail()) {
+            std::stringstream str;
+            str << "pos must not refer to discarded elements, but I was given " << pos << ". " << state();
+            throw std::range_error(str.str());
+        }
+        advanceTo(pos);
+        return _buffer[pos];
+    }
+
+    void advance()
+    {
+        if (atEnd()) {
+            return;
+        }
+        _buffer.push_back(*_iter);
+        // Don't use post-increment for iterators that don't support copying
+        ++_iter;
+        ++_head;
+    }
+
+    void advanceTo(int pos)
+    {
+        while (head() <= pos) {
+            if (atEnd()) {
+                return;
+            }
+            advance();
+        }
+    }
+
+    void discard(int amount)
+    {
+        _buffer.erase(_buffer.start(), _buffer.start() + amount);
+    }
+
+    void discard()
+    {
+        discard(buffered());
+    }
+};
+
+template <class Iterator>
+class Cursor
+{
+public:
+    typedef typename CursorData<Iterator>::Data Data;
+private:
+
+    std::shared_ptr<CursorData<Iterator>> _data;
+    int _pos;
+
+public:
+    Cursor(const Cursor<Iterator>& other) :
+        _data(other._data),
+        _pos(other._pos)
+    {
+    }
+
+    Cursor(Iterator begin) :
+        Cursor(begin, Iterator())
+    {
+    }
+
+    Cursor(Iterator begin, Iterator end) :
+        _data(new CursorData<Iterator>(begin, end)),
+        _pos(0)
+    {
+    }
+
+    int pos() const
+    {
+        return _pos;
+    }
+
+    typename CursorData<Iterator>::Data operator*()
+    {
+        return _data->get(pos());
+    }
+
+    operator bool() const
+    {
+        return !_data->atEnd() || pos() < _data->head();
+    }
+
+    Cursor& operator++()
+    {
+        _data->advanceTo(++_pos);
+        return *this;
+    }
+
+    Cursor operator++(int)
+    {
+        Cursor tmp(*this);
+        ++(*this);
+        return tmp;
+    }
+
+    Cursor& operator+=(const int delta)
+    {
+        _data->advanceTo(_pos += delta);
+        return *this;
+    }
+
+    Cursor& operator-=(const int delta)
+    {
+        return *this += -delta;
+    }
+
+    Cursor operator+(const int delta) const
+    {
+        Cursor tmp(*this);
+        tmp += delta;
+        return tmp;
+    }
+
+    Cursor operator-(const int delta) const
+    {
+        Cursor tmp(*this);
+        tmp -= delta;
+        return tmp;
+    }
+
+    bool operator<(const Cursor& other) const
+    {
+        return _data == other._data && pos() < other.pos();
+    }
+
+    bool operator>(const Cursor& other) const
+    {
+        return _data == other._data && pos() > other.pos();
+    }
+
+    bool operator<=(const Cursor& other) const
+    {
+        return _data == other._data && pos() <= other.pos();
+    }
+
+    bool operator>=(const Cursor& other) const
+    {
+        return _data == other._data && pos() >= other.pos();
+    }
+
+    bool operator==(const Cursor& other) const
+    {
+        return _data == other._data && pos() == other.pos();
+    }
+
+    bool operator!=(const Cursor& other) const
+    {
+        return !(*this == other);
+    }
+};
+
+template <class Data, class Stream>
+Cursor<StreamIterator<Data, Stream>>
+makeCursor(Stream& stream)
+{
+    return Cursor<StreamIterator<Data, Stream>>(
+        StreamIterator<Data, Stream>(stream)
+    );
+}
+
+} // namespace sprout
+
+#endif // SPROUT_CURSOR_HEADER
+
+// vim: set ft=cpp ts=4 sw=4 :

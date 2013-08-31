@@ -1,11 +1,11 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.68])
-AC_INIT([emit], [1.0], [dafrito@gmail.com], [emit], [http://www.dafrito.com])
+AC_INIT([sprout], [1.0], [dafrito@gmail.com], [sprout], [http://www.dafrito.com])
 AC_SUBST([PACKAGE_RELEASE], [1])
 AM_INIT_AUTOMAKE([-Wall foreign])
 AC_CONFIG_SRCDIR([src/main.cpp])
-AC_CONFIG_HEADERS([src/config.h])
+AC_CONFIG_HEADERS([include/config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
 # Check for build programs
@@ -31,5 +31,8 @@ AC_SUBST(AM_CXXFLAGS)
 AX_BOOST_BASE
 AX_BOOST_UNIT_TEST_FRAMEWORK
 
-AC_CONFIG_FILES([emit.m4 Makefile src/Makefile include/Makefile t/Makefile rpm.spec])
+# Check for Qt
+AX_HAVE_QT_CORE
+
+AC_CONFIG_FILES([sprout.m4 Makefile src/Makefile include/Makefile t/Makefile rpm.spec])
 AC_OUTPUT
