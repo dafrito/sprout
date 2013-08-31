@@ -1,25 +1,25 @@
 #include "init.hpp"
 
 #include "SequenceRule"
-#include "ExactMatchRule"
+#include "TokenRule"
 
 using namespace sprout;
 
-SequenceRule<ExactMatchRule<char, std::string>> createRule()
+SequenceRule<TokenRule<char, std::string>> createRule()
 {
-    ExactMatchRule<char, std::string> a;
+    TokenRule<char, std::string> a;
     a.setTarget("Cat");
     a.setToken("Heathen");
 
-    ExactMatchRule<char, std::string> b;
+    TokenRule<char, std::string> b;
     b.setTarget("Dog");
     b.setToken("Civilized");
 
-    ExactMatchRule<char, std::string> c;
+    TokenRule<char, std::string> c;
     c.setTarget("Calf");
     c.setToken("Cow");
 
-    std::vector<ExactMatchRule<char, std::string>> rules { a, b, c };
+    std::vector<TokenRule<char, std::string>> rules { a, b, c };
     return SequenceRule<decltype(a)>(rules);
 }
 

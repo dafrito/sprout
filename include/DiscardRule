@@ -1,0 +1,54 @@
+#ifndef SPROUT_DISCARDRULE_HEADER
+#define SPROUT_DISCARDRULE_HEADER
+
+#include <vector>
+#include <algorithm>
+
+#include "Cursor"
+#include "Result"
+
+namespace sprout {
+
+/**
+ * Runs the specified rule, but discards any matches. The cursor will be
+ * moved on successful matches, so this is useful for skipping unnecessary
+ * content like whitespace.
+ */
+template <class Rule>
+class DiscardRule
+{
+public:
+    typedef typename Rule::token_type token_type;
+    typedef typename Rule::input_type input_type;
+
+private:
+    typedef typename Rule::token_type Token;
+    typedef typename Rule::input_type Input;
+
+    Rule rule;
+
+public:
+    DiscardRule(Rule& rule) :
+        rule(rule)
+    {
+    }
+
+    const Result<Token> _eof;
+    const Result<Token>& end() const
+    {
+        return _eof;
+    }
+
+    template <class Iterator>
+    const Result<Token> parse(Cursor<Iterator>& iter) const
+    {
+        rule.parse(iter);
+        return _eof;
+    }
+};
+
+} // namespace sprout
+
+#endif // SPROUT_DISCARDRULE_HEADER
+
+// vim: set ft=cpp ts=4 sw=4 :

@@ -3,13 +3,13 @@
 #include <iterator>
 #include <sstream>
 
-#include "ExactMatchRule"
+#include "TokenRule"
 
 using namespace sprout;
 
 BOOST_AUTO_TEST_CASE(checkDirectMatch)
 {
-    ExactMatchRule<char, std::string> rule;
+    TokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 
@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(checkDirectMatch)
 
 BOOST_AUTO_TEST_CASE(checkBadMatch)
 {
-    ExactMatchRule<char, std::string> rule;
+    TokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 
@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(checkBadMatch)
 
 BOOST_AUTO_TEST_CASE(checkPreemptedMatch)
 {
-    ExactMatchRule<char, std::string> rule;
+    TokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(checkPreemptedMatch)
 
 BOOST_AUTO_TEST_CASE(checkMatchWithTrailing)
 {
-    ExactMatchRule<char, std::string> rule;
+    TokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(checkMatchWithTrailing)
 
 BOOST_AUTO_TEST_CASE(checkIteratorAtNextElementWhenMatchIsGood)
 {
-    ExactMatchRule<char, std::string> rule;
+    TokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(checkIteratorAtNextElementWhenMatchIsGood)
 
 BOOST_AUTO_TEST_CASE(checkIteratorAtFirstElementIfMatchFails)
 {
-    ExactMatchRule<char, std::string> rule;
+    TokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(checkIteratorAtFirstElementIfMatchFails)
 
     BOOST_CHECK_EQUAL('C', *cursor);
 
-    ExactMatchRule<char, std::string> calfRule;
+    TokenRule<char, std::string> calfRule;
     calfRule.setTarget("Calf");
     calfRule.setToken("Part");
 
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(checkIteratorAtFirstElementIfMatchFails)
 
 BOOST_AUTO_TEST_CASE(rulesCanBeNested)
 {
-    ExactMatchRule<char, std::string> rule;
+    TokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 

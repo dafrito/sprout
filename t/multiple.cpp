@@ -1,13 +1,13 @@
 #include "init.hpp"
 
 #include "MultipleRule"
-#include "ExactMatchRule"
+#include "TokenRule"
 
 using namespace sprout;
 
 BOOST_AUTO_TEST_CASE(matchASingleMultiple)
 {
-    ExactMatchRule<char, std::string> rule;
+    TokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 
@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(matchASingleMultiple)
 
 BOOST_AUTO_TEST_CASE(matchMultiple)
 {
-    ExactMatchRule<char, std::string> rule;
+    TokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(matchMultiple)
 
 BOOST_AUTO_TEST_CASE(matchMultipleWithANonMatch)
 {
-    ExactMatchRule<char, std::string> rule;
+    TokenRule<char, std::string> rule;
     rule.setTarget("Cat");
     rule.setToken("Animal");
 

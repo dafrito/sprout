@@ -1,0 +1,107 @@
+#ifndef SPROUT_TOKENRULE_HEADER
+#define SPROUT_TOKENRULE_HEADER
+
+#include <vector>
+#include <algorithm>
+
+#include "Cursor"
+
+namespace sprout {
+
+struct OrderedTokenMatcher
+{
+    template <class Input, class Iterator>
+    static bool parse(Cursor<Iterator>& iter, const std::vector<Input>& target)
+    {
+        int i = 0;
+        while (i < target.size()) {
+            if (!iter || *iter++ != target[i++]) {
+                return false;
+            }
+        }
+        return true;
+    }
+};
+
+struct AnyTokenMatcher
+{
+    template <class Input, class Iterator>
+    static bool parse(Cursor<Iterator>& iter, const std::vector<Input>& target)
+    {
+        if (!iter) {
+            return false;
+        }
+        auto value = *iter++;
+        for (auto candidate : target) {
+            if (value == candidate) {
+                return true;
+            }
+        }
+        return false;
+    }
+};
+
+template <class Input, class Token, class Matcher = OrderedTokenMatcher>
+class TokenRule
+{
+public:
+    typedef Input input_type;
+    typedef Token token_type;
+
+private:
+    std::vector<Input> _target;
+    Token _token;
+
+public:
+    void setTarget(const std::vector<Input>& target)
+    {
+        _target = target;
+    }
+
+    template <class Iterator>
+    void setTarget(const Iterator& begin, const Iterator& end)
+    {
+        _target.clear();
+        std::copy(begin, end, std::back_inserter(_target));
+    }
+
+    template <class Value>
+    void setTarget(const Value& value)
+    {
+        setTarget(std::begin(value), std::end(value));
+    }
+
+    void setTarget(const char* value)
+    {
+        setTarget(std::string(value));
+    }
+
+    void setToken(const Token& token)
+    {
+        _token = token;
+    }
+
+    const Token* end() const
+    {
+        auto eof = &_token;
+        return ++eof;
+    }
+
+    template <class Iterator>
+    const Token* parse(Cursor<Iterator>& iter) const
+    {
+        auto mark = iter;
+        if (Matcher::parse(iter, _target)) {
+            return &_token;
+        }
+        // No match, so reset the iter and return EOF
+        iter = mark;
+        return end();
+    }
+};
+
+} // namespace sprout
+
+#endif // SPROUT_TOKENRULE_HEADER
+
+// vim: set ft=cpp ts=4 sw=4 :

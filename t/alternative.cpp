@@ -2,25 +2,25 @@
 
 #include "AlternativeRule"
 #include "MultipleRule"
-#include "ExactMatchRule"
+#include "TokenRule"
 
 using namespace sprout;
 
-AlternativeRule<ExactMatchRule<char, std::string>> createAltRule()
+AlternativeRule<TokenRule<char, std::string>> createAltRule()
 {
-    ExactMatchRule<char, std::string> a;
+    TokenRule<char, std::string> a;
     a.setTarget("Cat");
     a.setToken("Heathen");
 
-    ExactMatchRule<char, std::string> b;
+    TokenRule<char, std::string> b;
     b.setTarget("Dog");
     b.setToken("Civilized");
 
-    ExactMatchRule<char, std::string> c;
+    TokenRule<char, std::string> c;
     c.setTarget("Calf");
     c.setToken("Cow");
 
-    std::vector<ExactMatchRule<char, std::string>> rules { a, b, c };
+    std::vector<TokenRule<char, std::string>> rules { a, b, c };
     return AlternativeRule<decltype(a)>(rules);
 }
 
