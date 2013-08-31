@@ -44,16 +44,20 @@ public:
         _token = token;
     }
 
+    Token* end() const
+    {
+        return nullptr;
+    }
+
     template <class Iterator>
     Token* parse(Cursor<Iterator>& iter)
     {
         auto mark = iter;
         int i = 0;
         while (i < _target.size()) {
-            std::cout << _target[i] << " " << (bool)iter << "\n";
             if (!iter || *iter++ != _target[i++]) {
                 iter = mark;
-                return nullptr;
+                return end();
             }
         }
         return &_token;
