@@ -63,12 +63,6 @@ BOOST_AUTO_TEST_CASE(checkIteratorAtNextElementWhenMatchIsGood)
     std::stringstream str("Catde");
     auto cursor = makeCursor<char>(str);
 
-    BOOST_CHECK(true);
-    for (auto i = cursor; i; ++i) {
-        std::cout << *i << std::endl;
-    }
-    BOOST_CHECK(true);
-
     auto tokens = rule.parse(cursor);
     BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Animal", *tokens);
