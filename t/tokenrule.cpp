@@ -105,4 +105,19 @@ BOOST_AUTO_TEST_CASE(rulesCanBeNested)
     BOOST_CHECK(!tokenCursor);
 }
 
+BOOST_AUTO_TEST_CASE(anyTokenRule)
+{
+    AnyTokenRule<char, std::string> rule;
+    rule.setTarget(" _");
+    rule.setToken("Whitespace");
+
+    std::stringstream str("_Dog");
+    auto cursor = makeCursor<char>(str);
+    auto tokens = rule.parse(cursor);
+
+    BOOST_REQUIRE(tokens != rule.end());
+    BOOST_CHECK_EQUAL("Whitespace", *tokens);
+    BOOST_CHECK_EQUAL('D', *cursor);
+}
+
 // vim: set ts=4 sw=4 :
