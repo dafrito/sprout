@@ -46,7 +46,8 @@ BOOST_AUTO_TEST_CASE(sequencesFailCompletely)
     auto cursor = makeCursor<char>(str);
 
     auto tokens = rule.parse(cursor);
-    BOOST_REQUIRE(!tokens);
+    BOOST_CHECK(!tokens);
+    BOOST_CHECK_EQUAL('D', *cursor);
 }
 
 BOOST_AUTO_TEST_CASE(partialSequencesAlsoFailCompletely)
@@ -57,5 +58,6 @@ BOOST_AUTO_TEST_CASE(partialSequencesAlsoFailCompletely)
     auto cursor = makeCursor<char>(str);
 
     auto tokens = rule.parse(cursor);
-    BOOST_REQUIRE(!tokens);
+    BOOST_CHECK(!tokens);
+    BOOST_CHECK_EQUAL('C', *cursor);
 }
