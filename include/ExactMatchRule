@@ -1,10 +1,8 @@
 #ifndef SPROUT_EXACTMATCHRULE_HEADER
 #define SPROUT_EXACTMATCHRULE_HEADER
 
-#include <functional>
 #include <vector>
 #include <algorithm>
-#include <iostream>
 
 #include "Cursor"
 
