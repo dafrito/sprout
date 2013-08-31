@@ -15,6 +15,7 @@ class ExactMatchRule
 {
     std::vector<Input> _target;
     Token _token;
+
 public:
     void setTarget(const std::vector<Input>& target)
     {
