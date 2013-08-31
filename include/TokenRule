@@ -53,6 +53,25 @@ private:
     Token _token;
 
 public:
+    TokenRule() :
+        _target(),
+        _token()
+    {
+    }
+
+    template <class Target>
+    TokenRule(const Target& target)
+    {
+        setTarget(target);
+    }
+
+    template <class Target, class Output>
+    TokenRule(const Target& target, const Output& output)
+    {
+        setTarget(target);
+        setToken(output);
+    }
+
     void setTarget(const std::vector<Input>& target)
     {
         _target = target;
