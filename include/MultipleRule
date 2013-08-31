@@ -49,6 +49,12 @@ public:
     }
 };
 
+template <class Rule>
+MultipleRule<Rule> makeMultiple(const Rule& rule)
+{
+    return MultipleRule<Rule>(rule);
+}
+
 } // namespace sprout
 
 #endif // SPROUT_MULTIPLERULE_HEADER

@@ -47,6 +47,12 @@ public:
     }
 };
 
+template <class Rule>
+DiscardRule<Rule> makeDiscard(const Rule& rule)
+{
+    return DiscardRule<Rule>(rule);
+}
+
 } // namespace sprout
 
 #endif // SPROUT_DISCARDRULE_HEADER
