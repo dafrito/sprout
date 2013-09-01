@@ -19,26 +19,36 @@ BOOST_AUTO_TEST_CASE(testTrivialProxy)
 BOOST_AUTO_TEST_CASE(testSplittingByWhitespace)
 {
     auto rule = makeMultiple(
-        makeSequence<ProxyRule<char, std::string>>(false,
-            makeAlternate(
-                OrderedTokenRule<char, std::string>("Cat", "Heathen"),
-                OrderedTokenRule<char, std::string>("Dog", "Civilized"),
-                OrderedTokenRule<char, std::string>("Calf", "Cow")
-            ),
-            makeDiscard(makeMultiple(
-                AnyTokenRule<char, std::string>("_-")
-            ))
+        SequenceRule<ProxyRule<char, std::string>>()
+        << makeAlternate(
+            OrderedTokenRule<char, std::string>("Cat", "Heathen"),
+            OrderedTokenRule<char, std::string>("Dog", "Civilized"),
+            OrderedTokenRule<char, std::string>("Calf", "Cow")
         )
+        << sprout::Optional
+        << makeDiscard(makeMultiple(
+            AnyTokenRule<char, std::string>("_")
+        ))
+        << sprout::Required
+        << OrderedTokenRule<char, std::string>(",", "Comma")
+        << sprout::Optional
+        << makeDiscard(makeMultiple(
+            AnyTokenRule<char, std::string>("_")
+        ))
     );
 
-    std::stringstream str("Dog___Cat__Calf__Cat");
+    std::stringstream str("Dog,_Cat,_Calf,_Cat,");
     auto cursor = makeCursor<char>(str);
 
     auto tokens = rule.parse(cursor);
     BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Civilized", *tokens++);
+    BOOST_CHECK_EQUAL("Comma", *tokens++);
     BOOST_CHECK_EQUAL("Heathen", *tokens++);
+    BOOST_CHECK_EQUAL("Comma", *tokens++);
     BOOST_CHECK_EQUAL("Cow", *tokens++);
+    BOOST_CHECK_EQUAL("Comma", *tokens++);
     BOOST_CHECK_EQUAL("Heathen", *tokens++);
+    BOOST_CHECK_EQUAL("Comma", *tokens++);
     BOOST_CHECK(!tokens);
 }

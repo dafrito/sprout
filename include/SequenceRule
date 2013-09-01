@@ -10,6 +10,32 @@
 namespace sprout {
 
 template <class Rule>
+struct RuleEntry {
+    Rule rule;
+    bool required;
+
+    template <class T>
+    RuleEntry(const T& rule, bool required) :
+        rule(rule),
+        required(required)
+    {
+    }
+};
+
+struct InsertRequired
+{
+    bool value;
+
+    InsertRequired(bool value) :
+        value(value)
+    {
+    }
+};
+
+const InsertRequired Required(true);
+const InsertRequired Optional(false);
+
+template <class Rule>
 class SequenceRule
 {
 public:
@@ -20,17 +46,35 @@ private:
     typedef typename Rule::token_type Token;
     typedef typename Rule::input_type Input;
 
-private:
-    bool _matchRequired;
-    std::vector<Rule> _rules;
+    std::vector<RuleEntry<Rule>> _rules;
 
+    bool _insertAsRequired;
 public:
     template <class Container>
-    SequenceRule(const Container& rules, bool matchRequired = true) :
-        _matchRequired(matchRequired),
-        _rules(rules),
-        _eof()
+    SequenceRule(const Container& rules) :
+        SequenceRule()
     {
+        for (auto rule : rules) {
+            *this << rule;
+        }
+    }
+
+    SequenceRule() :
+        _insertAsRequired(true)
+    {
+    }
+
+    SequenceRule& operator<<(const InsertRequired& requiredFlag)
+    {
+        _insertAsRequired = requiredFlag.value;
+        return *this;
+    }
+
+    template <class T>
+    SequenceRule& operator<<(const T& rule)
+    {
+        _rules.push_back(RuleEntry<Rule>(rule, _insertAsRequired));
+        return *this;
     }
 
     const Result<Token> _eof;
@@ -42,11 +86,11 @@ public:
     const Result<Token> parse(Cursor<Input>& iter) const
     {
         std::vector<Token> aggregate;
-        for (auto rule : _rules) {
-            auto tokens = rule.parse(iter);
-            if (tokens != rule.end()) {
-                std::copy(tokens, rule.end(), std::back_inserter(aggregate));
-            } else if (_matchRequired) {
+        for (auto entry : _rules) {
+            auto tokens = entry.rule.parse(iter);
+            if (tokens != entry.rule.end()) {
+                std::copy(tokens, entry.rule.end(), std::back_inserter(aggregate));
+            } else if (entry.required) {
                 return end();
             } else {
                 continue;
@@ -57,29 +101,24 @@ public:
 };
 
 template <class Rule>
-SequenceRule<Rule> makeSequence(const bool matchRequired, std::vector<Rule>& rules)
+void populateSequence(SequenceRule<Rule>& sequence)
 {
-    return SequenceRule<Rule>(rules, matchRequired);
+    // Do nothing
 }
 
-template <class Rule>
-SequenceRule<Rule> doMakeSequence(const bool matchRequired, std::vector<Rule>& rules)
+template <class Rule, class T, typename... Values>
+void populateSequence(SequenceRule<Rule>& sequence, const T& value, Values... rest)
 {
-    return makeSequence<Rule>(matchRequired, rules);
+    sequence << value;
+    populateSequence(sequence, rest...);
 }
 
-template <class Rule, typename... Rules>
-SequenceRule<Rule> doMakeSequence(const bool matchRequired, std::vector<Rule>& rules, const Rule& rule, Rules... rest)
+template <class Rule, typename... Values>
+SequenceRule<Rule> makeSequence(const Rule& rule, Values... rest)
 {
-    rules.push_back(rule);
-    return doMakeSequence<Rule>(matchRequired, rules, rest...);
-}
-
-template <class Rule, typename... Rules>
-SequenceRule<Rule> makeSequence(const bool matchRequired, const Rule& rule, Rules... rest)
-{
-    std::vector<Rule> rules;
-    return doMakeSequence<Rule>(matchRequired, rules, rule, rest...);
+    SequenceRule<Rule> sequence;
+    populateSequence(sequence, rule, rest...);
+    return sequence;
 }
 
 } // namespace sprout
