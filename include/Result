@@ -9,7 +9,8 @@ namespace sprout {
 template <class Token>
 class Result : public std::iterator<std::input_iterator_tag, Token>
 {
-    std::shared_ptr<std::vector<Token>> _data;
+    typedef std::vector<Token> Tokens;
+    std::shared_ptr<Tokens> _data;
     int _pos;
 
 public:
@@ -19,10 +20,28 @@ public:
     {
     }
 
-    Result(const std::vector<Token>& tokens) :
-        _data(new std::vector<Token>(tokens)),
+    Result(const Tokens& tokens) :
+        _data(new Tokens(tokens)),
         _pos(0)
     {
+    }
+
+    static const Tokens empty_tokens;
+
+    typename Tokens::const_iterator begin() const
+    {
+        if (!_data) {
+            return std::begin(empty_tokens);
+        }
+        return std::begin(*_data);
+    }
+
+    typename Tokens::const_iterator end() const
+    {
+        if (!_data) {
+            return std::end(empty_tokens);
+        }
+        return std::end(*_data);
     }
 
     int pos() const
