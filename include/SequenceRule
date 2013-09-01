@@ -21,12 +21,15 @@ private:
     typedef typename Rule::input_type Input;
 
 private:
+    bool _matchRequired;
     std::vector<Rule> _rules;
 
 public:
     template <class Container>
-    SequenceRule(const Container& rules) :
-        _rules(rules)
+    SequenceRule(const Container& rules, bool matchRequired = true) :
+        _matchRequired(matchRequired),
+        _rules(rules),
+        _eof()
     {
     }
 
@@ -41,39 +44,42 @@ public:
         std::vector<Token> aggregate;
         for (auto rule : _rules) {
             auto tokens = rule.parse(iter);
-            if (tokens == rule.end()) {
+            if (tokens != rule.end()) {
+                std::copy(tokens, rule.end(), std::back_inserter(aggregate));
+            } else if (_matchRequired) {
                 return end();
+            } else {
+                continue;
             }
-            std::copy(tokens, rule.end(), std::back_inserter(aggregate));
         }
         return Result<Token>(aggregate);
     }
 };
 
 template <class Rule>
-SequenceRule<Rule> makeSequence(std::vector<Rule>& rules)
+SequenceRule<Rule> makeSequence(const bool matchRequired, std::vector<Rule>& rules)
 {
-    return SequenceRule<Rule>(rules);
+    return SequenceRule<Rule>(rules, matchRequired);
 }
 
 template <class Rule>
-SequenceRule<Rule> doMakeSequence(std::vector<Rule>& rules)
+SequenceRule<Rule> doMakeSequence(const bool matchRequired, std::vector<Rule>& rules)
 {
-    return makeSequence(rules);
+    return makeSequence<Rule>(matchRequired, rules);
 }
 
 template <class Rule, typename... Rules>
-SequenceRule<Rule> doMakeSequence(std::vector<Rule>& rules, const Rule& rule, Rules... rest)
+SequenceRule<Rule> doMakeSequence(const bool matchRequired, std::vector<Rule>& rules, const Rule& rule, Rules... rest)
 {
     rules.push_back(rule);
-    return doMakeSequence(rules, rest...);
+    return doMakeSequence<Rule>(matchRequired, rules, rest...);
 }
 
 template <class Rule, typename... Rules>
-SequenceRule<Rule> makeSequence(const Rule& rule, Rules... rest)
+SequenceRule<Rule> makeSequence(const bool matchRequired, const Rule& rule, Rules... rest)
 {
     std::vector<Rule> rules;
-    return doMakeSequence(rules, rule, rest...);
+    return doMakeSequence<Rule>(matchRequired, rules, rule, rest...);
 }
 
 } // namespace sprout
