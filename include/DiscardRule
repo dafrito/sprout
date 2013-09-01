@@ -42,7 +42,7 @@ public:
     const Result<Token> parse(Cursor<Input>& iter) const
     {
         rule.parse(iter);
-        return _eof;
+        return end();
     }
 };
 
