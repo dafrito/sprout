@@ -4,4 +4,5 @@ nobase_pkginclude_HEADERS = \
 	Cursor \
 	TokenRule \
 	AlternativeRule \
+	ProxyRule \
 	MultipleRule

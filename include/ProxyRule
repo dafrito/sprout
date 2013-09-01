@@ -1,0 +1,86 @@
+#ifndef SPROUT_PROXYRULE_HEADER
+#define SPROUT_PROXYRULE_HEADER
+
+#include <memory>
+
+#include "Cursor"
+#include "Result"
+
+namespace sprout {
+
+template <class Input, class Token>
+class RulePlaceholder {
+public:
+    virtual const Result<Token>& end() const=0;
+    virtual Result<Token> parse(Cursor<Input>& iter) const=0;
+};
+
+template <class Rule, class Input, class Token>
+class RulePlaceholderImpl : public RulePlaceholder<Input, Token>
+{
+    Rule _rule;
+    const Result<Token> _eof;
+
+public:
+    RulePlaceholderImpl(const Rule& rule) :
+        _rule(rule)
+    {
+    }
+
+    const Result<Token>& end() const
+    {
+        return _eof;
+    }
+
+    Result<Token> parse(Cursor<Input>& iter) const
+    {
+        std::vector<Token> aggregate;
+        auto tokens = _rule.parse(iter);
+        if (tokens == _rule.end()) {
+            return end();
+        }
+        std::copy(tokens, _rule.end(), std::back_inserter(aggregate));
+        return Result<Token>(aggregate);
+    }
+};
+
+template <class Input, class Token>
+class ProxyRule
+{
+public:
+    typedef Input input_type;
+    typedef Token token_type;
+
+private:
+    std::shared_ptr<RulePlaceholder<Input, Token>> _rule;
+
+public:
+    ProxyRule(const ProxyRule& other) :
+        _rule(other._rule)
+    {
+    }
+
+    template <class Rule, typename std::enable_if<
+        !std::is_same<ProxyRule<Input, Token>, Rule>::value, int
+    >::type = 0>
+    ProxyRule(const Rule& rule) :
+        _rule(new RulePlaceholderImpl<Rule, Input, Token>(rule))
+    {
+    }
+
+    const Result<Token>& end() const
+    {
+        return _rule->end();
+    }
+
+    const Result<Token> parse(Cursor<Input>& iter) const
+    {
+        return _rule->parse(iter);
+    }
+};
+
+} // namespace sprout
+
+#endif // SPROUT_PROXYRULE_HEADER
+
+// vim: set ft=cpp ts=4 sw=4 :
