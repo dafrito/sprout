@@ -8,7 +8,9 @@ using namespace sprout;
 BOOST_AUTO_TEST_CASE(checkCursor)
 {
     std::stringstream str("Cat");
-    Cursor<std::istream_iterator<char>> cur(str);
+    Cursor<char> cur(
+        (std::istream_iterator<char>(str))
+    );
 
     BOOST_CHECK(cur);
     BOOST_CHECK_EQUAL('C', *cur++);
@@ -32,7 +34,9 @@ BOOST_AUTO_TEST_CASE(checkCursorWorksWithoutIncrementing)
 BOOST_AUTO_TEST_CASE(checkCursorWithStreamIterator)
 {
     std::stringstream str("Cat");
-    Cursor<std::istream_iterator<char>> cur(str);
+    Cursor<char> cur(
+        (std::istream_iterator<char>(str))
+    );
 }
 
 BOOST_AUTO_TEST_CASE(constructCursorWithMake)

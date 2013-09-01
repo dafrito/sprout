@@ -36,8 +36,7 @@ public:
         return _eof;
     }
 
-    template <class Iterator>
-    const Result<Token> parse(Cursor<Iterator>& iter) const
+    const Result<Token> parse(Cursor<Input>& iter) const
     {
         std::vector<Token> aggregate;
         for (auto rule : _rules) {

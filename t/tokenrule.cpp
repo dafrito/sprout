@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(rulesCanBeNested)
     auto cursor = makeCursor<char>(str);
     auto tokens = rule.parse(cursor);
 
-    Cursor<decltype(tokens)> tokenCursor(tokens, rule.end());
+    Cursor<std::string> tokenCursor(tokens, rule.end());
     BOOST_CHECK_EQUAL(std::string("Animal"), *tokenCursor);
     tokenCursor++;
     BOOST_CHECK(!tokenCursor);

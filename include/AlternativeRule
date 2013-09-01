@@ -36,8 +36,7 @@ public:
         return _eof;
     }
 
-    template <class Iterator>
-    const Result<Token> parse(Cursor<Iterator>& iter) const
+    const Result<Token> parse(Cursor<Input>& iter) const
     {
         for (auto rule : _rules) {
             auto tokens = rule.parse(iter);

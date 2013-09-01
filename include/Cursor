@@ -7,34 +7,22 @@
 
 namespace sprout {
 
-template <class Iterator>
+template <class Data>
 class CursorData
 {
-    Iterator _iter;
-    Iterator _end;
-
-public:
-    // Get the type of data by testing the dereference operator.
-    // For iterators in the STL, this should be equivalent to their
-    // value_type typedef.
-    typedef
-        typename std::remove_const<
-        typename std::remove_reference<
-        decltype(*_end)
-        >::type
-        >::type Data;
-
-private:
     std::vector<Data> _buffer;
     int _head;
 
+protected:
+    virtual Data next()=0;
+
 public:
-    CursorData(Iterator& begin, Iterator& end) :
-        _iter(begin),
-        _end(end),
+    CursorData() :
         _head(0)
     {
     }
+
+    virtual bool atEnd()=0;
 
     int head() const
     {
@@ -49,11 +37,6 @@ public:
     int buffered() const
     {
         return _buffer.size();
-    }
-
-    bool atEnd()
-    {
-        return _iter == _end;
     }
 
     bool hasTokens()
@@ -89,9 +72,7 @@ public:
         if (atEnd()) {
             return;
         }
-        _buffer.push_back(*_iter);
-        // Don't use post-increment for iterators that don't support copying
-        ++_iter;
+        _buffer.push_back(next());
         ++_head;
     }
 
@@ -116,30 +97,60 @@ public:
     }
 };
 
-template <class Iterator>
+template <class Data, class Iterator>
+class CursorDataImpl : public CursorData<Data>
+{
+    Iterator _iter;
+    Iterator _end;
+
+protected:
+    Data next()
+    {
+        // Don't use post-increment for iterators that don't support copying
+        Data value = *_iter;
+        ++_iter;
+        return value;
+    }
+
+public:
+    CursorDataImpl(Iterator begin, Iterator end) :
+        _iter(begin),
+        _end(end)
+    {
+    }
+
+    bool atEnd()
+    {
+        return _iter == _end;
+    }
+};
+
+template <class Data>
 class Cursor
 {
 public:
-    typedef typename CursorData<Iterator>::Data Data;
+    typedef Data value_type;
 private:
 
-    std::shared_ptr<CursorData<Iterator>> _data;
+    std::shared_ptr<CursorData<Data>> _data;
     int _pos;
 
 public:
-    Cursor(const Cursor<Iterator>& other) :
+    Cursor(const Cursor<Data>& other) :
         _data(other._data),
         _pos(other._pos)
     {
     }
 
+    template <class Iterator>
     Cursor(Iterator begin) :
         Cursor(begin, Iterator())
     {
     }
 
+    template <class Iterator>
     Cursor(Iterator begin, Iterator end) :
-        _data(new CursorData<Iterator>(begin, end)),
+        _data(new CursorDataImpl<Data, Iterator>(begin, end)),
         _pos(0)
     {
     }
@@ -149,7 +160,7 @@ public:
         return _pos;
     }
 
-    typename CursorData<Iterator>::Data operator*()
+    Data operator*()
     {
         return _data->get(pos());
     }
@@ -229,10 +240,10 @@ public:
 };
 
 template <class Data, class Stream>
-Cursor<StreamIterator<Data, Stream>>
+Cursor<Data>
 makeCursor(Stream& stream)
 {
-    return Cursor<StreamIterator<Data, Stream>>(
+    return Cursor<Data>(
         StreamIterator<Data, Stream>(stream)
     );
 }

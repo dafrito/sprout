@@ -106,8 +106,7 @@ public:
         return ++eof;
     }
 
-    template <class Iterator>
-    const Token* parse(Cursor<Iterator>& iter) const
+    const Token* parse(Cursor<Input>& iter) const
     {
         auto mark = iter;
         if (Matcher::parse(iter, _target)) {
