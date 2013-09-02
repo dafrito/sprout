@@ -103,6 +103,11 @@ public:
         return (*_data)[_pos];
     }
 
+    Token* operator->() const
+    {
+        return &operator*();
+    }
+
     const Result<Token>& operator++() const
     {
         ++_pos;
