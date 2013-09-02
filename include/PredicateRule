@@ -1,0 +1,68 @@
+#ifndef SPROUT_PREDICATERULE_HEADER
+#define SPROUT_PREDICATERULE_HEADER
+
+#include <vector>
+#include <algorithm>
+
+#include "Cursor"
+#include "Result"
+
+namespace sprout {
+
+template <class Input, class Token, class Matcher>
+class PredicateRule
+{
+public:
+    typedef Input input_type;
+    typedef Token token_type;
+
+private:
+    const Matcher _matcher;
+
+public:
+    PredicateRule(const Matcher& matcher) :
+        _matcher(matcher)
+    {
+    }
+
+    const Result<Token> _eof;
+    const Result<Token>& end() const
+    {
+        return _eof;
+    }
+
+    const Result<Token> parse(Cursor<Input>& orig) const
+    {
+        auto iter = orig;
+
+        Token aggregate;
+        bool matched = false;
+        while (iter) {
+            auto candidate = *iter++;
+            if (!_matcher(candidate)) {
+                break;
+            }
+            matched = true;
+            aggregate += candidate;
+        }
+
+        if (!matched) {
+            return end();
+        }
+
+        orig = iter;
+        return Result<Token>({ aggregate });
+    }
+};
+
+template <class Input, class Token, class Matcher>
+PredicateRule<Input, Token, Matcher> makePredicate(const Matcher& matcher)
+{
+    return PredicateRule<Input, Token, Matcher>(matcher);
+}
+
+} // namespace sprout
+
+#endif // SPROUT_PREDICATERULE_HEADER
+
+// vim: set ft=cpp ts=4 sw=4 :
