@@ -7,6 +7,7 @@ template <class Rule>
 struct RuleTraits {
     typedef typename Rule::token_type token_type;
     typedef typename Rule::input_type input_type;
+    typedef Rule rule_type;
 };
 
 } // namespace sprout
