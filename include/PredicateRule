@@ -1,9 +1,6 @@
 #ifndef SPROUT_PREDICATERULE_HEADER
 #define SPROUT_PREDICATERULE_HEADER
 
-#include <vector>
-#include <algorithm>
-
 #include "Cursor"
 #include "Result"
 
