@@ -2,6 +2,8 @@
 #define SPROUT_CURSOR_HEADER
 
 #include <cassert>
+#include <sstream>
+#include <memory>
 
 #include "StreamIterator"
 
