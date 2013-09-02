@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <iterator>
+#include <algorithm>
 
 namespace sprout {
 
@@ -16,7 +17,7 @@ class Result : public std::iterator<std::input_iterator_tag, Token>
 {
     typedef std::vector<Token> Tokens;
     std::shared_ptr<Tokens> _data;
-    int _pos;
+    mutable int _pos;
 
 public:
     Result() :
@@ -27,6 +28,20 @@ public:
 
     Result(const Tokens& tokens) :
         _data(new Tokens(tokens)),
+        _pos(0)
+    {
+    }
+
+    template <class Iterator>
+    Result(Iterator begin, Iterator end) :
+        Result(Tokens())
+    {
+        insert(begin, end);
+    }
+
+    template <class T>
+    Result(const Result<T>& begin, const Result<T>& end) :
+        _data(new Tokens(*begin._data)),
         _pos(0)
     {
     }
@@ -54,6 +69,15 @@ public:
         return _pos;
     }
 
+    template <class Iterator>
+    void insert(Iterator begin, Iterator end)
+    {
+        if (!_data) {
+            _data = std::make_shared<Tokens>();
+        }
+        std::copy(begin, end, std::back_inserter(*_data));
+    }
+
     operator bool() const
     {
         return _data && !_data->empty() && _pos < _data->size();
@@ -70,38 +94,38 @@ public:
         return (*_data)[_pos];
     }
 
-    Result<Token>& operator++()
+    const Result<Token>& operator++() const
     {
         ++_pos;
         return *this;
     }
 
-    Result<Token> operator++(int)
+    const Result<Token> operator++(int) const
     {
         Result<Token> tmp(*this);
         ++(*this);
         return tmp;
     }
 
-    Result<Token>& operator+=(const int delta)
+    const Result<Token>& operator+=(const int delta) const
     {
         _pos += delta;
         return *this;
     }
 
-    Result<Token>& operator-=(const int delta)
+    const Result<Token>& operator-=(const int delta) const
     {
         return *this += -delta;
     }
 
-    Result<Token> operator+(const int delta) const
+    const Result<Token> operator+(const int delta) const
     {
         Result<Token> tmp(*this);
         tmp += delta;
         return tmp;
     }
 
-    Result<Token> operator-(const int delta) const
+    const Result<Token> operator-(const int delta) const
     {
         Result<Token> tmp(*this);
         tmp -= delta;
