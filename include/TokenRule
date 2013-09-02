@@ -41,6 +41,18 @@ struct AnyTokenMatcher
     }
 };
 
+/**
+ * TokenRule is a rule that matches inputs against a vector of tokens. It
+ * can be parameterized to support different matching algorithms, such as
+ * "Match a single input against this group of candidates" or "Match an
+ * ordered sequence of inputs against an ordered sequence of tokens"
+ *
+ * This class is a workhorse, but it strikes me as surprisingly limited
+ * in its scope. The returned token is mandated, which relegates TokenRule
+ * to not being able to generate tokens with state. Since this limitation is
+ * rather severe, TokenRule will likely be changed in the future with a
+ * different API.
+ */
 template <class Input, class Token, class Matcher>
 class TokenRule
 {

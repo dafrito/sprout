@@ -6,6 +6,11 @@
 
 namespace sprout {
 
+/**
+ * Result is used as a container of tokens in Sprout. I wish I could
+ * have used a STL container instead of using a wrapper, but I desired
+ * something that could both act as a container, as well as an iterator.
+ */
 template <class Token>
 class Result : public std::iterator<std::input_iterator_tag, Token>
 {

@@ -35,6 +35,13 @@ struct InsertRequired
 const InsertRequired Required(true);
 const InsertRequired Optional(false);
 
+/**
+ * SequenceRule matches input against an ordered list of subrules.
+ * All required subrules to match for SequenceRule to match.
+ *
+ * SequenceRule is populated using the insertion operator and
+ * supports stream manipulator to specify optional rules.
+ */
 template <class Rule>
 class SequenceRule
 {

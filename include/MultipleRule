@@ -9,6 +9,10 @@
 
 namespace sprout {
 
+/**
+ * MultipleRule matches as many instances of a specified rule
+ * as possible, aggregating all results into a single result.
+ */
 template <class Rule>
 class MultipleRule
 {

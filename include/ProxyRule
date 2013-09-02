@@ -44,6 +44,12 @@ public:
     }
 };
 
+/**
+ * ProxyRule wraps a specified rule, and proxies all parsing and results
+ * to it. The reason to do this is to allow containers of heterogenous
+ * rule types, which is a common need. In this way, ProxyRule is similar
+ * to std::function.
+ */
 template <class Input, class Token>
 class ProxyRule
 {

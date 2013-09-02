@@ -9,6 +9,11 @@
 
 namespace sprout {
 
+/**
+ * AlternativeRule matches input against an ordered list of
+ * candidate rules. The first rule that matches will provide
+ * AlternativeRule's result.
+ */
 template <class Rule>
 class AlternativeRule
 {
