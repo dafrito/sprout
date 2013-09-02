@@ -255,6 +255,22 @@ makeCursor(Stream& stream)
     );
 }
 
+template <class Data>
+Cursor<Data> makeCursor(std::string& stream)
+{
+    return Cursor<Data>(stream.begin(), stream.end());
+}
+
+#ifdef HAVE_QT_CORE
+
+template <class Data>
+Cursor<Data> makeCursor(QString& stream)
+{
+    return Cursor<Data>(stream.begin(), stream.end());
+}
+
+#endif
+
 } // namespace sprout
 
 #endif // SPROUT_CURSOR_HEADER
