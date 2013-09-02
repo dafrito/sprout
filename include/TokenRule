@@ -10,8 +10,8 @@ namespace sprout {
 
 struct OrderedTokenMatcher
 {
-    template <class Input, class Iterator>
-    static bool parse(Cursor<Iterator>& iter, const std::vector<Input>& target)
+    template <class Input>
+    static bool parse(Cursor<Input>& iter, const std::vector<Input>& target)
     {
         int i = 0;
         while (i < target.size()) {
@@ -25,8 +25,8 @@ struct OrderedTokenMatcher
 
 struct AnyTokenMatcher
 {
-    template <class Input, class Iterator>
-    static bool parse(Cursor<Iterator>& iter, const std::vector<Input>& target)
+    template <class Input>
+    static bool parse(Cursor<Input>& iter, const std::vector<Input>& target)
     {
         if (!iter) {
             return false;
