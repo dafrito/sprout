@@ -69,6 +69,15 @@ public:
         return _pos;
     }
 
+    template <class T>
+    void insert(const T& value)
+    {
+        if (!_data) {
+            _data = std::make_shared<Tokens>();
+        }
+        _data->push_back(value);
+    }
+
     template <class Iterator>
     void insert(Iterator begin, Iterator end)
     {
