@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 
+#include "SequenceRule"
 #include "Cursor"
 #include "Result"
 
@@ -45,6 +46,30 @@ public:
         return end();
     }
 };
+
+// Ensure DiscardRule is always detected as optional
+template <class Rule, class Subrule>
+SequenceRule<Rule>& operator<<(SequenceRule<Rule>& sequence, const DiscardRule<Subrule>& rule)
+{
+    bool requiredFlag = sequence.insertAsRequired();
+    sequence << Optional;
+    sequence.insert(rule);
+    return sequence << (requiredFlag ? Required : Optional);
+}
+
+/**
+ * Ensure DiscardRule is always detected as optional.
+ *
+ * This rvalue implementation is needed for the SequenceRule() << makeDiscard() idiom.
+ */
+template <class Rule, class Subrule>
+SequenceRule<Rule>& operator<<(SequenceRule<Rule>&& sequence, const DiscardRule<Subrule>& rule)
+{
+    bool requiredFlag = sequence.insertAsRequired();
+    sequence << Optional;
+    sequence.insert(rule);
+    return sequence << (requiredFlag ? Required : Optional);
+}
 
 template <class Rule>
 DiscardRule<Rule> makeDiscard(const Rule& rule)
