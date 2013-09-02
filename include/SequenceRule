@@ -71,16 +71,21 @@ public:
     {
     }
 
-    SequenceRule& operator<<(const InsertRequired& requiredFlag)
+    bool insertAsRequired() const
     {
-        _insertAsRequired = requiredFlag.value;
+        return _insertAsRequired;
+    }
+
+    SequenceRule& setInsertAsRequired(const bool requiredFlag)
+    {
+        _insertAsRequired = requiredFlag;
         return *this;
     }
 
     template <class T>
-    SequenceRule& operator<<(const T& rule)
+    SequenceRule& insert(const T& rule)
     {
-        _rules.push_back(RuleEntry<Rule>(rule, _insertAsRequired));
+        _rules.push_back(RuleEntry<Rule>(rule, insertAsRequired()));
         return *this;
     }
 
@@ -106,6 +111,36 @@ public:
         return Result<Token>(aggregate);
     }
 };
+
+template <class Rule>
+SequenceRule<Rule>& operator<<(SequenceRule<Rule>& sequence, const InsertRequired& requiredFlag)
+{
+    return sequence.setInsertAsRequired(requiredFlag.value);
+}
+
+/**
+ * This rvalue implementation is needed for the SequenceRule() << subrule idiom.
+ */
+template <class Rule>
+SequenceRule<Rule>& operator<<(SequenceRule<Rule>&& sequence, const InsertRequired& requiredFlag)
+{
+    return sequence.setInsertAsRequired(requiredFlag.value);
+}
+
+template <class Rule, class T>
+SequenceRule<Rule>& operator<<(SequenceRule<Rule>& sequence, const T& rule)
+{
+    return sequence.insert(rule);
+}
+
+/**
+ * This rvalue implementation is needed for the SequenceRule() << subrule idiom.
+ */
+template <class Rule, class T>
+SequenceRule<Rule>& operator<<(SequenceRule<Rule>&& sequence, const T& rule)
+{
+    return sequence.insert(rule);
+}
 
 template <class Rule>
 void populateSequence(SequenceRule<Rule>& sequence)
