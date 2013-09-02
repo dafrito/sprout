@@ -30,6 +30,10 @@ public:
 
     const Result<Token> parse(Cursor<Input>& orig) const
     {
+        if (!orig) {
+            return end();
+        }
+
         auto iter = orig;
 
         Token aggregate;
