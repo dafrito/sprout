@@ -116,9 +116,9 @@ int main()
         makeProxySequence<QChar, QString>(
             OrderedTokenRule<QChar, QString>("var"),
             Optional,
-            WhitespaceStruct(),
+            whitespace,
             Required,
-            NameStruct()
+            name
         )
     );
 
