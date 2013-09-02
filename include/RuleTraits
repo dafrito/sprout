@@ -1,0 +1,16 @@
+#ifndef SPROUT_RULETRAITS_HEADER
+#define SPROUT_RULETRAITS_HEADER
+
+namespace sprout {
+
+template <class Rule>
+struct RuleTraits {
+    typedef typename Rule::token_type token_type;
+    typedef typename Rule::input_type input_type;
+};
+
+} // namespace sprout
+
+#endif // SPROUT_RULETRAITS_HEADER
+
+// vim: set ft=cpp ts=4 sw=4 :

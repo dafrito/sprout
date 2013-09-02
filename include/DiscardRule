@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 
+#include "RuleTraits"
 #include "SequenceRule"
 #include "Cursor"
 #include "Result"
@@ -16,13 +17,8 @@ namespace sprout {
  * content like whitespace.
  */
 template <class Rule>
-class DiscardRule
+class DiscardRule : public RuleTraits<Rule>
 {
-public:
-    typedef typename Rule::token_type token_type;
-    typedef typename Rule::input_type input_type;
-
-private:
     typedef typename Rule::token_type Token;
     typedef typename Rule::input_type Input;
 

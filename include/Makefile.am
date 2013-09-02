@@ -1,4 +1,5 @@
 nobase_pkginclude_HEADERS = \
+	RuleTraits \
 	StreamIterator \
 	Result \
 	Cursor \

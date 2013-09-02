@@ -1,6 +1,7 @@
 #ifndef SPROUT_MULTIPLERULE_HEADER
 #define SPROUT_MULTIPLERULE_HEADER
 
+#include "RuleTraits"
 #include <vector>
 #include <algorithm>
 
@@ -14,13 +15,8 @@ namespace sprout {
  * as possible, aggregating all results into a single result.
  */
 template <class Rule>
-class MultipleRule
+class MultipleRule : public RuleTraits<Rule>
 {
-public:
-    typedef typename Rule::token_type token_type;
-    typedef typename Rule::input_type input_type;
-
-private:
     typedef typename Rule::token_type Token;
     typedef typename Rule::input_type Input;
 

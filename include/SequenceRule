@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 
+#include "RuleTraits"
 #include "Cursor"
 #include "Result"
 
@@ -43,13 +44,8 @@ const InsertRequired Optional(false);
  * supports stream manipulator to specify optional rules.
  */
 template <class Rule>
-class SequenceRule
+class SequenceRule : public RuleTraits<Rule>
 {
-public:
-    typedef typename Rule::token_type token_type;
-    typedef typename Rule::input_type input_type;
-
-private:
     typedef typename Rule::token_type Token;
     typedef typename Rule::input_type Input;
 
