@@ -1,0 +1,57 @@
+#ifndef SPROUT_CATCHINGRULE_HEADER
+#define SPROUT_CATCHINGRULE_HEADER
+
+#include <vector>
+#include <algorithm>
+
+#include "RuleTraits"
+#include "Cursor"
+#include "Result"
+
+namespace sprout {
+
+template <class Rule, class Exception>
+class CatchingRule : public RuleTraits<Rule>
+{
+    typedef typename Rule::token_type Token;
+    typedef typename Rule::input_type Input;
+
+    Rule _rule;
+
+public:
+    CatchingRule(const Rule& rule) :
+        _rule(rule)
+    {
+    }
+
+    const Result<Token> _eof;
+    const Result<Token>& end() const
+    {
+        return _eof;
+    }
+
+    const Result<Token> parse(Cursor<Input>& iter) const
+    {
+        try {
+            auto tokens = _rule.parse(iter);
+            if (tokens == _rule.end()) {
+                return end();
+            }
+            return Result<Token>(tokens, _rule.end());
+        } catch (const Exception& ex) {
+            return end();
+        }
+    }
+};
+
+template <class Exception, class Rule>
+CatchingRule<Rule, Exception> makeCatching(const Rule& rule)
+{
+    return CatchingRule<Rule, Exception>(rule);
+}
+
+} // namespace sprout
+
+#endif // SPROUT_CATCHINGRULE_HEADER
+
+// vim: set ft=cpp ts=4 sw=4 :

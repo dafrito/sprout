@@ -20,4 +20,5 @@ runtest_SOURCES = \
 	discard.cpp \
 	proxy.cpp \
 	predicate.cpp \
+	catching.cpp \
 	main.cpp

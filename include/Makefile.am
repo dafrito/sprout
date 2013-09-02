@@ -7,4 +7,5 @@ nobase_pkginclude_HEADERS = \
 	AlternativeRule \
 	ProxyRule \
 	PredicateRule \
+	CatchingRule \
 	MultipleRule
