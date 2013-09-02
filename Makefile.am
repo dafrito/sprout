@@ -16,7 +16,7 @@ checkvalgrind:
 	cd t && valgrind -v --leak-check=full .libs/lt-runtest
 
 debug: $(TESTS)
-	cd src && gdb sprout
+	cd src && gdb ./.libs/lt-sprout
 
 valgrind:
 	cd src && valgrind -v --leak-check=full --trace-children=yes sprout
