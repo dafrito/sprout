@@ -10,7 +10,7 @@ struct FakeException {};
 BOOST_AUTO_TEST_CASE(testCatching)
 {
     auto rule = makeCatching<FakeException>(
-        makeAddingPredicate<char, std::string>([](const char& input) {
+        makeSimplePredicate<char, std::string>([](const char& input) {
             if (input == 'a') {
                 throw FakeException();
             }
@@ -32,6 +32,6 @@ BOOST_AUTO_TEST_CASE(testCatching)
 
         auto tokens = rule.parse(cursor);
         BOOST_REQUIRE(tokens);
-        BOOST_CHECK(*tokens == "bbb");
+        BOOST_CHECK(*tokens == "b");
     }
 }

@@ -33,16 +33,8 @@ public:
         auto iter = orig;
 
         Token aggregate;
-        bool matched = false;
-        while (iter) {
-            auto candidate = *iter++;
-            if (!_matcher(aggregate, candidate)) {
-                break;
-            }
-            matched = true;
-        }
-
-        if (!matched) {
+        auto candidate = *iter++;
+        if (!_matcher(aggregate, candidate)) {
             return end();
         }
 
@@ -52,12 +44,12 @@ public:
 };
 
 template <class Input, class Token, class Tester>
-class AddingPredicate
+class SimplePredicate
 {
     const Tester tester;
 
 public:
-    AddingPredicate(const Tester& tester) :
+    SimplePredicate(const Tester& tester) :
         tester(tester)
     {
     }
@@ -67,7 +59,7 @@ public:
         if (!tester(input)) {
             return false;
         }
-        aggregate += input;
+        aggregate = input;
         return true;
     }
 };
@@ -79,9 +71,9 @@ PredicateRule<Input, Token, Matcher> makePredicate(const Matcher& matcher)
 }
 
 template <class Input, class Token, class Tester>
-PredicateRule<Input, Token, AddingPredicate<Input, Token, Tester>> makeAddingPredicate(const Tester& tester)
+PredicateRule<Input, Token, SimplePredicate<Input, Token, Tester>> makeSimplePredicate(const Tester& tester)
 {
-    AddingPredicate<Input, Token, Tester> matcher(tester);
+    SimplePredicate<Input, Token, Tester> matcher(tester);
     PredicateRule<Input, Token, decltype(matcher)> rule(matcher);
     return rule;
 }
