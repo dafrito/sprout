@@ -32,7 +32,6 @@ BOOST_AUTO_TEST_CASE(testCatching)
 
         auto tokens = rule.parse(cursor);
         BOOST_REQUIRE(tokens);
-        std::cout << *tokens << std::endl;
         BOOST_CHECK(*tokens == "bbb");
     }
 }
