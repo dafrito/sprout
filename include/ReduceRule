@@ -1,0 +1,80 @@
+#ifndef SPROUT_REDUCERULE_HEADER
+#define SPROUT_REDUCERULE_HEADER
+
+#include "Cursor"
+#include "Result"
+#include "RuleTraits"
+
+namespace sprout {
+
+template <class Rule, class Reducer, class Token = typename Rule::token_type>
+class ReduceRule : public RuleTraits<Rule>
+{
+    typedef typename Rule::input_type Input;
+
+    const Reducer _reducer;
+    const Rule _rule;
+
+public:
+    ReduceRule(const Reducer& reducer, const Rule& rule) :
+        _reducer(reducer),
+        _rule(rule)
+    {
+    }
+
+    const Result<Token> _eof;
+    const Result<Token>& end() const
+    {
+        return _eof;
+    }
+
+    const Result<Token> parse(Cursor<Input>& orig) const
+    {
+        auto tokens = _rule.parse(orig);
+        if (tokens == _rule.end()) {
+            return end();
+        }
+        Result<Token> aggregate;
+        _reducer(aggregate, tokens, _rule.end());
+        return aggregate;
+    }
+};
+
+template <class Token, class Rule, class Reducer>
+ReduceRule<Rule, Reducer, Token> makeReduce(const Reducer& reducer, const Rule& rule)
+{
+    return ReduceRule<Rule, Reducer, Token>(reducer, rule);
+}
+
+template <class Reducer, class Token>
+class SimpleReducer
+{
+    const Reducer _reducer;
+public:
+    SimpleReducer (const Reducer& reducer) :
+        _reducer(reducer)
+    {
+    }
+
+    template <class Iterator>
+    void operator()(Result<Token>& result, Iterator begin, const Iterator& end) const
+    {
+        Token aggregate;
+        for (auto i = begin; i != end; ++i) {
+            _reducer(aggregate, *i);
+        }
+        result.insert(aggregate);
+    }
+};
+
+template <class Token, class Rule, class Reducer>
+ReduceRule<Rule, SimpleReducer<Reducer, Token>, Token> makeSimpleReduce(const Reducer& reducer, const Rule& rule)
+{
+    return makeReduce<Token>(SimpleReducer<Reducer, Token>(reducer), rule);
+}
+
+} // namespace sprout
+
+#endif // SPROUT_REDUCERULE_HEADER
+
+// vim: set ft=cpp ts=4 sw=4 :
