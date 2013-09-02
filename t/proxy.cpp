@@ -20,18 +20,18 @@ BOOST_AUTO_TEST_CASE(testSplittingByWhitespace)
 {
     auto rule = makeMultiple(
         SequenceRule<ProxyRule<char, std::string>>()
+        << makeDiscard(makeMultiple(
+            AnyTokenRule<char, std::string>("_")
+        ))
         << makeAlternate(
             OrderedTokenRule<char, std::string>("Cat", "Heathen"),
             OrderedTokenRule<char, std::string>("Dog", "Civilized"),
             OrderedTokenRule<char, std::string>("Calf", "Cow")
         )
-        << sprout::Optional
         << makeDiscard(makeMultiple(
             AnyTokenRule<char, std::string>("_")
         ))
-        << sprout::Required
         << OrderedTokenRule<char, std::string>(",", "Comma")
-        << sprout::Optional
         << makeDiscard(makeMultiple(
             AnyTokenRule<char, std::string>("_")
         ))
