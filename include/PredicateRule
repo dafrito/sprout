@@ -39,11 +39,10 @@ public:
         bool matched = false;
         while (iter) {
             auto candidate = *iter++;
-            if (!_matcher(candidate)) {
+            if (!_matcher(aggregate, candidate)) {
                 break;
             }
             matched = true;
-            aggregate += candidate;
         }
 
         if (!matched) {
@@ -55,10 +54,39 @@ public:
     }
 };
 
+template <class Input, class Token, class Tester>
+class AddingPredicate
+{
+    const Tester tester;
+
+public:
+    AddingPredicate(const Tester& tester) :
+        tester(tester)
+    {
+    }
+
+    bool operator()(Token& aggregate, const Input& input) const
+    {
+        if (!tester(input)) {
+            return false;
+        }
+        aggregate += input;
+        return true;
+    }
+};
+
 template <class Input, class Token, class Matcher>
 PredicateRule<Input, Token, Matcher> makePredicate(const Matcher& matcher)
 {
     return PredicateRule<Input, Token, Matcher>(matcher);
+}
+
+template <class Input, class Token, class Tester>
+PredicateRule<Input, Token, AddingPredicate<Input, Token, Tester>> makeAddingPredicate(const Tester& tester)
+{
+    AddingPredicate<Input, Token, Tester> matcher(tester);
+    PredicateRule<Input, Token, decltype(matcher)> rule(matcher);
+    return rule;
 }
 
 } // namespace sprout

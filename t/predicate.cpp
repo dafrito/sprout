@@ -6,8 +6,8 @@ using namespace sprout;
 
 BOOST_AUTO_TEST_CASE(testPredicate)
 {
-    auto rule = makePredicate<QChar, QString>([](const QChar& c) {
-        return c.isLetter();
+    auto rule = makeAddingPredicate<QChar, QString>([](const QChar& input) {
+        return input.isLetter();
     });
 
     QString str(QString::fromUtf8("中国"));
