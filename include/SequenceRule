@@ -158,6 +158,12 @@ SequenceRule<Rule> makeSequence(const Rule& rule, Values... rest)
     return sequence;
 }
 
+template <class Rule>
+SequenceRule<Rule> makeSequence()
+{
+    return SequenceRule<Rule>();
+}
+
 } // namespace sprout
 
 #endif // SPROUT_SEQUENCERULE_HEADER
