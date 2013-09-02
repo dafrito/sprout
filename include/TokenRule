@@ -118,14 +118,13 @@ public:
         return ++eof;
     }
 
-    const Token* parse(Cursor<Input>& iter) const
+    const Token* parse(Cursor<Input>& orig) const
     {
-        auto mark = iter;
+        auto iter = orig;
         if (Matcher::parse(iter, _target)) {
+            orig = iter;
             return &_token;
         }
-        // No match, so reset the iter and return EOF
-        iter = mark;
         return end();
     }
 };
