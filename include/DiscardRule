@@ -22,11 +22,11 @@ class DiscardRule : public RuleTraits<Rule>
     typedef typename Rule::token_type Token;
     typedef typename Rule::input_type Input;
 
-    Rule rule;
+    const Rule _rule;
 
 public:
     DiscardRule(const Rule& rule) :
-        rule(rule)
+        _rule(rule)
     {
     }
 
@@ -38,7 +38,7 @@ public:
 
     const Result<Token> parse(Cursor<Input>& iter) const
     {
-        rule.parse(iter);
+        _rule.parse(iter);
         return end();
     }
 };
