@@ -34,13 +34,11 @@ public:
 
     Result<Token> parse(Cursor<Input>& iter) const
     {
-        std::vector<Token> aggregate;
         auto tokens = _rule.parse(iter);
         if (tokens == _rule.end()) {
             return end();
         }
-        std::copy(tokens, _rule.end(), std::back_inserter(aggregate));
-        return Result<Token>(aggregate);
+        return Result<Token>(tokens, _rule.end());
     }
 };
 

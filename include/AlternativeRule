@@ -2,7 +2,6 @@
 #define SPROUT_ALTERNATIVERULE_HEADER
 
 #include <vector>
-#include <algorithm>
 
 #include "RuleTraits"
 #include "Cursor"
@@ -43,9 +42,7 @@ public:
             if (tokens == rule.end()) {
                 continue;
             }
-            std::vector<Token> aggregate;
-            std::copy(tokens, rule.end(), std::back_inserter(aggregate));
-            return Result<Token>(aggregate);
+            return Result<Token>(tokens, rule.end());
         }
         return end();
     }

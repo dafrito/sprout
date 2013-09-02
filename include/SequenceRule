@@ -2,7 +2,6 @@
 #define SPROUT_SEQUENCERULE_HEADER
 
 #include <vector>
-#include <algorithm>
 
 #include "RuleTraits"
 #include "Cursor"
@@ -93,18 +92,18 @@ public:
 
     const Result<Token> parse(Cursor<Input>& iter) const
     {
-        std::vector<Token> aggregate;
+        Result<Token> aggregate;
         for (auto entry : _rules) {
             auto tokens = entry.rule.parse(iter);
             if (tokens != entry.rule.end()) {
-                std::copy(tokens, entry.rule.end(), std::back_inserter(aggregate));
+                aggregate.insert(tokens, entry.rule.end());
             } else if (entry.required) {
                 return end();
             } else {
                 continue;
             }
         }
-        return Result<Token>(aggregate);
+        return aggregate;
     }
 };
 

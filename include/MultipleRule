@@ -2,9 +2,6 @@
 #define SPROUT_MULTIPLERULE_HEADER
 
 #include "RuleTraits"
-#include <vector>
-#include <algorithm>
-
 #include "Cursor"
 #include "Result"
 
@@ -36,15 +33,15 @@ public:
 
     const Result<Token> parse(Cursor<Input>& iter) const
     {
-        std::vector<Token> aggregate;
+        Result<Token> aggregate;
         while (true) {
             auto tokens = rule.parse(iter);
             if (tokens == rule.end()) {
                 break;
             }
-            std::copy(tokens, rule.end(), std::back_inserter(aggregate));
+            aggregate.insert(tokens, rule.end());
         }
-        return Result<Token>(aggregate);
+        return aggregate;
     }
 };
 
