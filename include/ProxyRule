@@ -5,6 +5,7 @@
 
 #include "Cursor"
 #include "Result"
+#include "SequenceRule"
 
 namespace sprout {
 
@@ -82,6 +83,14 @@ public:
         return _rule->parse(iter);
     }
 };
+
+template <class Input, class Token, typename... Values>
+SequenceRule<ProxyRule<Input, Token>> makeProxySequence(Values... rest)
+{
+    SequenceRule<ProxyRule<Input, Token>> sequence;
+    populateSequence(sequence, rest...);
+    return sequence;
+}
 
 } // namespace sprout
 
