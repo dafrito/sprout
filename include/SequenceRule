@@ -107,34 +107,29 @@ public:
     }
 };
 
-template <class Rule>
-SequenceRule<Rule>& operator<<(SequenceRule<Rule>& sequence, const InsertRequired& requiredFlag)
+template <class Rule, class T>
+struct SequenceInserter
 {
-    return sequence.setInsertAsRequired(requiredFlag.value);
-}
+    static void insert(SequenceRule<Rule>& sequence, const T& rule)
+    {
+        sequence.insert(rule);
+    }
+};
 
-/**
- * This rvalue implementation is needed for the SequenceRule() << subrule idiom.
- */
 template <class Rule>
-SequenceRule<Rule>& operator<<(SequenceRule<Rule>&& sequence, const InsertRequired& requiredFlag)
+struct SequenceInserter<Rule, InsertRequired>
 {
-    return sequence.setInsertAsRequired(requiredFlag.value);
-}
+    static void insert(SequenceRule<Rule>& sequence, const InsertRequired& flag)
+    {
+        sequence.setInsertAsRequired(flag.value);
+    }
+};
 
 template <class Rule, class T>
 SequenceRule<Rule>& operator<<(SequenceRule<Rule>& sequence, const T& rule)
 {
-    return sequence.insert(rule);
-}
-
-/**
- * This rvalue implementation is needed for the SequenceRule() << subrule idiom.
- */
-template <class Rule, class T>
-SequenceRule<Rule>& operator<<(SequenceRule<Rule>&& sequence, const T& rule)
-{
-    return sequence.insert(rule);
+    SequenceInserter<Rule, T>::insert(sequence, rule);
+    return sequence;
 }
 
 template <class Rule>

@@ -19,22 +19,23 @@ BOOST_AUTO_TEST_CASE(testTrivialProxy)
 BOOST_AUTO_TEST_CASE(testSplittingByWhitespace)
 {
     auto rule = makeMultiple(
-        SequenceRule<ProxyRule<char, std::string>>()
-        << makeDiscard(makeMultiple(
-            AnyTokenRule<char, std::string>("_")
-        ))
-        << makeAlternate(
-            OrderedTokenRule<char, std::string>("Cat", "Heathen"),
-            OrderedTokenRule<char, std::string>("Dog", "Civilized"),
-            OrderedTokenRule<char, std::string>("Calf", "Cow")
+        makeProxySequence<char, std::string>(
+            makeDiscard(makeMultiple(
+                AnyTokenRule<char, std::string>("_")
+            )),
+            makeAlternate(
+                OrderedTokenRule<char, std::string>("Cat", "Heathen"),
+                OrderedTokenRule<char, std::string>("Dog", "Civilized"),
+                OrderedTokenRule<char, std::string>("Calf", "Cow")
+            ),
+            makeDiscard(makeMultiple(
+                AnyTokenRule<char, std::string>("_")
+            )),
+            OrderedTokenRule<char, std::string>(",", "Comma"),
+            makeDiscard(makeMultiple(
+                AnyTokenRule<char, std::string>("_")
+            ))
         )
-        << makeDiscard(makeMultiple(
-            AnyTokenRule<char, std::string>("_")
-        ))
-        << OrderedTokenRule<char, std::string>(",", "Comma")
-        << makeDiscard(makeMultiple(
-            AnyTokenRule<char, std::string>("_")
-        ))
     );
 
     std::stringstream str("Dog,_Cat,_Calf,_Cat,");
