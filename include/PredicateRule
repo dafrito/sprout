@@ -64,13 +64,13 @@ public:
     }
 };
 
-template <class Input, class Token, class Matcher>
+template <class Input, class Token = Input, class Matcher>
 PredicateRule<Input, Token, Matcher> makePredicate(const Matcher& matcher)
 {
     return PredicateRule<Input, Token, Matcher>(matcher);
 }
 
-template <class Input, class Token, class Tester>
+template <class Input, class Token = Input, class Tester>
 PredicateRule<Input, Token, SimplePredicate<Input, Token, Tester>> makeSimplePredicate(const Tester& tester)
 {
     SimplePredicate<Input, Token, Tester> matcher(tester);
