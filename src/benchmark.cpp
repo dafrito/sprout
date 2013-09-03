@@ -19,29 +19,25 @@
 
 using namespace sprout;
 
-QString runRegex(QString str, QRegExp& re)
-{
-    assert(re.indexIn(str, 0) == 0);
-    auto matchedName = re.cap(1);
-    return matchedName;
-}
+const int RUNS = 1e5;
 
-template <class Parser>
-QString runSprout(const QString str, Parser& parser)
+template <class Runner>
+void runBenchmark(const char* name, Runner runner)
 {
-    auto cursor = makeCursor<QChar>(&str);
-    Result<QString> results;
+    QElapsedTimer timer;
+    timer.start();
 
-    if (parser.parse(cursor, results)) {
-        return *results;
+    for (int i = 0; i < RUNS; ++i) {
+        runner();
     }
-    return QString();
+
+    std::cout << name << " took " << timer.elapsed() << " ms\n";
 }
 
 int main()
 {
     auto whitespace = makeDiscard(
-        makeMultiple(makeSimplePredicate<QChar, QString>([](const QChar& input) {
+        makeMultiple(makePredicate<QChar, QString>([](QString&, const QChar& input) {
             return input.isSpace();
         }))
     );
@@ -55,80 +51,140 @@ int main()
         }))
     );
 
-    auto definition = makeReduce<QString>(
-        [](Result<QString>& result, Result<QString>& subresults) {
-            QString aggregate;
-            for (auto c : subresults) {
-                aggregate += c;
-            }
-
-            result.insert(aggregate);
-        },
-        makeProxySequence<QChar, QString>(
-            OrderedTokenRule<QChar, QString>("var"),
-            Optional,
-            whitespace,
-            Required,
-            name
-        )
-    );
-
-
-    const int RUNS = 1e5;
     std::cout << "Running " << RUNS << " iteration" << (RUNS == 1 ? "" : "s") << "\n";
 
     std::cout << std::endl;
     std::cout << "=== Parser Benchmarks ===\n";
 
+    const QString inputString("var bar");
+    const QString targetString("bar");
+
     {
         QRegExp re("^var\\s+(\\w+)");
-        QElapsedTimer timer;
-        timer.start();
-
-        QString result;
-        for (int i = 0; i < RUNS; ++i) {
-            result = runRegex("var foo", re);
-        }
-        std::cout << "RegExp found " << result.toStdString() << " and took " << timer.elapsed() << " milliseconds\n";
+        runBenchmark("RegExp", [&]() {
+            assert(re.indexIn(inputString, 0) == 0);
+            assert(re.cap(1) == targetString);
+        });
     }
 
     {
-        auto benchmark = makeSequence(
-            OrderedTokenRule<QChar, QString>("var"),
-            OrderedTokenRule<QChar, QString>(" "),
-            OrderedTokenRule<QChar, QString>("foo", "foo")
+        auto benchmark = makeProxySequence<QChar, QString>(
+            makeDiscard(OrderedTokenRule<QChar, QString>("var")),
+            whitespace,
+            name
         );
-        QElapsedTimer timer;
-        timer.start();
+        runBenchmark("Sprout", [&]() {
+            auto cursor = makeCursor<QChar>(&inputString);
+            Result<QString> results;
 
-        QString result;
-        for (int i = 0; i < RUNS; ++i) {
-            result = runSprout("var foo", definition);
-        }
-        std::cout << "Sprout found " << result.toStdString() << " and took " << timer.elapsed() << " milliseconds\n";
+            assert(benchmark.parse(cursor, results));
+            assert(targetString == *results);
+        });
     }
 
     {
-        QElapsedTimer timer;
-        timer.start();
+        runBenchmark("Inline", [&]() {
+            QString result;
 
-        QString result;
-        for (int i = 0; i < RUNS; ++i) {
-            QString str("var foo");
-
-            if (str.startsWith("var")) {
-                int mark = 3;
-                while (str.at(mark).isSpace()) {
-                    ++mark;
-                }
-                QString aggr;
-                while (mark < str.size() && str.at(mark).isLetter()) {
-                    aggr += str.at(mark++);
-                }
-                result = aggr;
+            if (!inputString.startsWith("var")) {
+                assert(false);
             }
+            int mark = 3;
+            while (mark < inputString.size() && inputString.at(mark).isSpace()) {
+                ++mark;
+            }
+            QString aggr;
+            while (mark < inputString.size() && inputString.at(mark).isLetter()) {
+                aggr += inputString.at(mark++);
+            }
+            assert(aggr == targetString);
+        });
+    }
+
+    std::cout << std::endl;
+    std::cout << "=== Direct Match Benchmarks ===\n";
+
+    const QString simpleTarget("var");
+
+    {
+        QRegExp re("^var");
+        runBenchmark("RegExp", [&]() {
+            assert(re.indexIn(inputString, 0) == 0);
+            assert(re.cap(0) == simpleTarget);
+        });
+    }
+
+    {
+        auto benchmark = OrderedTokenRule<QChar, QString>("var", "var");
+        runBenchmark("Sprout", [&]() {
+            auto cursor = makeCursor<QChar>(&inputString);
+            Result<QString> results;
+
+            assert(benchmark.parse(cursor, results));
+            assert(*results == simpleTarget);
+        });
+    }
+
+    std::cout << std::endl;
+    std::cout << "=== Aggregating Match Benchmarks ===\n";
+
+    {
+        const QString inputString("varbar");
+        const QString targetString("bar");
+
+        {
+            QRegExp re("^var(\\w+)");
+            runBenchmark("RegExp", [&]() {
+                assert(re.indexIn(inputString, 0) == 0);
+                assert(re.cap(1) == targetString);
+            });
         }
-        std::cout << "Inline found " << result.toStdString() << " and took " << timer.elapsed() << " milliseconds\n";
+
+        {
+            auto benchmark = makeProxySequence<QChar, QString>(
+                makeDiscard(OrderedTokenRule<QChar, QString>("var")),
+                name
+            );
+
+            runBenchmark("Sprout", [&]() {
+                auto cursor = makeCursor<QChar>(&inputString);
+                Result<QString> results;
+
+                assert(benchmark.parse(cursor, results));
+                assert(*results == targetString);
+            });
+        }
+    }
+
+    std::cout << std::endl;
+    std::cout << "=== Whitespace Match Benchmarks ===\n";
+
+    {
+        const QString inputString(" foo");
+        const QString targetString("foo");
+
+        {
+            QRegExp re("^\\s+(foo)");
+            runBenchmark("RegExp", [&]() {
+                assert(re.indexIn(inputString, 0) == 0);
+                assert(re.cap(1) == targetString);
+            });
+        }
+
+        {
+            auto benchmark = makeProxySequence<QChar, QString>(
+                whitespace,
+                OrderedTokenRule<QChar, QString>("foo", "foo")
+            );
+
+            runBenchmark("Sprout", [&]() {
+                auto cursor = makeCursor<QChar>(&inputString);
+                Result<QString> results;
+
+                assert(benchmark.parse(cursor, results));
+                assert(*results == targetString);
+            });
+        }
     }
 
     std::cout << std::endl;
@@ -137,31 +193,21 @@ int main()
     {
         QString target("var foo");
         QString str("var foo");
-        QElapsedTimer timer;
-        timer.start();
-
-        QString result;
-        for (int i = 0; i < RUNS; ++i) {
+        runBenchmark("Sprout", [&]() {
             auto cursor = makeCursor<QChar>(&str);
-            result = "foo";
             for (int j = 0; j < target.size(); ++j) {
                 if (target.at(j) != *cursor++) {
-                    result = "";
+                    assert(false);
                 }
             }
-        }
-
-        std::cout << "Cursor found " << result.toStdString() << " and took " << timer.elapsed() << " milliseconds\n";
+        });
     }
 
     {
         QString target("var foo");
         QString str("var foo");
-        QElapsedTimer timer;
-        timer.start();
-
-        QString result;
-        for (int i = 0; i < RUNS; ++i) {
+        runBenchmark("Inline", [&]() {
+            QString result;
             auto cursor = makeCursor<QChar>(&str);
             result = "foo";
             for (int j = 0; j < target.size(); ++j) {
@@ -169,9 +215,7 @@ int main()
                     result = "";
                 }
             }
-        }
-
-        std::cout << "Inline found " << result.toStdString() << " and took " << timer.elapsed() << " milliseconds\n";
+        });
     }
 
     return 0;
