@@ -105,6 +105,26 @@ int main()
     }
 
     {
+        QString target("var foo");
+        QString str("var foo");
+        QElapsedTimer timer;
+        timer.start();
+
+        QString result;
+        for (int i = 0; i < RUNS; ++i) {
+            auto cursor = makeCursor<QChar>(&str);
+            result = "foo";
+            for (int j = 0; j < target.size(); ++j) {
+                if (target.at(j) != *cursor++) {
+                    result = "";
+                }
+            }
+        }
+
+        std::cout << "Direct found " << result.toStdString() << " and took " << timer.elapsed() << " milliseconds\n";
+    }
+
+    {
         QElapsedTimer timer;
         timer.start();
 
