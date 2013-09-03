@@ -37,7 +37,7 @@ void runBenchmark(const char* name, Runner runner)
 int main()
 {
     auto whitespace = makeDiscard(
-        makeMultiple(makePredicate<QChar, QString>([](QString&, const QChar& input) {
+        makeMultiple(makePredicate<QChar, QString>([](const QChar& input, QString&) {
             return input.isSpace();
         }))
     );
