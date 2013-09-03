@@ -9,7 +9,8 @@ BOOST_AUTO_TEST_CASE(checkCursor)
 {
     std::stringstream str("Cat");
     Cursor<char> cur(
-        (std::istream_iterator<char>(str))
+        (std::istream_iterator<char>(str)),
+        (std::istream_iterator<char>())
     );
 
     BOOST_CHECK(cur);
@@ -35,7 +36,8 @@ BOOST_AUTO_TEST_CASE(checkCursorWithStreamIterator)
 {
     std::stringstream str("Cat");
     Cursor<char> cur(
-        (std::istream_iterator<char>(str))
+        (std::istream_iterator<char>(str)),
+        (std::istream_iterator<char>())
     );
 }
 
