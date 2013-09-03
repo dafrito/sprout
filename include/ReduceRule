@@ -29,10 +29,10 @@ public:
         return _eof;
     }
 
-    bool parse(Cursor<Input>& orig, Result<Token>& result) const
+    bool operator()(Cursor<Input>& orig, Result<Token>& result) const
     {
         Result<SubToken> subresults;
-        if (!_rule.parse(orig, subresults)) {
+        if (!_rule(orig, subresults)) {
             return false;
         }
         _reducer(result, subresults);

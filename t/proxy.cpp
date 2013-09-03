@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(testSplittingByWhitespace)
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("Dog,_Cat,_Calf,_Cat,");
-    BOOST_CHECK(rule.parse(cursor, tokens));
+    BOOST_CHECK(rule(cursor, tokens));
 
     BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Civilized", *tokens++);

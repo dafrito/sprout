@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
         auto cursor = makeCursor<QChar>(&lineStream);
         Result<QString> results;
 
-        if (definition.parse(cursor, results)) {
+        if (definition(cursor, results)) {
             std::cout << "I came up with ";
             while (results) {
                 std::cout << results->toUtf8().constData() << " ";

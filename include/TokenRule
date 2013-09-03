@@ -113,7 +113,7 @@ public:
         _token = token;
     }
 
-    bool parse(Cursor<Input>& orig, Result<Token>& result) const
+    bool operator()(Cursor<Input>& orig, Result<Token>& result) const
     {
         auto iter = orig;
         if (!Matcher::parse(iter, _target)) {

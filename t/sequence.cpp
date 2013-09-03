@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(matchASingleSequence)
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("CatDogCalf");
-    BOOST_CHECK(rule.parse(cursor, tokens));
+    BOOST_CHECK(rule(cursor, tokens));
 
     BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Heathen", *tokens++);
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(sequencesFailCompletely)
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("DogCat");
-    BOOST_CHECK(!rule.parse(cursor, tokens));
+    BOOST_CHECK(!rule(cursor, tokens));
 
     BOOST_CHECK(!tokens);
     BOOST_CHECK_EQUAL('D', *cursor);
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(partialSequencesAlsoFailCompletely)
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("CatDogCat");
-    BOOST_CHECK(!rule.parse(cursor, tokens));
+    BOOST_CHECK(!rule(cursor, tokens));
 
     BOOST_CHECK(!tokens);
     BOOST_CHECK_EQUAL('C', *cursor);

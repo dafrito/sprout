@@ -13,7 +13,7 @@ BOOST_AUTO_TEST_CASE(matchASingleMultiple)
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("CatDog");
-    BOOST_CHECK(rule.parse(cursor, tokens));
+    BOOST_CHECK(rule(cursor, tokens));
 
     BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Animal", *tokens++);
@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(matchMultiple)
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("CatCatCat");
-    BOOST_CHECK(rule.parse(cursor, tokens));
+    BOOST_CHECK(rule(cursor, tokens));
 
     BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Animal", *tokens++);
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(matchMultipleWithANonMatch)
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("Dog");
-    BOOST_CHECK(rule.parse(cursor, tokens));
+    BOOST_CHECK(rule(cursor, tokens));
 
     BOOST_REQUIRE(!tokens);
 }

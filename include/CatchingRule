@@ -24,10 +24,10 @@ public:
     {
     }
 
-    bool parse(Cursor<Input>& iter, Result<Token>& result) const
+    bool operator()(Cursor<Input>& iter, Result<Token>& result) const
     {
         try {
-            return _rule.parse(iter, result);
+            return _rule(iter, result);
         } catch (const Exception& ex) {
             return false;
         }

@@ -84,11 +84,11 @@ public:
         return *this;
     }
 
-    bool parse(Cursor<Input>& iter, Result<Token>& result) const
+    bool operator()(Cursor<Input>& iter, Result<Token>& result) const
     {
         Result<Token> aggregate;
         for (auto entry : _rules) {
-            if (!entry.rule.parse(iter, aggregate)) {
+            if (!entry.rule(iter, aggregate)) {
                 return false;
             }
         }

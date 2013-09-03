@@ -25,14 +25,12 @@ public:
     {
     }
 
-    bool parse(Cursor<Input>& iter, Result<Token>& result) const
+    bool operator()(Cursor<Input>& iter, Result<Token>& result) const
     {
         int i = 0;
-        while (_rule.parse(iter, result)) {
-            //std::cout << "Multiple matched " << i << "\n";
+        while (_rule(iter, result)) {
             ++i;
         }
-        //std::cout << "Matched " << i << " time(s)\n";
         return true;
     }
 };

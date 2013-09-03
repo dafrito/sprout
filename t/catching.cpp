@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(testCatching)
         Result<std::string> tokens;
 
         auto cursor = makeCursor<char>("abc");
-        BOOST_CHECK(!rule.parse(cursor, tokens));
+        BOOST_CHECK(!rule(cursor, tokens));
 
         BOOST_CHECK(!tokens);
     }
@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(testCatching)
         Result<std::string> tokens;
 
         auto cursor = makeCursor<char>("bbb");
-        BOOST_CHECK(rule.parse(cursor, tokens));
+        BOOST_CHECK(rule(cursor, tokens));
 
         BOOST_REQUIRE(tokens);
         BOOST_CHECK(*tokens == "b");

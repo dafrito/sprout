@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE(testDiscard)
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("_Dog");
-    BOOST_CHECK(rule.parse(cursor, tokens));
+    BOOST_CHECK(rule(cursor, tokens));
 
     BOOST_CHECK(!tokens);
     BOOST_CHECK_EQUAL('D', *cursor);
@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(testDiscardWithMultiple)
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("____----____Dog");
-    BOOST_CHECK(rule.parse(cursor, tokens));
+    BOOST_CHECK(rule(cursor, tokens));
 
     BOOST_CHECK(!tokens);
     BOOST_CHECK_EQUAL('D', *cursor);

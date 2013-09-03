@@ -77,7 +77,7 @@ int main()
             auto cursor = makeCursor<QChar>(&inputString);
             Result<QString> results;
 
-            assert(benchmark.parse(cursor, results));
+            assert(benchmark(cursor, results));
             assert(targetString == *results);
         });
     }
@@ -120,7 +120,7 @@ int main()
             auto cursor = makeCursor<QChar>(&inputString);
             Result<QString> results;
 
-            assert(benchmark.parse(cursor, results));
+            assert(benchmark(cursor, results));
             assert(*results == simpleTarget);
         });
     }
@@ -150,7 +150,7 @@ int main()
                 auto cursor = makeCursor<QChar>(&inputString);
                 Result<QString> results;
 
-                assert(benchmark.parse(cursor, results));
+                assert(benchmark(cursor, results));
                 assert(*results == targetString);
             });
         }
@@ -181,7 +181,7 @@ int main()
                 auto cursor = makeCursor<QChar>(&inputString);
                 Result<QString> results;
 
-                assert(benchmark.parse(cursor, results));
+                assert(benchmark(cursor, results));
                 assert(*results == targetString);
             });
         }

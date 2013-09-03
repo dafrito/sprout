@@ -13,7 +13,7 @@ namespace sprout {
 template <class Input, class Token>
 class RulePlaceholder {
 public:
-    virtual bool parse(Cursor<Input>& iter, Result<Token>& result) const=0;
+    virtual bool operator()(Cursor<Input>& iter, Result<Token>& result) const=0;
 };
 
 template <class Rule, class Input, class Token>
@@ -27,9 +27,9 @@ public:
     {
     }
 
-    bool parse(Cursor<Input>& iter, Result<Token>& result) const
+    bool operator()(Cursor<Input>& iter, Result<Token>& result) const
     {
-        return _rule.parse(iter, result);
+        return _rule(iter, result);
     }
 };
 
@@ -63,9 +63,9 @@ public:
     {
     }
 
-    bool parse(Cursor<Input>& iter, Result<Token>& result) const
+    bool operator()(Cursor<Input>& iter, Result<Token>& result) const
     {
-        return _rule->parse(iter, result);
+        return (*_rule)(iter, result);
     }
 };
 

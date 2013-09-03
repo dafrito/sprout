@@ -22,7 +22,7 @@ public:
     {
     }
 
-    bool parse(Cursor<Input>& orig, Result<Token>& result) const
+    bool operator()(Cursor<Input>& orig, Result<Token>& result) const
     {
         if (!orig) {
             return false;

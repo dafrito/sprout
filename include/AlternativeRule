@@ -29,10 +29,10 @@ public:
     {
     }
 
-    bool parse(Cursor<Input>& iter, Result<Token>& result) const
+    bool operator()(Cursor<Input>& iter, Result<Token>& result) const
     {
         for (auto rule : _rules) {
-            if (rule.parse(iter, result)) {
+            if (rule(iter, result)) {
                 return true;
             }
         }

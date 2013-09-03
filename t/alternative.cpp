@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(matchASingleAlternative)
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("CatDogDogCalfCat");
-    BOOST_CHECK(alternative.parse(cursor, tokens));
+    BOOST_CHECK(alternative(cursor, tokens));
 
     BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Heathen", *tokens++);
@@ -39,11 +39,11 @@ BOOST_AUTO_TEST_CASE(matchASingleAlternative)
 
 BOOST_AUTO_TEST_CASE(matchAnotherSingleAlternative)
 {
-    auto alternative = createAltRule();
+    auto rule = createAltRule();
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("DogCalfCat");
-    BOOST_CHECK(alternative.parse(cursor, tokens));
+    BOOST_CHECK(rule(cursor, tokens));
 
     BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Civilized", *tokens++);
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(matchMultipleAlternatives)
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("CatDogDogCalfCat");
-    BOOST_CHECK(rule.parse(cursor, tokens));
+    BOOST_CHECK(rule(cursor, tokens));
 
     BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Heathen", *tokens++);
