@@ -295,13 +295,13 @@ Cursor<Data> makeCursor(std::string* stream)
 template <class Data>
 Cursor<Data> makeCursor(const char* stream)
 {
-    return Cursor<Data>(stream, stream += strlen(stream));
+    return Cursor<Data>(stream, stream + strlen(stream));
 }
 
 template <class Data>
 Cursor<Data> makeCursor(char* stream)
 {
-    return Cursor<Data>(stream, stream += strlen(stream));
+    return Cursor<Data>(stream, stream + strlen(stream));
 }
 
 #ifdef HAVE_QT_CORE
