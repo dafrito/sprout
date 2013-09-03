@@ -18,7 +18,7 @@ template <class Token>
 class Result : public std::iterator<std::input_iterator_tag, Token>
 {
     typedef std::vector<Token> Tokens;
-    std::shared_ptr<Tokens> _data;
+    Tokens _data;
     mutable int _pos;
 
 public:
@@ -29,7 +29,7 @@ public:
     }
 
     Result(const Tokens& tokens) :
-        _data(new Tokens(tokens)),
+        _data(tokens),
         _pos(0)
     {
     }
@@ -43,7 +43,7 @@ public:
 
     template <class T>
     Result(const Result<T>& begin, const Result<T>& end) :
-        _data(new Tokens(*begin._data)),
+        _data(*begin._data),
         _pos(0)
     {
     }
@@ -52,18 +52,12 @@ public:
 
     typename Tokens::const_iterator begin() const
     {
-        if (!_data) {
-            return std::begin(empty_tokens);
-        }
-        return std::begin(*_data);
+        return std::begin(_data);
     }
 
     typename Tokens::const_iterator end() const
     {
-        if (!_data) {
-            return std::end(empty_tokens);
-        }
-        return std::end(*_data);
+        return std::end(_data);
     }
 
     int pos() const
@@ -74,10 +68,7 @@ public:
     template <class T>
     void insert(const T& value)
     {
-        if (!_data) {
-            _data = std::make_shared<Tokens>();
-        }
-        _data->push_back(value);
+        _data.push_back(value);
     }
 
     template <class T>
@@ -89,35 +80,29 @@ public:
     template <class Iterator>
     void insert(Iterator begin, Iterator end)
     {
-        if (!_data) {
-            _data = std::make_shared<Tokens>();
-        }
-        std::copy(begin, end, std::back_inserter(*_data));
+        std::copy(begin, end, std::back_inserter(_data));
     }
 
     operator bool() const
     {
-        return _data && !_data->empty() && _pos < _data->size();
+        return !_data.empty() && _pos < _data.size();
     }
 
-    Token& get() const
+    const Token& get() const
     {
-        if (!_data) {
-            throw std::runtime_error("An empty result must not be dereferenced");
-        }
-        if (_pos >= _data->size()) {
+        if (_pos >= _data.size()) {
             throw std::runtime_error("Position must not be dereferenced out of range");
         }
-        return (*_data)[_pos];
+        return _data[_pos];
     }
 
-    Token operator*() const
+    const Token operator*() const
     {
         // Convert to a value to ensure the memory is not destroyed if our vector is reallocated
         return get();
     }
 
-    Token* operator->() const
+    const Token* operator->() const
     {
         return &get();
     }
