@@ -37,10 +37,10 @@ int main(int argc, char* argv[])
     );
 
     auto definition = makeReduce<QString>(
-        [](Result<QString>& result, Result<QString>& begin, const Result<QString>& end) {
+        [](Result<QString>& result, Result<QString>& subresults) {
             QString aggregate;
-            for (auto i = begin; i != end; ++i) {
-                aggregate += *i;
+            for (auto c : subresults) {
+                aggregate += c;
             }
 
             result.insert(aggregate);
@@ -73,14 +73,14 @@ int main(int argc, char* argv[])
             break;
         }
         QTextStream lineStream(&line);
-        auto cursor = makeCursor<QChar>(lineStream);
+        auto cursor = makeCursor<QChar>(&lineStream);
+        Result<QString> results;
 
-        auto tokens = definition.parse(cursor);
-        if (tokens) {
+        if (definition.parse(cursor, results)) {
             std::cout << "I came up with ";
-            while (tokens) {
-                std::cout << tokens->toUtf8().constData() << " ";
-                ++tokens;
+            while (results) {
+                std::cout << results->toUtf8().constData() << " ";
+                ++results;
             }
             std::cout << std::endl;
         } else {

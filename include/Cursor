@@ -4,6 +4,7 @@
 #include <cassert>
 #include <sstream>
 #include <memory>
+#include <cstring>
 
 #include "StreamIterator"
 
@@ -66,7 +67,7 @@ public:
             throw std::range_error(str.str());
         }
         advanceTo(pos);
-        return _buffer[pos];
+        return _buffer.at(pos);
     }
 
     void advance()
@@ -162,14 +163,19 @@ public:
         return _pos;
     }
 
-    Data& operator*()
+    Data& get()
     {
         return _data->get(pos());
     }
 
+    Data operator*()
+    {
+        return get();
+    }
+
     Data* operator->()
     {
-        return &operator*();
+        return &get();
     }
 
     operator bool() const
@@ -248,7 +254,7 @@ public:
 
 template <class Data, class Stream>
 Cursor<Data>
-makeCursor(Stream& stream)
+makeCursor(Stream* stream)
 {
     return Cursor<Data>(
         StreamIterator<Data, Stream>(stream)
@@ -256,17 +262,44 @@ makeCursor(Stream& stream)
 }
 
 template <class Data>
-Cursor<Data> makeCursor(std::string& stream)
+Cursor<Data> makeCursor(const std::string* stream)
 {
-    return Cursor<Data>(stream.begin(), stream.end());
+    return Cursor<Data>(stream->begin(), stream->end());
+}
+
+template <class Data>
+Cursor<Data> makeCursor(std::string* stream)
+{
+    return makeCursor<Data>(
+        stream->begin(),
+        stream->end()
+    );
+}
+
+template <class Data>
+Cursor<Data> makeCursor(const char* stream)
+{
+    return Cursor<Data>(stream, stream += strlen(stream));
+}
+
+template <class Data>
+Cursor<Data> makeCursor(char* stream)
+{
+    return Cursor<Data>(stream, stream += strlen(stream));
 }
 
 #ifdef HAVE_QT_CORE
 
 template <class Data>
-Cursor<Data> makeCursor(QString& stream)
+Cursor<Data> makeCursor(const QString* stream)
 {
-    return Cursor<Data>(stream.begin(), stream.end());
+    return Cursor<Data>(stream->begin(), stream->end());
+}
+
+template <class Data>
+Cursor<Data> makeCursor(QString* stream)
+{
+    return Cursor<Data>(stream->begin(), stream->end());
 }
 
 #endif

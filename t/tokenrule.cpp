@@ -9,61 +9,57 @@ using namespace sprout;
 
 BOOST_AUTO_TEST_CASE(checkDirectMatch)
 {
-    OrderedTokenRule<char, std::string> rule;
-    rule.setTarget("Cat");
-    rule.setToken("Animal");
+    OrderedTokenRule<char, std::string> rule("Cat", "Animal");
+    Result<std::string> tokens;
 
-    std::stringstream str("Cat");
-    auto cursor = makeCursor<char>(str);
+    auto cursor = makeCursor<char>("Cat");
+    BOOST_CHECK(rule.parse(cursor, tokens));
 
-    auto tokens = rule.parse(cursor);
     BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Animal", *tokens);
 }
 
 BOOST_AUTO_TEST_CASE(checkBadMatch)
 {
-    OrderedTokenRule<char, std::string> rule;
-    rule.setTarget("Cat");
-    rule.setToken("Animal");
+    OrderedTokenRule<char, std::string> rule("Cat", "Animal");
+    Result<std::string> tokens;
 
-    std::stringstream str("Dog");
-    auto cursor = makeCursor<char>(str);
-    BOOST_CHECK(rule.end() == rule.parse(cursor));
+    auto cursor = makeCursor<char>("Dog");
+    BOOST_CHECK(!rule.parse(cursor, tokens));
+    BOOST_CHECK(!tokens);
 }
 
 BOOST_AUTO_TEST_CASE(checkPreemptedMatch)
 {
-    OrderedTokenRule<char, std::string> rule;
-    rule.setTarget("Cat");
-    rule.setToken("Animal");
+    OrderedTokenRule<char, std::string> rule("Cat", "Animal");
+    Result<std::string> tokens;
 
-    std::stringstream str("Ca");
-    auto cursor = makeCursor<char>(str);
-    BOOST_CHECK(rule.end() == rule.parse(cursor));
+    auto cursor = makeCursor<char>("Ca");
+    BOOST_CHECK(!rule.parse(cursor, tokens));
+    BOOST_CHECK(!tokens);
+    BOOST_CHECK_EQUAL('C', *cursor);
 }
 
 BOOST_AUTO_TEST_CASE(checkMatchWithTrailing)
 {
-    OrderedTokenRule<char, std::string> rule;
-    rule.setTarget("Cat");
-    rule.setToken("Animal");
+    OrderedTokenRule<char, std::string> rule("Cat", "Animal");
+    Result<std::string> tokens;
 
-    std::stringstream str("Catca");
-    auto cursor = makeCursor<char>(str);
-    BOOST_CHECK_EQUAL("Animal", *rule.parse(cursor));
+    auto cursor = makeCursor<char>("Catca");
+    BOOST_CHECK(rule.parse(cursor, tokens));
+
+    BOOST_REQUIRE(tokens);
+    BOOST_CHECK_EQUAL("Animal", *tokens);
 }
 
 BOOST_AUTO_TEST_CASE(checkIteratorAtNextElementWhenMatchIsGood)
 {
-    OrderedTokenRule<char, std::string> rule;
-    rule.setTarget("Cat");
-    rule.setToken("Animal");
+    OrderedTokenRule<char, std::string> rule("Cat", "Animal");
+    Result<std::string> tokens;
 
-    std::stringstream str("Catde");
-    auto cursor = makeCursor<char>(str);
+    auto cursor = makeCursor<char>("Catde");
+    BOOST_CHECK(rule.parse(cursor, tokens));
 
-    auto tokens = rule.parse(cursor);
     BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Animal", *tokens);
     BOOST_CHECK_EQUAL('d', *cursor);
@@ -71,51 +67,46 @@ BOOST_AUTO_TEST_CASE(checkIteratorAtNextElementWhenMatchIsGood)
 
 BOOST_AUTO_TEST_CASE(checkIteratorAtFirstElementIfMatchFails)
 {
-    OrderedTokenRule<char, std::string> rule;
-    rule.setTarget("Cat");
-    rule.setToken("Animal");
+    OrderedTokenRule<char, std::string> rule("Cat", "Animal");
+    Result<std::string> tokens;
 
-    std::stringstream str("Calf");
-    auto cursor = makeCursor<char>(str);
-    rule.parse(cursor);
+    auto cursor = makeCursor<char>("Calf");
+    BOOST_CHECK(!rule.parse(cursor, tokens));
 
+    BOOST_CHECK(!tokens);
     BOOST_CHECK_EQUAL('C', *cursor);
 
-    OrderedTokenRule<char, std::string> calfRule;
-    calfRule.setTarget("Calf");
-    calfRule.setToken("Part");
+    OrderedTokenRule<char, std::string> calfRule("Calf", "Cow");
+    BOOST_CHECK(calfRule.parse(cursor, tokens));
 
-    BOOST_CHECK_EQUAL("Part", *calfRule.parse(cursor));
-    BOOST_CHECK(!cursor);
+    BOOST_REQUIRE(tokens);
+    BOOST_CHECK_EQUAL("Cow", *tokens);
 }
 
 BOOST_AUTO_TEST_CASE(rulesCanBeNested)
 {
-    OrderedTokenRule<char, std::string> rule;
-    rule.setTarget("Cat");
-    rule.setToken("Animal");
+    OrderedTokenRule<char, std::string> rule("Cat", "Animal");
+    Result<std::string> tokens;
 
-    std::stringstream str("Cat");
-    auto cursor = makeCursor<char>(str);
-    auto tokens = rule.parse(cursor);
+    auto cursor = makeCursor<char>("Cat");
+    BOOST_CHECK(rule.parse(cursor, tokens));
+    BOOST_CHECK(tokens);
 
-    Cursor<std::string> tokenCursor(tokens, rule.end());
-    BOOST_CHECK_EQUAL(std::string("Animal"), *tokenCursor);
-    tokenCursor++;
+    auto tokenCursor = makeCursor<std::string>(tokens);
+    BOOST_REQUIRE(tokenCursor);
+    BOOST_CHECK_EQUAL(std::string("Animal"), *tokenCursor++);
     BOOST_CHECK(!tokenCursor);
 }
 
 BOOST_AUTO_TEST_CASE(anyTokenRule)
 {
-    AnyTokenRule<char, std::string> rule;
-    rule.setTarget(" _");
-    rule.setToken("Whitespace");
+    AnyTokenRule<char, std::string> rule(" _", "Whitespace");
+    Result<std::string> tokens;
 
-    std::stringstream str("_Dog");
-    auto cursor = makeCursor<char>(str);
-    auto tokens = rule.parse(cursor);
+    auto cursor = makeCursor<char>("_Dog");
+    BOOST_CHECK(rule.parse(cursor, tokens));
 
-    BOOST_REQUIRE(tokens != rule.end());
+    BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Whitespace", *tokens);
     BOOST_CHECK_EQUAL('D', *cursor);
 }

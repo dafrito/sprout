@@ -26,11 +26,11 @@ SequenceRule<OrderedTokenRule<char, std::string>> createRule()
 BOOST_AUTO_TEST_CASE(matchASingleSequence)
 {
     auto rule = createRule();
+    Result<std::string> tokens;
 
-    std::stringstream str("CatDogCalf");
-    auto cursor = makeCursor<char>(str);
+    auto cursor = makeCursor<char>("CatDogCalf");
+    BOOST_CHECK(rule.parse(cursor, tokens));
 
-    auto tokens = rule.parse(cursor);
     BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Heathen", *tokens++);
     BOOST_CHECK_EQUAL("Civilized", *tokens++);
@@ -41,11 +41,11 @@ BOOST_AUTO_TEST_CASE(matchASingleSequence)
 BOOST_AUTO_TEST_CASE(sequencesFailCompletely)
 {
     auto rule = createRule();
+    Result<std::string> tokens;
 
-    std::stringstream str("DogCat");
-    auto cursor = makeCursor<char>(str);
+    auto cursor = makeCursor<char>("DogCat");
+    BOOST_CHECK(!rule.parse(cursor, tokens));
 
-    auto tokens = rule.parse(cursor);
     BOOST_CHECK(!tokens);
     BOOST_CHECK_EQUAL('D', *cursor);
 }
@@ -53,11 +53,11 @@ BOOST_AUTO_TEST_CASE(sequencesFailCompletely)
 BOOST_AUTO_TEST_CASE(partialSequencesAlsoFailCompletely)
 {
     auto rule = createRule();
+    Result<std::string> tokens;
 
-    std::stringstream str("CatDogCat");
-    auto cursor = makeCursor<char>(str);
+    auto cursor = makeCursor<char>("CatDogCat");
+    BOOST_CHECK(!rule.parse(cursor, tokens));
 
-    auto tokens = rule.parse(cursor);
     BOOST_CHECK(!tokens);
     BOOST_CHECK_EQUAL('C', *cursor);
 }

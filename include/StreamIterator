@@ -114,8 +114,8 @@ public:
     {
     }
 
-    StreamIterator(Stream& stream) :
-        _stream(&stream)
+    StreamIterator(Stream* stream) :
+        _stream(stream)
     {
         if (Evaluator<Stream>::atEnd(*_stream)) {
             _state = StreamIteratorState::PastLastElement;

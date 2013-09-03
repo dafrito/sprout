@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(checkCursor)
 BOOST_AUTO_TEST_CASE(checkCursorWorksWithoutIncrementing)
 {
     std::stringstream str("Cat");
-    auto cursor = makeCursor<char>(str);
+    auto cursor = makeCursor<char>(&str);
     BOOST_CHECK_EQUAL('C', *cursor);
 }
 
@@ -42,5 +42,5 @@ BOOST_AUTO_TEST_CASE(checkCursorWithStreamIterator)
 BOOST_AUTO_TEST_CASE(constructCursorWithMake)
 {
     std::stringstream str("Cat");
-    auto cursor = makeCursor<char>(str);
+    auto cursor = makeCursor<char>(&str);
 }

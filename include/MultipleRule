@@ -17,31 +17,23 @@ class MultipleRule : public RuleTraits<Rule>
     typedef typename Rule::token_type Token;
     typedef typename Rule::input_type Input;
 
-    Rule rule;
+    Rule _rule;
 
 public:
     MultipleRule(const Rule& rule) :
-        rule(rule)
+        _rule(rule)
     {
     }
 
-    const Result<Token> _eof;
-    const Result<Token>& end() const
+    bool parse(Cursor<Input>& iter, Result<Token>& result) const
     {
-        return _eof;
-    }
-
-    const Result<Token> parse(Cursor<Input>& iter) const
-    {
-        Result<Token> aggregate;
-        while (true) {
-            auto tokens = rule.parse(iter);
-            if (tokens == rule.end()) {
-                break;
-            }
-            aggregate.insert(tokens, rule.end());
+        int i = 0;
+        while (_rule.parse(iter, result)) {
+            //std::cout << "Multiple matched " << i << "\n";
+            ++i;
         }
-        return aggregate;
+        //std::cout << "Matched " << i << " time(s)\n";
+        return true;
     }
 };
 

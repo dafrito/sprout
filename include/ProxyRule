@@ -13,15 +13,13 @@ namespace sprout {
 template <class Input, class Token>
 class RulePlaceholder {
 public:
-    virtual const Result<Token>& end() const=0;
-    virtual Result<Token> parse(Cursor<Input>& iter) const=0;
+    virtual bool parse(Cursor<Input>& iter, Result<Token>& result) const=0;
 };
 
 template <class Rule, class Input, class Token>
 class RulePlaceholderImpl : public RulePlaceholder<Input, Token>
 {
     Rule _rule;
-    const Result<Token> _eof;
 
 public:
     RulePlaceholderImpl(const Rule& rule) :
@@ -29,18 +27,9 @@ public:
     {
     }
 
-    const Result<Token>& end() const
+    bool parse(Cursor<Input>& iter, Result<Token>& result) const
     {
-        return _eof;
-    }
-
-    Result<Token> parse(Cursor<Input>& iter) const
-    {
-        auto tokens = _rule.parse(iter);
-        if (tokens == _rule.end()) {
-            return end();
-        }
-        return Result<Token>(tokens, _rule.end());
+        return _rule.parse(iter, result);
     }
 };
 
@@ -74,14 +63,9 @@ public:
     {
     }
 
-    const Result<Token>& end() const
+    bool parse(Cursor<Input>& iter, Result<Token>& result) const
     {
-        return _rule->end();
-    }
-
-    const Result<Token> parse(Cursor<Input>& iter) const
-    {
-        return _rule->parse(iter);
+        return _rule->parse(iter, result);
     }
 };
 

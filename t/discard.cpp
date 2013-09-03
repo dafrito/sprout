@@ -10,30 +10,30 @@ using namespace sprout;
 
 BOOST_AUTO_TEST_CASE(testDiscard)
 {
-    AnyTokenRule<char, std::string> tokenRule;
-    tokenRule.setTarget("_-");
+    auto rule = makeDiscard(
+        AnyTokenRule<char, std::string>("_-")
+    );
+    Result<std::string> tokens;
 
-    auto rule = makeDiscard(tokenRule);
+    auto cursor = makeCursor<char>("_Dog");
+    BOOST_CHECK(rule.parse(cursor, tokens));
 
-    std::stringstream str("_Dog");
-    auto cursor = makeCursor<char>(str);
-
-    auto tokens = rule.parse(cursor);
-    BOOST_CHECK(tokens == rule.end());
+    BOOST_CHECK(!tokens);
     BOOST_CHECK_EQUAL('D', *cursor);
 }
 
 BOOST_AUTO_TEST_CASE(testDiscardWithMultiple)
 {
-    AnyTokenRule<char, std::string> tokenRule;
-    tokenRule.setTarget("_-");
+    auto rule = makeDiscard(
+        makeMultiple(
+            AnyTokenRule<char, std::string>("_-")
+        )
+    );
+    Result<std::string> tokens;
 
-    auto rule = makeDiscard(makeMultiple(tokenRule));
+    auto cursor = makeCursor<char>("____----____Dog");
+    BOOST_CHECK(rule.parse(cursor, tokens));
 
-    std::stringstream str("____----____Dog");
-    auto cursor = makeCursor<char>(str);
-
-    auto tokens = rule.parse(cursor);
-    BOOST_CHECK(tokens == rule.end());
+    BOOST_CHECK(!tokens);
     BOOST_CHECK_EQUAL('D', *cursor);
 }

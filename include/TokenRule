@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "Cursor"
+#include "Result"
 
 namespace sprout {
 
@@ -112,20 +113,15 @@ public:
         _token = token;
     }
 
-    const Token* end() const
-    {
-        auto eof = &_token;
-        return ++eof;
-    }
-
-    const Token* parse(Cursor<Input>& orig) const
+    bool parse(Cursor<Input>& orig, Result<Token>& result) const
     {
         auto iter = orig;
-        if (Matcher::parse(iter, _target)) {
-            orig = iter;
-            return &_token;
+        if (!Matcher::parse(iter, _target)) {
+            return false;
         }
-        return end();
+        result.insert(_token);
+        orig = iter;
+        return true;
     }
 };
 

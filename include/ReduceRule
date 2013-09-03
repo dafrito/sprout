@@ -11,6 +11,7 @@ template <class Rule, class Reducer, class Token = typename Rule::token_type>
 class ReduceRule : public RuleTraits<Rule>
 {
     typedef typename Rule::input_type Input;
+    typedef typename Rule::token_type SubToken;
 
     const Reducer _reducer;
     const Rule _rule;
@@ -28,15 +29,14 @@ public:
         return _eof;
     }
 
-    const Result<Token> parse(Cursor<Input>& orig) const
+    bool parse(Cursor<Input>& orig, Result<Token>& result) const
     {
-        auto tokens = _rule.parse(orig);
-        if (tokens == _rule.end()) {
-            return end();
+        Result<SubToken> subresults;
+        if (!_rule.parse(orig, subresults)) {
+            return false;
         }
-        Result<Token> aggregate;
-        _reducer(aggregate, tokens, _rule.end());
-        return aggregate;
+        _reducer(result, subresults);
+        return true;
     }
 };
 
@@ -56,12 +56,12 @@ public:
     {
     }
 
-    template <class Iterator>
-    void operator()(Result<Token>& result, Iterator begin, const Iterator& end) const
+    template <class SubToken>
+    void operator()(Result<Token>& result, Result<SubToken>& subtokens) const
     {
         Token aggregate;
-        for (auto i = begin; i != end; ++i) {
-            _reducer(aggregate, *i);
+        for (auto token : subtokens) {
+            _reducer(aggregate, token);
         }
         result.insert(aggregate);
     }

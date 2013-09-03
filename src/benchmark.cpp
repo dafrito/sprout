@@ -27,65 +27,16 @@ QString runRegex(QString str, QRegExp& re)
 }
 
 template <class Parser>
-QString runSprout(QString str, Parser& parser)
+QString runSprout(const QString str, Parser& parser)
 {
-    auto cursor = makeCursor<QChar>(str);
+    auto cursor = makeCursor<QChar>(&str);
+    Result<QString> results;
 
-    return *parser.parse(cursor);
+    if (parser.parse(cursor, results)) {
+        return *results;
+    }
+    return QString();
 }
-
-struct NameStruct {
-    Result<QString> _eof;
-    const Result<QString> end() const
-    {
-        return _eof;
-    }
-
-    const Result<QString> parse(Cursor<QChar>& orig) const
-    {
-        if (!orig) {
-            return end();
-        }
-
-        auto iter = orig;
-        QString aggr;
-        while (iter) {
-            auto c = *iter;
-            if (c.isLetter() || c == '_') {
-                aggr += c;
-            } else {
-                break;
-            }
-            ++iter;
-        }
-        orig = iter;
-        return Result<QString>({aggr});
-    }
-};
-
-struct WhitespaceStruct {
-    Result<QString> _eof;
-    const Result<QString> end() const
-    {
-        return _eof;
-    }
-
-    const Result<QString> parse(Cursor<QChar>& orig) const
-    {
-        if (!orig) {
-            return end();
-        }
-
-        while (orig) {
-            if (!orig->isSpace()) {
-                break;
-            }
-            ++orig;
-        }
-
-        return end();
-    }
-};
 
 int main()
 {
@@ -105,10 +56,10 @@ int main()
     );
 
     auto definition = makeReduce<QString>(
-        [](Result<QString>& result, Result<QString>& begin, const Result<QString>& end) {
+        [](Result<QString>& result, Result<QString>& subresults) {
             QString aggregate;
-            for (auto i = begin; i != end; ++i) {
-                aggregate += *i;
+            for (auto c : subresults) {
+                aggregate += c;
             }
 
             result.insert(aggregate);

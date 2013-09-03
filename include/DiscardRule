@@ -30,16 +30,11 @@ public:
     {
     }
 
-    const Result<Token> _eof;
-    const Result<Token>& end() const
+    bool parse(Cursor<Input>& iter, Result<Token>& result) const
     {
-        return _eof;
-    }
-
-    const Result<Token> parse(Cursor<Input>& iter) const
-    {
-        _rule.parse(iter);
-        return end();
+        Result<Token> trash;
+        _rule.parse(iter, trash);
+        return true;
     }
 };
 

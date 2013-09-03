@@ -7,34 +7,29 @@ using namespace sprout;
 
 BOOST_AUTO_TEST_CASE(matchASingleMultiple)
 {
-    OrderedTokenRule<char, std::string> rule;
-    rule.setTarget("Cat");
-    rule.setToken("Animal");
+    auto rule = makeMultiple(
+        OrderedTokenRule<char, std::string>("Cat", "Animal")
+    );
+    Result<std::string> tokens;
 
-    MultipleRule<decltype(rule)> multiple(rule);
+    auto cursor = makeCursor<char>("CatDog");
+    BOOST_CHECK(rule.parse(cursor, tokens));
 
-    std::stringstream str("CatDog");
-    auto cursor = makeCursor<char>(str);
-
-    auto tokens = multiple.parse(cursor);
     BOOST_REQUIRE(tokens);
-    BOOST_CHECK_EQUAL("Animal", *tokens);
-    ++tokens;
+    BOOST_CHECK_EQUAL("Animal", *tokens++);
     BOOST_REQUIRE(!tokens);
 }
 
 BOOST_AUTO_TEST_CASE(matchMultiple)
 {
-    OrderedTokenRule<char, std::string> rule;
-    rule.setTarget("Cat");
-    rule.setToken("Animal");
+    auto rule = makeMultiple(
+        OrderedTokenRule<char, std::string>("Cat", "Animal")
+    );
+    Result<std::string> tokens;
 
-    MultipleRule<decltype(rule)> multiple(rule);
+    auto cursor = makeCursor<char>("CatCatCat");
+    BOOST_CHECK(rule.parse(cursor, tokens));
 
-    std::stringstream str("CatCatCat");
-    auto cursor = makeCursor<char>(str);
-
-    auto tokens = multiple.parse(cursor);
     BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Animal", *tokens++);
     BOOST_CHECK_EQUAL("Animal", *tokens++);
@@ -44,15 +39,13 @@ BOOST_AUTO_TEST_CASE(matchMultiple)
 
 BOOST_AUTO_TEST_CASE(matchMultipleWithANonMatch)
 {
-    OrderedTokenRule<char, std::string> rule;
-    rule.setTarget("Cat");
-    rule.setToken("Animal");
+    auto rule = makeMultiple(
+        OrderedTokenRule<char, std::string>("Cat", "Animal")
+    );
+    Result<std::string> tokens;
 
-    MultipleRule<decltype(rule)> multiple(rule);
+    auto cursor = makeCursor<char>("Dog");
+    BOOST_CHECK(rule.parse(cursor, tokens));
 
-    std::stringstream str("Dog");
-    auto cursor = makeCursor<char>(str);
-
-    auto tokens = multiple.parse(cursor);
     BOOST_REQUIRE(!tokens);
 }

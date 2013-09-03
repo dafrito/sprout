@@ -19,18 +19,20 @@ BOOST_AUTO_TEST_CASE(testCatching)
     );
 
     {
-        std::stringstream str("abc");
-        auto cursor = makeCursor<char>(str);
+        Result<std::string> tokens;
 
-        auto tokens = rule.parse(cursor);
+        auto cursor = makeCursor<char>("abc");
+        BOOST_CHECK(!rule.parse(cursor, tokens));
+
         BOOST_CHECK(!tokens);
     }
 
     {
-        std::stringstream str("bbb");
-        auto cursor = makeCursor<char>(str);
+        Result<std::string> tokens;
 
-        auto tokens = rule.parse(cursor);
+        auto cursor = makeCursor<char>("bbb");
+        BOOST_CHECK(rule.parse(cursor, tokens));
+
         BOOST_REQUIRE(tokens);
         BOOST_CHECK(*tokens == "b");
     }

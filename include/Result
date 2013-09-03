@@ -5,6 +5,8 @@
 #include <iterator>
 #include <algorithm>
 
+#include "Cursor"
+
 namespace sprout {
 
 /**
@@ -46,7 +48,7 @@ public:
     {
     }
 
-    static const Tokens empty_tokens;
+    const Tokens empty_tokens;
 
     typename Tokens::const_iterator begin() const
     {
@@ -78,6 +80,12 @@ public:
         _data->push_back(value);
     }
 
+    template <class T>
+    void insert(const Result<T>& value)
+    {
+        insert(value.begin(), value.end());
+    }
+
     template <class Iterator>
     void insert(Iterator begin, Iterator end)
     {
@@ -92,7 +100,7 @@ public:
         return _data && !_data->empty() && _pos < _data->size();
     }
 
-    Token& operator*() const
+    Token& get() const
     {
         if (!_data) {
             throw std::runtime_error("An empty result must not be dereferenced");
@@ -103,9 +111,15 @@ public:
         return (*_data)[_pos];
     }
 
+    Token operator*() const
+    {
+        // Convert to a value to ensure the memory is not destroyed if our vector is reallocated
+        return get();
+    }
+
     Token* operator->() const
     {
-        return &operator*();
+        return &get();
     }
 
     const Result<Token>& operator++() const
@@ -185,6 +199,18 @@ public:
         return !(*this == other);
     }
 };
+
+template <class Data, class Token>
+Cursor<Data> makeCursor(Result<Token>& stream)
+{
+    return Cursor<Data>(stream.begin(), stream.end());
+}
+
+template <class Data, class Token>
+Cursor<Data> makeCursor(const Result<Token>& stream)
+{
+    return Cursor<Data>(stream.begin(), stream.end());
+}
 
 } // namespace sprout
 

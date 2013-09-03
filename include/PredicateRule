@@ -22,16 +22,10 @@ public:
     {
     }
 
-    const Result<Token> _eof;
-    const Result<Token>& end() const
-    {
-        return _eof;
-    }
-
-    const Result<Token> parse(Cursor<Input>& orig) const
+    bool parse(Cursor<Input>& orig, Result<Token>& result) const
     {
         if (!orig) {
-            return end();
+            return false;
         }
 
         auto iter = orig;
@@ -39,11 +33,12 @@ public:
         Token aggregate;
         auto candidate = *iter++;
         if (!_matcher(aggregate, candidate)) {
-            return end();
+            return false;
         }
 
         orig = iter;
-        return Result<Token>({ aggregate });
+        result.insert(aggregate);
+        return true;
     }
 };
 

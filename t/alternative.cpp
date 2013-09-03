@@ -27,11 +27,11 @@ AlternativeRule<OrderedTokenRule<char, std::string>> createAltRule()
 BOOST_AUTO_TEST_CASE(matchASingleAlternative)
 {
     auto alternative = createAltRule();
+    Result<std::string> tokens;
 
-    std::stringstream str("CatDogDogCalfCat");
-    auto cursor = makeCursor<char>(str);
+    auto cursor = makeCursor<char>("CatDogDogCalfCat");
+    BOOST_CHECK(alternative.parse(cursor, tokens));
 
-    auto tokens = alternative.parse(cursor);
     BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Heathen", *tokens++);
     BOOST_CHECK(!tokens);
@@ -40,25 +40,25 @@ BOOST_AUTO_TEST_CASE(matchASingleAlternative)
 BOOST_AUTO_TEST_CASE(matchAnotherSingleAlternative)
 {
     auto alternative = createAltRule();
+    Result<std::string> tokens;
 
-    std::stringstream str("DogCalfCat");
-    auto cursor = makeCursor<char>(str);
+    auto cursor = makeCursor<char>("DogCalfCat");
+    BOOST_CHECK(alternative.parse(cursor, tokens));
 
-    auto tokens = alternative.parse(cursor);
     BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Civilized", *tokens++);
     BOOST_CHECK(!tokens);
+    BOOST_CHECK_EQUAL('C', *cursor);
 }
 
 BOOST_AUTO_TEST_CASE(matchMultipleAlternatives)
 {
-    auto alternative = createAltRule();
-    MultipleRule<decltype(alternative)> multiple(alternative);
+    auto rule = makeMultiple(createAltRule());
+    Result<std::string> tokens;
 
-    std::stringstream str("CatDogDogCalfCat");
-    auto cursor = makeCursor<char>(str);
+    auto cursor = makeCursor<char>("CatDogDogCalfCat");
+    BOOST_CHECK(rule.parse(cursor, tokens));
 
-    auto tokens = multiple.parse(cursor);
     BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Heathen", *tokens++);
     BOOST_REQUIRE(tokens);

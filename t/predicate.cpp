@@ -11,12 +11,12 @@ BOOST_AUTO_TEST_CASE(testPredicate)
     auto rule = makeSimplePredicate<QChar, QString>([](const QChar& input) {
         return input.isLetter();
     });
+    Result<QString> tokens;
 
-    QString str(QString::fromUtf8("中国"));
-    QTextStream stream(&str);
-    auto cursor = makeCursor<QChar>(stream);
+    auto data = QString::fromUtf8("中国");
+    auto cursor = makeCursor<QChar>(&data);
+    BOOST_CHECK(rule.parse(cursor, tokens));
 
-    auto tokens = rule.parse(cursor);
     BOOST_REQUIRE(tokens);
     BOOST_CHECK(QString::fromUtf8("中") == *tokens++);
     BOOST_CHECK(!tokens);
@@ -32,13 +32,13 @@ BOOST_AUTO_TEST_CASE(testPredicateWithMultiple)
             return input.isLetter();
         }))
     );
+    Result<QString> tokens;
 
-    QString str(QString::fromUtf8("中国"));
-    QTextStream stream(&str);
-    auto cursor = makeCursor<QChar>(stream);
+    auto data = QString::fromUtf8("中国");
+    auto cursor = makeCursor<QChar>(&data);
+    BOOST_CHECK(rule.parse(cursor, tokens));
 
-    auto tokens = rule.parse(cursor);
     BOOST_REQUIRE(tokens);
-    BOOST_CHECK(str == *tokens++);
+    BOOST_CHECK(QString::fromUtf8("中国") == *tokens++);
     BOOST_CHECK(!tokens);
 }

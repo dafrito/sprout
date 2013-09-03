@@ -24,22 +24,12 @@ public:
     {
     }
 
-    const Result<Token> _eof;
-    const Result<Token>& end() const
-    {
-        return _eof;
-    }
-
-    const Result<Token> parse(Cursor<Input>& iter) const
+    bool parse(Cursor<Input>& iter, Result<Token>& result) const
     {
         try {
-            auto tokens = _rule.parse(iter);
-            if (tokens == _rule.end()) {
-                return end();
-            }
-            return Result<Token>(tokens, _rule.end());
+            return _rule.parse(iter, result);
         } catch (const Exception& ex) {
-            return end();
+            return false;
         }
     }
 };

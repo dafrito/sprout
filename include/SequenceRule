@@ -84,26 +84,16 @@ public:
         return *this;
     }
 
-    const Result<Token> _eof;
-    const Result<Token>& end() const
-    {
-        return _eof;
-    }
-
-    const Result<Token> parse(Cursor<Input>& iter) const
+    bool parse(Cursor<Input>& iter, Result<Token>& result) const
     {
         Result<Token> aggregate;
         for (auto entry : _rules) {
-            auto tokens = entry.rule.parse(iter);
-            if (tokens != entry.rule.end()) {
-                aggregate.insert(tokens, entry.rule.end());
-            } else if (entry.required) {
-                return end();
-            } else {
-                continue;
+            if (!entry.rule.parse(iter, aggregate)) {
+                return false;
             }
         }
-        return aggregate;
+        result.insert(aggregate);
+        return true;
     }
 };
 
