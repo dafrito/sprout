@@ -16,6 +16,14 @@ BOOST_AUTO_TEST_CASE(testTrivialProxy)
     );
 }
 
+BOOST_AUTO_TEST_CASE(testProxyHandlesAClosure)
+{
+    ProxyRule<char, std::string> rule([](Cursor<char>& input, Result<std::string>& result) {
+        ++input;
+        return true;
+    });
+}
+
 BOOST_AUTO_TEST_CASE(testSplittingByWhitespace)
 {
     auto rule = makeMultiple(
