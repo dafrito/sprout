@@ -73,8 +73,12 @@ int main()
         )
     );
 
+
     const int RUNS = 1e5;
     std::cout << "Running " << RUNS << " iteration" << (RUNS == 1 ? "" : "s") << "\n";
+
+    std::cout << std::endl;
+    std::cout << "=== Parser Benchmarks ===\n";
 
     {
         QRegExp re("^var\\s+(\\w+)");
@@ -105,26 +109,6 @@ int main()
     }
 
     {
-        QString target("var foo");
-        QString str("var foo");
-        QElapsedTimer timer;
-        timer.start();
-
-        QString result;
-        for (int i = 0; i < RUNS; ++i) {
-            auto cursor = makeCursor<QChar>(&str);
-            result = "foo";
-            for (int j = 0; j < target.size(); ++j) {
-                if (target.at(j) != *cursor++) {
-                    result = "";
-                }
-            }
-        }
-
-        std::cout << "Direct found " << result.toStdString() << " and took " << timer.elapsed() << " milliseconds\n";
-    }
-
-    {
         QElapsedTimer timer;
         timer.start();
 
@@ -144,6 +128,49 @@ int main()
                 result = aggr;
             }
         }
+        std::cout << "Inline found " << result.toStdString() << " and took " << timer.elapsed() << " milliseconds\n";
+    }
+
+    std::cout << std::endl;
+    std::cout << "=== Cursor Benchmarks ===\n";
+
+    {
+        QString target("var foo");
+        QString str("var foo");
+        QElapsedTimer timer;
+        timer.start();
+
+        QString result;
+        for (int i = 0; i < RUNS; ++i) {
+            auto cursor = makeCursor<QChar>(&str);
+            result = "foo";
+            for (int j = 0; j < target.size(); ++j) {
+                if (target.at(j) != *cursor++) {
+                    result = "";
+                }
+            }
+        }
+
+        std::cout << "Cursor found " << result.toStdString() << " and took " << timer.elapsed() << " milliseconds\n";
+    }
+
+    {
+        QString target("var foo");
+        QString str("var foo");
+        QElapsedTimer timer;
+        timer.start();
+
+        QString result;
+        for (int i = 0; i < RUNS; ++i) {
+            auto cursor = makeCursor<QChar>(&str);
+            result = "foo";
+            for (int j = 0; j < target.size(); ++j) {
+                if (target.at(j) != str.at(j)) {
+                    result = "";
+                }
+            }
+        }
+
         std::cout << "Inline found " << result.toStdString() << " and took " << timer.elapsed() << " milliseconds\n";
     }
 
