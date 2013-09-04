@@ -42,6 +42,17 @@ int main()
         }))
     );
 
+    auto fastWhitespace = [](Cursor<QChar>& iter, Result<QString>& result) {
+        while (iter) {
+            auto input = *iter;
+            if (!input.isSpace()) {
+                break;
+            }
+            ++iter;
+        }
+        return true;
+    };
+
     auto name = makeSimpleReduce<QString>(
         [](QString& aggregate, const QChar& c) {
             aggregate += c;
@@ -50,6 +61,25 @@ int main()
             return input.isLetter() || input == '_';
         }))
     );
+
+    auto fastName = [](Cursor<QChar>& orig, Result<QString>& result) {
+        auto iter = orig;
+        QString aggr;
+        while (iter) {
+            auto input = *iter++;
+            if (input.isLetter() || input == '_') {
+                aggr += input;
+            } else {
+                break;
+            }
+        }
+        if (aggr.isNull()) {
+            return false;
+        }
+        result.insert(aggr);
+        orig = iter;
+        return true;
+    };
 
     std::cout << "Running " << RUNS << " iteration" << (RUNS == 1 ? "" : "s") << "\n";
 
@@ -74,6 +104,21 @@ int main()
             name
         );
         runBenchmark("Sprout", [&]() {
+            auto cursor = makeCursor<QChar>(&inputString);
+            Result<QString> results;
+
+            assert(benchmark(cursor, results));
+            assert(targetString == *results);
+        });
+    }
+
+    {
+        auto benchmark = makeProxySequence<QChar, QString>(
+            makeDiscard(OrderedTokenRule<QChar, QString>("var")),
+            fastWhitespace,
+            fastName
+        );
+        runBenchmark("Spfast", [&]() {
             auto cursor = makeCursor<QChar>(&inputString);
             Result<QString> results;
 
@@ -125,6 +170,28 @@ int main()
         });
     }
 
+    {
+        QString varStr("var");
+        auto benchmark = [&](Cursor<QChar>& orig, Result<QString>& results) {
+            auto iter = orig;
+            for (int i = 0; i < varStr.size(); ++i) {
+                if (!iter || *iter++ != varStr.at(i)) {
+                    return false;
+                }
+            }
+            orig = iter;
+            results.insert(varStr);
+            return true;
+        };
+        runBenchmark("Spfast", [&]() {
+            auto cursor = makeCursor<QChar>(&inputString);
+            Result<QString> results;
+
+            assert(benchmark(cursor, results));
+            assert(*results == simpleTarget);
+        });
+    }
+
     std::cout << std::endl;
     std::cout << "=== Aggregating Match Benchmarks ===\n";
 
@@ -147,6 +214,21 @@ int main()
             );
 
             runBenchmark("Sprout", [&]() {
+                auto cursor = makeCursor<QChar>(&inputString);
+                Result<QString> results;
+
+                assert(benchmark(cursor, results));
+                assert(*results == targetString);
+            });
+        }
+
+        {
+            auto benchmark = makeProxySequence<QChar, QString>(
+                makeDiscard(OrderedTokenRule<QChar, QString>("var")),
+                fastName
+            );
+
+            runBenchmark("Spfast", [&]() {
                 auto cursor = makeCursor<QChar>(&inputString);
                 Result<QString> results;
 
@@ -178,6 +260,21 @@ int main()
             );
 
             runBenchmark("Sprout", [&]() {
+                auto cursor = makeCursor<QChar>(&inputString);
+                Result<QString> results;
+
+                assert(benchmark(cursor, results));
+                assert(*results == targetString);
+            });
+        }
+
+        {
+            auto benchmark = makeProxySequence<QChar, QString>(
+                fastWhitespace,
+                OrderedTokenRule<QChar, QString>("foo", "foo")
+            );
+
+            runBenchmark("Spfast", [&]() {
                 auto cursor = makeCursor<QChar>(&inputString);
                 Result<QString> results;
 
