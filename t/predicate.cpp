@@ -8,7 +8,7 @@ using namespace sprout;
 
 BOOST_AUTO_TEST_CASE(testPredicate)
 {
-    auto rule = makeSimplePredicate<QChar, QString>([](const QChar& input) {
+    auto rule = make::simplePredicate<QChar, QString>([](const QChar& input) {
         return input.isLetter();
     });
     Result<QString> tokens;
@@ -24,11 +24,12 @@ BOOST_AUTO_TEST_CASE(testPredicate)
 
 BOOST_AUTO_TEST_CASE(testPredicateWithMultiple)
 {
-    auto rule = makeSimpleReduce<QString>(
+    using namespace make;
+    auto rule = simpleReduce<QString>(
         [](QString& str, const QChar& c) {
             str += c;
         },
-        makeMultiple(makeSimplePredicate<QChar, QChar>([](const QChar& input) {
+        multiple(simplePredicate<QChar, QChar>([](const QChar& input) {
             return input.isLetter();
         }))
     );

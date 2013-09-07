@@ -63,19 +63,23 @@ public:
     }
 };
 
+namespace make {
+
 template <class Input, class Token = Input, class Matcher>
-PredicateRule<Input, Token, Matcher> makePredicate(const Matcher& matcher)
+PredicateRule<Input, Token, Matcher> predicate(const Matcher& matcher)
 {
     return PredicateRule<Input, Token, Matcher>(matcher);
 }
 
 template <class Input, class Token = Input, class Tester>
-PredicateRule<Input, Token, SimplePredicate<Input, Token, Tester>> makeSimplePredicate(const Tester& tester)
+PredicateRule<Input, Token, SimplePredicate<Input, Token, Tester>> simplePredicate(const Tester& tester)
 {
     SimplePredicate<Input, Token, Tester> matcher(tester);
     PredicateRule<Input, Token, decltype(matcher)> rule(matcher);
     return rule;
 }
+
+} // namespace make
 
 } // namespace sprout
 

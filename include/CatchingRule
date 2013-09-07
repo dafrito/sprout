@@ -34,11 +34,15 @@ public:
     }
 };
 
+namespace make {
+
 template <class Exception, class Rule>
-CatchingRule<Rule, Exception> makeCatching(const Rule& rule)
+CatchingRule<Rule, Exception> catching(const Rule& rule)
 {
     return CatchingRule<Rule, Exception>(rule);
 }
+
+} // namespace make
 
 } // namespace sprout
 

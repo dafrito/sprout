@@ -35,11 +35,15 @@ public:
     }
 };
 
+namespace make {
+
 template <class Rule>
-MultipleRule<Rule> makeMultiple(const Rule& rule)
+MultipleRule<Rule> multiple(const Rule& rule)
 {
     return MultipleRule<Rule>(rule);
 }
+
+} // namespace make
 
 } // namespace sprout
 

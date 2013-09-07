@@ -50,11 +50,15 @@ struct SequenceInserter<Rule, DiscardRule<Subrule>>
     }
 };
 
+namespace make {
+
 template <class Rule>
-DiscardRule<Rule> makeDiscard(const Rule& rule)
+DiscardRule<Rule> discard(const Rule& rule)
 {
     return DiscardRule<Rule>(rule);
 }
+
+} // namespace make
 
 } // namespace sprout
 

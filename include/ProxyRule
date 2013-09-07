@@ -69,8 +69,10 @@ public:
     }
 };
 
+namespace make {
+
 template <class Input, class Token, typename... Values>
-SequenceRule<ProxyRule<Input, Token>> makeProxySequence(Values... rest)
+SequenceRule<ProxyRule<Input, Token>> proxySequence(Values... rest)
 {
     SequenceRule<ProxyRule<Input, Token>> sequence;
     populateSequence(sequence, rest...);
@@ -78,11 +80,13 @@ SequenceRule<ProxyRule<Input, Token>> makeProxySequence(Values... rest)
 }
 
 template <class Input, class Token, typename... Rules>
-AlternativeRule<ProxyRule<Input, Token>> makeProxyAlternate(Rules... rest)
+AlternativeRule<ProxyRule<Input, Token>> proxyAlternate(Rules... rest)
 {
     std::vector<ProxyRule<Input, Token>> rules;
     return populateAlternate(rules, rest...);
 }
+
+} // namespace make
 
 } // namespace sprout
 

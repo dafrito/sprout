@@ -9,8 +9,10 @@ struct FakeException {};
 
 BOOST_AUTO_TEST_CASE(testCatching)
 {
-    auto rule = makeCatching<FakeException>(
-        makeSimplePredicate<char, std::string>([](const char& input) {
+    using namespace make;
+
+    auto rule = catching<FakeException>(
+        simplePredicate<char, std::string>([](const char& input) {
             if (input == 'a') {
                 throw FakeException();
             }

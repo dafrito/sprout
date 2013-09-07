@@ -135,8 +135,10 @@ void populateSequence(SequenceRule<Rule>& sequence, const T& value, Values... re
     populateSequence(sequence, rest...);
 }
 
+namespace make {
+
 template <class Rule, typename... Values>
-SequenceRule<Rule> makeSequence(const Rule& rule, Values... rest)
+SequenceRule<Rule> sequence(const Rule& rule, Values... rest)
 {
     SequenceRule<Rule> sequence;
     populateSequence(sequence, rule, rest...);
@@ -144,10 +146,12 @@ SequenceRule<Rule> makeSequence(const Rule& rule, Values... rest)
 }
 
 template <class Rule>
-SequenceRule<Rule> makeSequence()
+SequenceRule<Rule> sequence()
 {
     return SequenceRule<Rule>();
 }
+
+} // namespace make
 
 } // namespace sprout
 

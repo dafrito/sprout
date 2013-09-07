@@ -26,21 +26,22 @@ BOOST_AUTO_TEST_CASE(testProxyHandlesAClosure)
 
 BOOST_AUTO_TEST_CASE(testSplittingByWhitespace)
 {
-    auto rule = makeMultiple(
-        makeProxySequence<char, std::string>(
-            makeDiscard(makeMultiple(
+    using namespace make;
+    auto rule = multiple(
+        proxySequence<char, std::string>(
+            discard(multiple(
                 AnyTokenRule<char, std::string>("_")
             )),
-            makeAlternate(
+            alternate(
                 OrderedTokenRule<char, std::string>("Cat", "Heathen"),
                 OrderedTokenRule<char, std::string>("Dog", "Civilized"),
                 OrderedTokenRule<char, std::string>("Calf", "Cow")
             ),
-            makeDiscard(makeMultiple(
+            discard(multiple(
                 AnyTokenRule<char, std::string>("_")
             )),
             OrderedTokenRule<char, std::string>(",", "Comma"),
-            makeDiscard(makeMultiple(
+            discard(multiple(
                 AnyTokenRule<char, std::string>("_")
             ))
         )

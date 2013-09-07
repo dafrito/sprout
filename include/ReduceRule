@@ -40,8 +40,10 @@ public:
     }
 };
 
+namespace make {
+
 template <class Token, class Rule, class Reducer>
-ReduceRule<Rule, Reducer, Token> makeReduce(const Reducer& reducer, const Rule& rule)
+ReduceRule<Rule, Reducer, Token> reduce(const Reducer& reducer, const Rule& rule)
 {
     return ReduceRule<Rule, Reducer, Token>(reducer, rule);
 }
@@ -68,10 +70,12 @@ public:
 };
 
 template <class Token, class Rule, class Reducer>
-ReduceRule<Rule, SimpleReducer<Reducer, Token>, Token> makeSimpleReduce(const Reducer& reducer, const Rule& rule)
+ReduceRule<Rule, SimpleReducer<Reducer, Token>, Token> simpleReduce(const Reducer& reducer, const Rule& rule)
 {
-    return makeReduce<Token>(SimpleReducer<Reducer, Token>(reducer), rule);
+    return reduce<Token>(SimpleReducer<Reducer, Token>(reducer), rule);
 }
+
+} // namespace make
 
 } // namespace sprout
 

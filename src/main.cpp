@@ -21,22 +21,24 @@ using namespace sprout;
 
 int main(int argc, char* argv[])
 {
-    auto whitespace = makeDiscard(
-        makeMultiple(makeSimplePredicate<QChar, QString>([](const QChar& input) {
+    using namespace make;
+
+    auto whitespace = discard(
+        multiple(simplePredicate<QChar, QString>([](const QChar& input) {
             return input.isSpace();
         }))
     );
 
-    auto name = makeSimpleReduce<QString>(
+    auto name = simpleReduce<QString>(
         [](QString& aggregate, const QChar& c) {
             aggregate += c;
         },
-        makeMultiple(makeSimplePredicate<QChar>([](const QChar& input) {
+        multiple(simplePredicate<QChar>([](const QChar& input) {
             return input.isLetter() || input == '_';
         }))
     );
 
-    auto definition = makeReduce<QString>(
+    auto definition = reduce<QString>(
         [](Result<QString>& result, Result<QString>& subresults) {
             QString aggregate;
             for (auto c : subresults) {
@@ -45,7 +47,7 @@ int main(int argc, char* argv[])
 
             result.insert(aggregate);
         },
-        makeProxySequence<QChar, QString>(
+        proxySequence<QChar, QString>(
             OrderedTokenRule<QChar, QString>("var"),
             whitespace,
             name
@@ -116,8 +118,8 @@ int main(int argc, char* argv[])
         return false;
     };
 
-    auto parser = makeMultiple(
-        makeProxySequence<QChar, QString>(
+    auto parser = multiple(
+        proxySequence<QChar, QString>(
             definition,
             whitespace,
             OrderedTokenRule<QChar, QString>("="),

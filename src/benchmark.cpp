@@ -36,8 +36,10 @@ void runBenchmark(const char* name, Runner runner)
 
 int main()
 {
-    auto whitespace = makeDiscard(
-        makeMultiple(makePredicate<QChar, QString>([](const QChar& input, QString&) {
+    using namespace make;
+
+    auto whitespace = discard(
+        multiple(predicate<QChar, QString>([](const QChar& input, QString&) {
             return input.isSpace();
         }))
     );
@@ -53,11 +55,11 @@ int main()
         return true;
     };
 
-    auto name = makeSimpleReduce<QString>(
+    auto name = simpleReduce<QString>(
         [](QString& aggregate, const QChar& c) {
             aggregate += c;
         },
-        makeMultiple(makeSimplePredicate<QChar>([](const QChar& input) {
+        multiple(simplePredicate<QChar>([](const QChar& input) {
             return input.isLetter() || input == '_';
         }))
     );
@@ -98,8 +100,8 @@ int main()
     }
 
     {
-        auto benchmark = makeProxySequence<QChar, QString>(
-            makeDiscard(OrderedTokenRule<QChar, QString>("var")),
+        auto benchmark = proxySequence<QChar, QString>(
+            discard(OrderedTokenRule<QChar, QString>("var")),
             whitespace,
             name
         );
@@ -113,8 +115,8 @@ int main()
     }
 
     {
-        auto benchmark = makeProxySequence<QChar, QString>(
-            makeDiscard(OrderedTokenRule<QChar, QString>("var")),
+        auto benchmark = proxySequence<QChar, QString>(
+            discard(OrderedTokenRule<QChar, QString>("var")),
             fastWhitespace,
             fastName
         );
@@ -208,8 +210,8 @@ int main()
         }
 
         {
-            auto benchmark = makeProxySequence<QChar, QString>(
-                makeDiscard(OrderedTokenRule<QChar, QString>("var")),
+            auto benchmark = proxySequence<QChar, QString>(
+                discard(OrderedTokenRule<QChar, QString>("var")),
                 name
             );
 
@@ -223,8 +225,8 @@ int main()
         }
 
         {
-            auto benchmark = makeProxySequence<QChar, QString>(
-                makeDiscard(OrderedTokenRule<QChar, QString>("var")),
+            auto benchmark = proxySequence<QChar, QString>(
+                discard(OrderedTokenRule<QChar, QString>("var")),
                 fastName
             );
 
@@ -254,7 +256,7 @@ int main()
         }
 
         {
-            auto benchmark = makeProxySequence<QChar, QString>(
+            auto benchmark = proxySequence<QChar, QString>(
                 whitespace,
                 OrderedTokenRule<QChar, QString>("foo", "foo")
             );
@@ -269,7 +271,7 @@ int main()
         }
 
         {
-            auto benchmark = makeProxySequence<QChar, QString>(
+            auto benchmark = proxySequence<QChar, QString>(
                 fastWhitespace,
                 OrderedTokenRule<QChar, QString>("foo", "foo")
             );

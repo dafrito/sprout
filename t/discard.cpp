@@ -10,7 +10,7 @@ using namespace sprout;
 
 BOOST_AUTO_TEST_CASE(testDiscard)
 {
-    auto rule = makeDiscard(
+    auto rule = make::discard(
         AnyTokenRule<char, std::string>("_-")
     );
     Result<std::string> tokens;
@@ -24,8 +24,8 @@ BOOST_AUTO_TEST_CASE(testDiscard)
 
 BOOST_AUTO_TEST_CASE(testDiscardWithMultiple)
 {
-    auto rule = makeDiscard(
-        makeMultiple(
+    auto rule = make::discard(
+        make::multiple(
             AnyTokenRule<char, std::string>("_-")
         )
     );

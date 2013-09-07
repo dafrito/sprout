@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(matchAnotherSingleAlternative)
 
 BOOST_AUTO_TEST_CASE(matchMultipleAlternatives)
 {
-    auto rule = makeMultiple(createAltRule());
+    auto rule = make::multiple(createAltRule());
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("CatDogDogCalfCat");

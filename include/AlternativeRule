@@ -40,8 +40,10 @@ public:
     }
 };
 
+namespace make {
+
 template <class Rule>
-AlternativeRule<Rule> makeAlternate(std::vector<Rule>& rules)
+AlternativeRule<Rule> alternate(std::vector<Rule>& rules)
 {
     return AlternativeRule<Rule>(rules);
 }
@@ -49,7 +51,7 @@ AlternativeRule<Rule> makeAlternate(std::vector<Rule>& rules)
 template <class Rule>
 AlternativeRule<Rule> populateAlternate(std::vector<Rule>& rules)
 {
-    return makeAlternate(rules);
+    return alternate(rules);
 }
 
 template <class Rule, class T, typename... Rules>
@@ -60,11 +62,13 @@ AlternativeRule<Rule> populateAlternate(std::vector<Rule>& rules, const T& rule,
 }
 
 template <class Rule, typename... Rules>
-AlternativeRule<Rule> makeAlternate(const Rule& rule, Rules... rest)
+AlternativeRule<Rule> alternate(const Rule& rule, Rules... rest)
 {
     std::vector<Rule> rules;
     return populateAlternate(rules, rule, rest...);
 }
+
+} // namespace make
 
 } // namespace sprout
 
