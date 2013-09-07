@@ -52,15 +52,77 @@ int main(int argc, char* argv[])
         )
     );
 
+    auto quotedString = [](Cursor<QChar>& orig, Result<QString>& result) {
+        auto iter = orig;
+
+        if (!iter) {
+            return false;
+        }
+        auto quote = *iter++;
+
+        if (quote != '\'' && quote != '"') {
+            return false;
+        }
+
+        QString str;
+        while (iter) {
+            auto c = *iter++;
+
+            if (c == quote) {
+                result.insert(str);
+                orig = iter;
+                return true;
+            }
+
+            if (c == '\\') {
+                // Escaped string, so parse it accordingly
+                if (!iter) {
+                    break;
+                }
+
+                auto escape = *iter++;
+                if (escape == 'n') {
+                    c = '\n';
+                } else if (escape == 'b') {
+                    c = '\b';
+                } else if (escape == 'f') {
+                    c = '\f';
+                } else if (escape == 'r') {
+                    c = '\r';
+                } else if (escape == 't') {
+                    c = '\t';
+                } else if (escape == 'u') {
+                    // Unicode
+                    QString unicodeValue;
+                    for (int i = 0; i < 4; ++i) {
+                        if (!iter) {
+                            return false;
+                        }
+                        unicodeValue += *iter++;
+                    }
+                    bool ok;
+                    auto realValue = unicodeValue.toInt(&ok, 16);
+                    if (!ok) {
+                        return false;
+                    }
+                    c = QChar(realValue);
+                }
+            }
+
+            str += c;
+        }
+
+        // Ran out of data before we could complete the string
+        return false;
+    };
+
     auto parser = makeMultiple(
         makeProxySequence<QChar, QString>(
+            definition,
             whitespace,
-            makeProxyAlternate<QChar, QString>(
-                OrderedTokenRule<QChar, QString>("Cat", "Heathen"),
-                OrderedTokenRule<QChar, QString>("Dog", "Civilized"),
-                OrderedTokenRule<QChar, QString>("Calf", "Cow"),
-                name
-            ),
+            OrderedTokenRule<QChar, QString>("="),
+            whitespace,
+            quotedString,
             whitespace
         )
     );
@@ -78,7 +140,7 @@ int main(int argc, char* argv[])
         auto cursor = makeCursor<QChar>(&lineStream);
         Result<QString> results;
 
-        if (definition(cursor, results)) {
+        if (parser(cursor, results) && results) {
             std::cout << "I came up with ";
             while (results) {
                 std::cout << results->toUtf8().constData() << " ";
