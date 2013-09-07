@@ -66,6 +66,8 @@ int main(int argc, char* argv[])
     );
 
     QTextStream stream(stdin);
+    stream.setCodec("UTF-8");
+
     QString line;
     while (true) {
         line = stream.readLine();
