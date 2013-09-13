@@ -71,3 +71,19 @@ BOOST_AUTO_TEST_CASE(matchMultipleAlternatives)
     BOOST_CHECK_EQUAL("Heathen", *tokens++);
     BOOST_REQUIRE(!tokens);
 }
+
+bool oneAlternative(Cursor<char>& iter, Result<std::string>& result) {
+    return true;
+};
+
+bool twoAlternative(Cursor<char>& iter, Result<std::string>& result) {
+    return true;
+};
+
+BOOST_AUTO_TEST_CASE(testAlternativeWithLambda)
+{
+    auto rule = make::alternate<char, std::string, std::function<decltype(oneAlternative)>>(
+        oneAlternative,
+        twoAlternative
+    );
+}

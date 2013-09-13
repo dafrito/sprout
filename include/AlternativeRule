@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include "composite.hpp"
 #include "RuleTraits"
 #include "Cursor"
 #include "Result"
@@ -14,19 +15,34 @@ namespace sprout {
  * candidate rules. The first rule that matches will provide
  * AlternativeRule's result.
  */
-template <class Rule>
-class AlternativeRule : public RuleTraits<Rule>
+template <
+    class Rule,
+    class Input = typename Rule::input_type,
+    class Token = typename Rule::token_type
+>
+class AlternativeRule
 {
-    typedef typename Rule::token_type Token;
-    typedef typename Rule::input_type Input;
-
     std::vector<Rule> _rules;
 
 public:
+    typedef Input input_type;
+    typedef Token token_type;
+
+    AlternativeRule()
+    {
+    }
+
     template <class Container>
     AlternativeRule(const Container& rules) :
         _rules(rules)
     {
+    }
+
+    template <class T>
+    AlternativeRule& insert(const T& rule)
+    {
+        _rules.push_back(rule);
+        return *this;
     }
 
     bool operator()(Cursor<Input>& iter, Result<Token>& result) const
@@ -42,30 +58,20 @@ public:
 
 namespace make {
 
-template <class Rule>
-AlternativeRule<Rule> alternate(std::vector<Rule>& rules)
-{
-    return AlternativeRule<Rule>(rules);
-}
-
-template <class Rule>
-AlternativeRule<Rule> populateAlternate(std::vector<Rule>& rules)
-{
-    return alternate(rules);
-}
-
-template <class Rule, class T, typename... Rules>
-AlternativeRule<Rule> populateAlternate(std::vector<Rule>& rules, const T& rule, Rules... rest)
-{
-    rules.push_back(rule);
-    return populateAlternate(rules, rest...);
-}
-
 template <class Rule, typename... Rules>
 AlternativeRule<Rule> alternate(const Rule& rule, Rules... rest)
 {
-    std::vector<Rule> rules;
-    return populateAlternate(rules, rule, rest...);
+    AlternativeRule<Rule> alternative;
+    populate(alternative, rule, rest...);
+    return alternative;
+}
+
+template <class Input, class Token, class Rule, typename... Rules>
+AlternativeRule<Rule, Input, Token> alternate(const Rule& rule, Rules... rest)
+{
+    AlternativeRule<Rule, Input, Token> alternative;
+    populate(alternative, rule, rest...);
+    return alternative;
 }
 
 } // namespace make
