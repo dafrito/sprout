@@ -7,7 +7,11 @@
 
 namespace sprout {
 
-template <class Rule, class Reducer, class Token = typename Rule::token_type>
+template <
+    class Rule,
+    class Reducer,
+    class Token = typename Rule::token_type
+>
 class ReduceRule : public RuleTraits<Rule>
 {
     typedef typename Rule::input_type Input;
