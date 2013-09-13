@@ -1,4 +1,5 @@
 nobase_pkginclude_HEADERS = \
+	composite.hpp \
 	RuleTraits \
 	StreamIterator \
 	Result \
