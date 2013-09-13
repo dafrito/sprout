@@ -11,15 +11,19 @@ namespace sprout {
  * MultipleRule matches as many instances of a specified rule
  * as possible, aggregating all results into a single result.
  */
-template <class Rule>
-class MultipleRule : public RuleTraits<Rule>
+template <
+    class Rule,
+    class Input = typename Rule::input_type,
+    class Token = typename Rule::token_type
+>
+class MultipleRule
 {
-    typedef typename Rule::token_type Token;
-    typedef typename Rule::input_type Input;
-
     Rule _rule;
 
 public:
+    typedef Input input_type;
+    typedef Token token_type;
+
     MultipleRule(const Rule& rule) :
         _rule(rule)
     {
@@ -41,6 +45,12 @@ template <class Rule>
 MultipleRule<Rule> multiple(const Rule& rule)
 {
     return MultipleRule<Rule>(rule);
+}
+
+template <class Input, class Token, class Rule>
+MultipleRule<Rule, Input, Token> multiple(const Rule& rule)
+{
+    return MultipleRule<Rule, Input, Token>(rule);
 }
 
 } // namespace make
