@@ -10,15 +10,20 @@
 
 namespace sprout {
 
-template <class Rule, class Exception>
-class CatchingRule : public RuleTraits<Rule>
+template <
+    class Rule,
+    class Exception,
+    class Input = typename Rule::input_type,
+    class Token = typename Rule::token_type
+>
+class CatchingRule
 {
-    typedef typename Rule::token_type Token;
-    typedef typename Rule::input_type Input;
-
     Rule _rule;
 
 public:
+    typedef Input input_type;
+    typedef Token token_type;
+
     CatchingRule(const Rule& rule) :
         _rule(rule)
     {
@@ -40,6 +45,12 @@ template <class Exception, class Rule>
 CatchingRule<Rule, Exception> catching(const Rule& rule)
 {
     return CatchingRule<Rule, Exception>(rule);
+}
+
+template <class Exception, class Input, class Token, class Rule>
+CatchingRule<Rule, Exception, Input, Token> catching(const Rule& rule)
+{
+    return CatchingRule<Rule, Exception, Input, Token>(rule);
 }
 
 } // namespace make

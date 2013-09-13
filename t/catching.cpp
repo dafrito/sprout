@@ -39,3 +39,23 @@ BOOST_AUTO_TEST_CASE(testCatching)
         BOOST_CHECK(*tokens == "b");
     }
 }
+
+BOOST_AUTO_TEST_CASE(testCatchingWithLambda)
+{
+    using namespace make;
+
+    auto rule = catching<FakeException, char, std::string>(
+        [](Cursor<char>& iter, Result<std::string>& result) -> bool {
+            throw FakeException();
+        }
+    );
+
+    {
+        Result<std::string> tokens;
+
+        auto cursor = makeCursor<char>("abc");
+        BOOST_CHECK(!rule(cursor, tokens));
+
+        BOOST_CHECK(!tokens);
+    }
+}
