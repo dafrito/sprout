@@ -16,15 +16,19 @@ namespace sprout {
  * moved on successful matches, so this is useful for skipping unnecessary
  * content like whitespace.
  */
-template <class Rule>
-class DiscardRule : public RuleTraits<Rule>
+template <
+    class Rule,
+    class Input = typename Rule::input_type,
+    class Token = typename Rule::token_type
+>
+class DiscardRule
 {
-    typedef typename Rule::token_type Token;
-    typedef typename Rule::input_type Input;
-
     const Rule _rule;
 
 public:
+    typedef Input input_type;
+    typedef Token token_type;
+
     DiscardRule(const Rule& rule) :
         _rule(rule)
     {
@@ -56,6 +60,12 @@ template <class Rule>
 DiscardRule<Rule> discard(const Rule& rule)
 {
     return DiscardRule<Rule>(rule);
+}
+
+template <class Input, class Token, class Rule>
+DiscardRule<Rule, Input, Token> discard(const Rule& rule)
+{
+    return DiscardRule<Rule, Input, Token>(rule);
 }
 
 } // namespace make

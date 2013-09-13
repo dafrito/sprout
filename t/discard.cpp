@@ -37,3 +37,24 @@ BOOST_AUTO_TEST_CASE(testDiscardWithMultiple)
     BOOST_CHECK(!tokens);
     BOOST_CHECK_EQUAL('D', *cursor);
 }
+
+BOOST_AUTO_TEST_CASE(testDiscardWithLambda)
+{
+    auto rule = make::discard<char, std::string>(
+        [](Cursor<char>& input, Result<std::string>& result) {
+            bool found = false;
+            while (input && *input == '_') {
+                found = true;
+                ++input;
+            }
+            return found;
+        }
+    );
+    Result<std::string> tokens;
+
+    auto cursor = makeCursor<char>("_Dog");
+    BOOST_CHECK(rule(cursor, tokens));
+
+    BOOST_CHECK(!tokens);
+    BOOST_CHECK_EQUAL('D', *cursor);
+}
