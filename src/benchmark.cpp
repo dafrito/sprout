@@ -55,7 +55,7 @@ int main()
         return true;
     };
 
-    auto name = simpleReduce<QString>(
+    auto name = aggregate<QString>(
         [](QString& aggregate, const QChar& c) {
             aggregate += c;
         },

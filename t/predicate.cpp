@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(testPredicate)
 BOOST_AUTO_TEST_CASE(testPredicateWithMultiple)
 {
     using namespace make;
-    auto rule = simpleReduce<QString>(
+    auto rule = aggregate<QString>(
         [](QString& str, const QChar& c) {
             str += c;
         },

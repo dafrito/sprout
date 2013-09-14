@@ -60,11 +60,11 @@ ReduceRule<Rule, Reducer, Token, Input, SubToken> reduce(const Reducer& reducer,
 }
 
 template <class Reducer, class Token>
-class SimpleReducer
+class AggregatingReducer
 {
     const Reducer _reducer;
 public:
-    SimpleReducer (const Reducer& reducer) :
+    AggregatingReducer (const Reducer& reducer) :
         _reducer(reducer)
     {
     }
@@ -81,9 +81,50 @@ public:
 };
 
 template <class Token, class Rule, class Reducer>
-ReduceRule<Rule, SimpleReducer<Reducer, Token>, Token> simpleReduce(const Reducer& reducer, const Rule& rule)
+ReduceRule<Rule, AggregatingReducer<Reducer, Token>, Token>
+aggregate(const Reducer& reducer, const Rule& rule)
 {
-    return reduce<Token>(SimpleReducer<Reducer, Token>(reducer), rule);
+    return reduce<Token>(AggregatingReducer<Reducer, Token>(reducer), rule);
+}
+
+template <class Token, class Input, class SubToken, class Rule, class Reducer>
+ReduceRule<Rule, AggregatingReducer<Reducer, Token>, Token, Input, SubToken>
+aggregate(const Reducer& reducer, const Rule& rule)
+{
+    return reduce<Token, Input, SubToken>(AggregatingReducer<Reducer, Token>(reducer), rule);
+}
+
+template <class Reducer, class Token>
+class ConvertingReducer
+{
+    const Reducer _reducer;
+public:
+    ConvertingReducer (const Reducer& reducer) :
+        _reducer(reducer)
+    {
+    }
+
+    template <class SubToken>
+    void operator()(Result<Token>& result, Result<SubToken>& subtokens) const
+    {
+        for (auto token : subtokens) {
+            result.insert(_reducer(token));
+        }
+    }
+};
+
+template <class Token, class Rule, class Reducer>
+ReduceRule<Rule, ConvertingReducer<Reducer, Token>, Token>
+convert(const Reducer& reducer, const Rule& rule)
+{
+    return reduce<Token>(ConvertingReducer<Reducer, Token>(reducer), rule);
+}
+
+template <class Token, class Input, class SubToken, class Rule, class Reducer>
+ReduceRule<Rule, ConvertingReducer<Reducer, Token>, Token, Input, SubToken>
+convert(const Reducer& reducer, const Rule& rule)
+{
+    return reduce<Token, Input, SubToken>(ConvertingReducer<Reducer, Token>(reducer), rule);
 }
 
 } // namespace make
