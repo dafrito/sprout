@@ -42,12 +42,15 @@ BOOST_AUTO_TEST_CASE(testDiscardWithLambda)
 {
     auto rule = make::discard<char, std::string>(
         [](Cursor<char>& input, Result<std::string>& result) {
-            bool found = false;
+            std::string str;
             while (input && *input == '_') {
-                found = true;
+                str += *input;
                 ++input;
             }
-            return found;
+            if (!str.empty()) {
+                result << str;
+            }
+            return str;
         }
     );
     Result<std::string> tokens;
