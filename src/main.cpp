@@ -116,6 +116,18 @@ int main(int argc, char* argv[])
         name
     );
 
+    auto stringConstant = convert<Node>(
+        rule::quotedString,
+        [](QString& value) {
+            return Node(Token(TokenType::StringConstant, value));
+        }
+    );
+
+    auto rvalue = proxyAlternative<QChar, Node>(
+        name,
+        stringConstant
+    );
+
     auto assignment = reduce<Node>(
         proxySequence<QChar, Node>(
             name,
@@ -124,12 +136,7 @@ int main(int argc, char* argv[])
                 OrderedTokenRule<QChar, QString>("="),
                 optional(whitespace)
             )),
-            convert<Node>(
-                rule::quotedString,
-                [](QString& value) {
-                    return Node(Token(TokenType::StringConstant, value));
-                }
-            ),
+            rvalue,
             discard(optional(whitespace)),
             discard(optional(OrderedTokenRule<QChar, QString>(";")))
         ),
@@ -176,7 +183,19 @@ int main(int argc, char* argv[])
                         }
                     case TokenType::Assignment:
                         {
-                            globals[node[0].value()] = node[1].value();
+                            auto name = node[0].value();
+                            auto result = node[1];
+                            switch (result.type()) {
+                                case TokenType::Name:
+                                    globals[name] = globals[result.value()];
+                                    break;
+                                case TokenType::StringConstant:
+                                    globals[name] = result.value();
+                                    break;
+                                default:
+                                    std::cout << "Unhandled type: " << static_cast<int>(node.type()) << std::endl;
+                                    break;
+                            }
                             break;
                         }
                     default:
