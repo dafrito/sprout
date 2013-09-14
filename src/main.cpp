@@ -18,6 +18,7 @@
 #include "ReduceRule"
 
 #include <QRegExp>
+#include <QHash>
 #include <QElapsedTimer>
 
 using namespace sprout;
@@ -53,14 +54,20 @@ struct Token {
 
 struct Node {
     Token token;
-    std::vector<Node*> children;
+    std::vector<Node> children;
 
     Node(const Token& token) :
         token(token)
     {
     }
 
-    TokenType tokenType() const
+    Node(const Token& token, std::vector<Node> children) :
+        token(token),
+        children(children)
+    {
+    }
+
+    TokenType type() const
     {
         return token.type;
     }
@@ -70,21 +77,14 @@ struct Node {
         return token.value;
     }
 
-    void add(Node* const child)
+    void add(const Node& child)
     {
         children.push_back(child);
     }
 
-    Node* operator[](const int index) const
+    Node operator[](const int index) const
     {
         return children[index];
-    }
-
-    ~Node()
-    {
-        for (auto child : children) {
-            delete child;
-        }
     }
 };
 
@@ -94,16 +94,21 @@ int main(int argc, char* argv[])
 
     auto whitespace = rule::whitespace<QString>();
 
-    auto name = aggregate<QString>(
-        multiple(simplePredicate<QChar>([](const QChar& input) {
-            return input.isLetter() || input == '_';
-        })),
-        [](QString& target, const QChar& c) {
-            target += c;
+    auto name = convert<Node>(
+        aggregate<QString>(
+            multiple(simplePredicate<QChar>([](const QChar& input) {
+                return input.isLetter() || input == '_';
+            })),
+            [](QString& target, const QChar& c) {
+                target += c;
+            }
+        ),
+        [](QString& value) {
+            return Node(Token(TokenType::Name, value));
         }
     );
 
-    auto definition = proxySequence<QChar, QString>(
+    auto definition = proxySequence<QChar, Node>(
         discard(proxySequence<QChar, QString>(
             OrderedTokenRule<QChar, QString>("var"),
             whitespace
@@ -111,20 +116,43 @@ int main(int argc, char* argv[])
         name
     );
 
-    auto assignment = proxySequence<QChar, QString>(
-        definition,
-        discard(proxySequence<QChar, QString>(
-            optional(whitespace),
-            OrderedTokenRule<QChar, QString>("="),
-            optional(whitespace)
-)),
-        rule::quotedString,
-        optional(whitespace),
-        optional(discard(OrderedTokenRule<QChar, QString>(";")))
+    auto assignment = reduce<Node>(
+        proxySequence<QChar, Node>(
+            name,
+            discard(proxySequence<QChar, QString>(
+                optional(whitespace),
+                OrderedTokenRule<QChar, QString>("="),
+                optional(whitespace)
+            )),
+            convert<Node>(
+                rule::quotedString,
+                [](QString& value) {
+                    return Node(Token(TokenType::StringConstant, value));
+                }
+            ),
+            discard(optional(whitespace)),
+            discard(optional(OrderedTokenRule<QChar, QString>(";")))
+        ),
+        [](Result<Node>& results, Result<Node>& subresults) {
+            results << Node(
+                TokenType::Assignment,
+                subresults.data()
+            );
+        }
+    );
+
+    auto parser = proxySequence<QChar, Node>(
+        proxyAlternative<QChar, Node>(
+            assignment,
+            name
+        ),
+        make::end<QChar, Node>()
     );
 
     QTextStream stream(stdin);
     stream.setCodec("UTF-8");
+
+    QHash<QString, QString> globals;
 
     QString line;
     while (true) {
@@ -135,6 +163,28 @@ int main(int argc, char* argv[])
         }
         QTextStream lineStream(&line);
         auto cursor = makeCursor<QChar>(&lineStream);
+
+        Result<Node> nodes;
+        if (parser(cursor, nodes)) {
+            for (auto node : nodes) {
+                switch (node.type()) {
+                    case TokenType::Name:
+                        {
+                            auto name = node.value();
+                            std::cout << globals[name].toUtf8().constData() << std::endl;
+                            break;
+                        }
+                    case TokenType::Assignment:
+                        {
+                            globals[node[0].value()] = node[1].value();
+                            break;
+                        }
+                    default:
+                        std::cout << "Unhandled type: " << static_cast<int>(node.type()) << std::endl;
+                        break;
+                }
+            }
+        }
     }
 
     return 0;
