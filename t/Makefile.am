@@ -18,6 +18,7 @@ runtest_SOURCES = \
 	alternative.cpp \
 	sequence.cpp \
 	discard.cpp \
+	optional.cpp \
 	proxy.cpp \
 	predicate.cpp \
 	catching.cpp \

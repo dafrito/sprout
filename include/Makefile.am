@@ -10,4 +10,5 @@ nobase_pkginclude_HEADERS = \
 	PredicateRule \
 	CatchingRule \
 	ReduceRule \
+	OptionalRule \
 	MultipleRule
