@@ -17,6 +17,8 @@
 #include <QRegExp>
 #include <QElapsedTimer>
 
+#include "rules.hpp"
+
 using namespace sprout;
 
 const int RUNS = 1e5;
@@ -38,22 +40,13 @@ int main()
 {
     using namespace make;
 
+    auto fastWhitespace = rule::whitespace;
+
     auto whitespace = discard(
         multiple(predicate<QChar, QString>([](const QChar& input, QString&) {
             return input.isSpace();
         }))
     );
-
-    auto fastWhitespace = [](Cursor<QChar>& iter, Result<QString>& result) {
-        while (iter) {
-            auto input = *iter;
-            if (!input.isSpace()) {
-                break;
-            }
-            ++iter;
-        }
-        return true;
-    };
 
     auto name = aggregate<QString>(
         [](QString& aggregate, const QChar& c) {
