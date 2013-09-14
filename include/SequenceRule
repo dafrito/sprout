@@ -14,15 +14,19 @@ namespace sprout {
  * SequenceRule matches input against an ordered list of subrules.
  * All required subrules to match for SequenceRule to match.
  */
-template <class Rule>
-class SequenceRule : public RuleTraits<Rule>
+template <
+    class Rule,
+    class Input = typename Rule::input_type,
+    class Token = typename Rule::token_type
+>
+class SequenceRule
 {
-    typedef typename Rule::token_type Token;
-    typedef typename Rule::input_type Input;
-
     std::vector<Rule> _rules;
 
 public:
+    typedef Input input_type;
+    typedef Token token_type;
+
     template <class Container>
     SequenceRule(const Container& rules)
     {
@@ -56,6 +60,14 @@ public:
 };
 
 namespace make {
+
+template <class Input, class Token, class Rule, typename... Rules>
+SequenceRule<Rule, Input, Token> sequence(const Rule& rule, Rules... rest)
+{
+    SequenceRule<Rule, Input, Token> sequence;
+    populate(sequence, rule, rest...);
+    return sequence;
+}
 
 template <class Rule, typename... Values>
 SequenceRule<Rule> sequence(const Rule& rule, Values... rest)

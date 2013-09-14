@@ -61,3 +61,20 @@ BOOST_AUTO_TEST_CASE(partialSequencesAlsoFailCompletely)
     BOOST_CHECK(!tokens);
     BOOST_CHECK_EQUAL('C', *cursor);
 }
+
+BOOST_AUTO_TEST_CASE(sequenceWorksWithLambdas)
+{
+    // This test is slightly degenerate, since we can't actually store
+    // more than one rule in this sequence, but it works to ensure
+    // lambdas are supported.
+    auto rule = make::sequence<char, std::string>(
+        [](Cursor<char>& iter, Result<std::string>& results) {
+            if (iter && *iter == 'A') {
+                results << "First";
+                ++iter;
+                return true;
+            }
+            return false;
+        }
+    );
+}
