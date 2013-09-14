@@ -7,20 +7,11 @@ using namespace sprout;
 
 SequenceRule<OrderedTokenRule<char, std::string>> createRule()
 {
-    OrderedTokenRule<char, std::string> a;
-    a.setTarget("Cat");
-    a.setToken("Heathen");
-
-    OrderedTokenRule<char, std::string> b;
-    b.setTarget("Dog");
-    b.setToken("Civilized");
-
-    OrderedTokenRule<char, std::string> c;
-    c.setTarget("Calf");
-    c.setToken("Cow");
-
-    std::vector<OrderedTokenRule<char, std::string>> rules { a, b, c };
-    return SequenceRule<decltype(a)>(rules);
+    return make::sequence(
+        OrderedTokenRule<char, std::string>("Cat", "Heathen"),
+        OrderedTokenRule<char, std::string>("Dog", "Civilized"),
+        OrderedTokenRule<char, std::string>("Zebra", "Cow")
+    );
 }
 
 BOOST_AUTO_TEST_CASE(matchASingleSequence)
@@ -28,7 +19,7 @@ BOOST_AUTO_TEST_CASE(matchASingleSequence)
     auto rule = createRule();
     Result<std::string> tokens;
 
-    auto cursor = makeCursor<char>("CatDogCalf");
+    auto cursor = makeCursor<char>("CatDogZebra");
     BOOST_CHECK(rule(cursor, tokens));
 
     BOOST_REQUIRE(tokens);
