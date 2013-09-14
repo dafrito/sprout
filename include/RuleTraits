@@ -7,6 +7,9 @@
 namespace sprout {
 
 template <class Input, class Token>
+using Rule = bool (*)(Cursor<Input>&, Result<Token>&);
+
+template <class Input, class Token>
 struct RuleTraits {
     typedef Input input_type;
     typedef Token token_type;
