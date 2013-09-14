@@ -127,6 +127,22 @@ using OrderedTokenRule = TokenRule<Input, Token, OrderedTokenMatcher>;
 template <class Input, class Token>
 using AnyTokenRule = TokenRule<Input, Token, AnyTokenMatcher>;
 
+namespace make {
+
+template <class Input, class Token>
+bool EndRule(Cursor<Input>& iter, Result<Token>& result)
+{
+    return !iter;
+}
+
+template <class Input, class Token>
+Rule<Input, Token> end()
+{
+    return EndRule<Input, Token>;
+}
+
+} // namespace make
+
 } // namespace sprout
 
 #endif // SPROUT_TOKENRULE_HEADER

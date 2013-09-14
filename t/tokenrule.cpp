@@ -4,6 +4,9 @@
 #include <sstream>
 
 #include "TokenRule"
+#include "SequenceRule"
+#include "ProxyRule"
+#include "MultipleRule"
 
 using namespace sprout;
 
@@ -109,6 +112,33 @@ BOOST_AUTO_TEST_CASE(anyTokenRule)
     BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Whitespace", *tokens);
     BOOST_CHECK_EQUAL('D', *cursor);
+}
+
+BOOST_AUTO_TEST_CASE(endTokenRule)
+{
+    auto rule = make::proxySequence<char, std::string>(
+        make::multiple(
+            AnyTokenRule<char, std::string>(" _", "Whitespace")
+        ),
+        make::end<char, std::string>()
+    );
+
+    {
+        Result<std::string> tokens;
+
+        auto cursor = makeCursor<char>("_");
+        BOOST_CHECK(rule(cursor, tokens));
+        BOOST_REQUIRE(tokens);
+        BOOST_CHECK_EQUAL(*tokens, "Whitespace");
+    }
+
+    {
+        Result<std::string> tokens;
+
+        auto cursor = makeCursor<char>("_D");
+        BOOST_CHECK(!rule(cursor, tokens));
+        BOOST_CHECK(!tokens);
+    }
 }
 
 // vim: set ts=4 sw=4 :
