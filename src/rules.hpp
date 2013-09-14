@@ -8,8 +8,26 @@
 namespace sprout {
 namespace rule {
 
-bool _whitespace(Cursor<QChar>& input, Result<QString>& result);
-auto whitespace = make::rule<QChar, QString>(&_whitespace);
+template <class Token>
+bool parseWhitespace(Cursor<QChar>& iter, Result<Token>& result)
+{
+    bool found = false;
+    while (iter) {
+        auto input = *iter;
+        if (!input.isSpace()) {
+            break;
+        }
+        found = true;
+        ++iter;
+    }
+    return found;
+}
+
+template <class Token>
+auto whitespace() -> decltype(make::rule<QChar, Token>(&parseWhitespace<Token>))
+{
+    return make::rule<QChar, Token>(&parseWhitespace<Token>);
+}
 
 bool _quotedString(Cursor<QChar>& input, Result<QString>& result);
 auto quotedString = make::rule<QChar, QString>(&_quotedString);

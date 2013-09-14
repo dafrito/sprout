@@ -6,20 +6,6 @@
 namespace sprout {
 namespace rule {
 
-bool _whitespace(Cursor<QChar>& iter, Result<QString>& result)
-{
-    bool found = false;
-    while (iter) {
-        auto input = *iter;
-        if (!input.isSpace()) {
-            break;
-        }
-        found = true;
-        ++iter;
-    }
-    return found;
-}
-
 bool _quotedString(Cursor<QChar>& orig, Result<QString>& result)
 {
     auto iter = orig;

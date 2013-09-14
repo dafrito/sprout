@@ -92,6 +92,8 @@ int main(int argc, char* argv[])
 {
     using namespace make;
 
+    auto whitespace = rule::whitespace<QString>();
+
     auto name = aggregate<QString>(
         multiple(simplePredicate<QChar>([](const QChar& input) {
             return input.isLetter() || input == '_';
@@ -104,7 +106,7 @@ int main(int argc, char* argv[])
     auto definition = proxySequence<QChar, QString>(
         discard(proxySequence<QChar, QString>(
             OrderedTokenRule<QChar, QString>("var"),
-            rule::whitespace
+            whitespace
         )),
         name
     );
@@ -112,13 +114,13 @@ int main(int argc, char* argv[])
     auto assignment = proxySequence<QChar, QString>(
         definition,
         discard(proxySequence<QChar, QString>(
-            optional(rule::whitespace),
+            optional(whitespace),
             OrderedTokenRule<QChar, QString>("="),
-            optional(rule::whitespace)
-        )),
+            optional(whitespace)
+)),
         rule::quotedString,
-        optional(rule::whitespace),
-        optional(discard(OrderedTokenRule<QChar, QString>(";"))),
+        optional(whitespace),
+        optional(discard(OrderedTokenRule<QChar, QString>(";")))
     );
 
     QTextStream stream(stdin);

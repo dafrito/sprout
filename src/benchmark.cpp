@@ -40,7 +40,7 @@ int main()
 {
     using namespace make;
 
-    auto fastWhitespace = rule::whitespace;
+    auto fastWhitespace = rule::whitespace<QString>();
 
     auto whitespace = discard(
         multiple(predicate<QChar, QString>([](const QChar& input, QString&) {
