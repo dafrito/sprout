@@ -5,6 +5,7 @@
 #include "MultipleRule"
 #include "AlternativeRule"
 #include "SequenceRule"
+#include "OptionalRule"
 #include "ProxyRule"
 
 using namespace sprout;
@@ -27,23 +28,22 @@ BOOST_AUTO_TEST_CASE(testProxyHandlesAClosure)
 BOOST_AUTO_TEST_CASE(testSplittingByWhitespace)
 {
     using namespace make;
+
+    auto whitespace = optional(discard(multiple(
+        AnyTokenRule<char, std::string>("_")
+    )));
+
     auto rule = multiple(
         proxySequence<char, std::string>(
-            discard(multiple(
-                AnyTokenRule<char, std::string>("_")
-            )),
+            whitespace,
             alternate(
                 OrderedTokenRule<char, std::string>("Cat", "Heathen"),
                 OrderedTokenRule<char, std::string>("Dog", "Civilized"),
                 OrderedTokenRule<char, std::string>("Calf", "Cow")
             ),
-            discard(multiple(
-                AnyTokenRule<char, std::string>("_")
-            )),
+            whitespace,
             OrderedTokenRule<char, std::string>(",", "Comma"),
-            discard(multiple(
-                AnyTokenRule<char, std::string>("_")
-            ))
+            whitespace
         )
     );
     Result<std::string> tokens;
