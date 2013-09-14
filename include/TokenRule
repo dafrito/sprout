@@ -75,10 +75,10 @@ public:
     }
 
     template <class Target, class Output>
-    TokenRule(const Target& target, const Output& output)
+    TokenRule(const Target& target, const Output& output) :
+        _token(output)
     {
         setTarget(target);
-        setToken(output);
     }
 
     void setTarget(const std::vector<Input>& target)
