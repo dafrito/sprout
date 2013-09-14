@@ -3,44 +3,16 @@
 
 #include <vector>
 
+#include "composite.hpp"
 #include "RuleTraits"
 #include "Cursor"
 #include "Result"
 
 namespace sprout {
 
-template <class Rule>
-struct RuleEntry {
-    Rule rule;
-    bool required;
-
-    template <class T>
-    RuleEntry(const T& rule, bool required) :
-        rule(rule),
-        required(required)
-    {
-    }
-};
-
-struct InsertRequired
-{
-    bool value;
-
-    InsertRequired(bool value) :
-        value(value)
-    {
-    }
-};
-
-const InsertRequired Required(true);
-const InsertRequired Optional(false);
-
 /**
  * SequenceRule matches input against an ordered list of subrules.
  * All required subrules to match for SequenceRule to match.
- *
- * SequenceRule is populated using the insertion operator and
- * supports stream manipulator to specify optional rules.
  */
 template <class Rule>
 class SequenceRule : public RuleTraits<Rule>
@@ -48,47 +20,33 @@ class SequenceRule : public RuleTraits<Rule>
     typedef typename Rule::token_type Token;
     typedef typename Rule::input_type Input;
 
-    std::vector<RuleEntry<Rule>> _rules;
+    std::vector<Rule> _rules;
 
-    bool _insertAsRequired;
 public:
     template <class Container>
-    SequenceRule(const Container& rules) :
-        SequenceRule()
+    SequenceRule(const Container& rules)
     {
         for (auto rule : rules) {
             *this << rule;
         }
     }
 
-    SequenceRule() :
-        _insertAsRequired(true)
+    SequenceRule()
     {
-    }
-
-    bool insertAsRequired() const
-    {
-        return _insertAsRequired;
-    }
-
-    SequenceRule& setInsertAsRequired(const bool requiredFlag)
-    {
-        _insertAsRequired = requiredFlag;
-        return *this;
     }
 
     template <class T>
-    SequenceRule& insert(const T& rule)
+    SequenceRule& operator<<(const T& rule)
     {
-        _rules.push_back(RuleEntry<Rule>(rule, insertAsRequired()));
+        _rules.push_back(rule);
         return *this;
     }
 
     bool operator()(Cursor<Input>& iter, Result<Token>& result) const
     {
         Result<Token> aggregate;
-        for (auto entry : _rules) {
-            if (!entry.rule(iter, aggregate)) {
+        for (auto rule : _rules) {
+            if (!rule(iter, aggregate)) {
                 return false;
             }
         }
@@ -97,51 +55,13 @@ public:
     }
 };
 
-template <class Rule, class T>
-struct SequenceInserter
-{
-    static void insert(SequenceRule<Rule>& sequence, const T& rule)
-    {
-        sequence.insert(rule);
-    }
-};
-
-template <class Rule>
-struct SequenceInserter<Rule, InsertRequired>
-{
-    static void insert(SequenceRule<Rule>& sequence, const InsertRequired& flag)
-    {
-        sequence.setInsertAsRequired(flag.value);
-    }
-};
-
-template <class Rule, class T>
-SequenceRule<Rule>& operator<<(SequenceRule<Rule>& sequence, const T& rule)
-{
-    SequenceInserter<Rule, T>::insert(sequence, rule);
-    return sequence;
-}
-
-template <class Rule>
-void populateSequence(SequenceRule<Rule>& sequence)
-{
-    // Do nothing
-}
-
-template <class Rule, class T, typename... Values>
-void populateSequence(SequenceRule<Rule>& sequence, const T& value, Values... rest)
-{
-    sequence << value;
-    populateSequence(sequence, rest...);
-}
-
 namespace make {
 
 template <class Rule, typename... Values>
 SequenceRule<Rule> sequence(const Rule& rule, Values... rest)
 {
     SequenceRule<Rule> sequence;
-    populateSequence(sequence, rule, rest...);
+    populate(sequence, rule, rest...);
     return sequence;
 }
 

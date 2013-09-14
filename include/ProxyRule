@@ -75,7 +75,7 @@ template <class Input, class Token, typename... Values>
 SequenceRule<ProxyRule<Input, Token>> proxySequence(Values... rest)
 {
     SequenceRule<ProxyRule<Input, Token>> sequence;
-    populateSequence(sequence, rest...);
+    populate(sequence, rest...);
     return sequence;
 }
 
