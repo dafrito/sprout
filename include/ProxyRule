@@ -82,8 +82,9 @@ SequenceRule<ProxyRule<Input, Token>> proxySequence(Values... rest)
 template <class Input, class Token, typename... Rules>
 AlternativeRule<ProxyRule<Input, Token>> proxyAlternate(Rules... rest)
 {
-    std::vector<ProxyRule<Input, Token>> rules;
-    return populateAlternate(rules, rest...);
+    AlternativeRule<ProxyRule<Input, Token>> alternative;
+    populate(alternative, rest...);
+    return alternative;
 }
 
 } // namespace make
