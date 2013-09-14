@@ -45,8 +45,7 @@ BOOST_AUTO_TEST_CASE(matchMultipleWithANonMatch)
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("Dog");
-    BOOST_CHECK(rule(cursor, tokens));
-
+    BOOST_CHECK(!rule(cursor, tokens));
     BOOST_REQUIRE(!tokens);
 }
 

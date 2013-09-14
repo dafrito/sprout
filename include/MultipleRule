@@ -28,11 +28,11 @@ public:
 
     bool operator()(Cursor<Input>& iter, Result<Token>& result) const
     {
-        int i = 0;
+        bool found = false;
         while (_rule(iter, result)) {
-            ++i;
+            found = true;
         }
-        return true;
+        return found;
     }
 };
 
