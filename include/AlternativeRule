@@ -39,7 +39,7 @@ public:
     }
 
     template <class T>
-    AlternativeRule& insert(const T& rule)
+    AlternativeRule& operator<<(const T& rule)
     {
         _rules.push_back(rule);
         return *this;

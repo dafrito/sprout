@@ -12,7 +12,7 @@ void populate(Target& target)
 template <class Target, class T, typename... Values>
 void populate(Target& target, const T& value, Values... rest)
 {
-    target.insert(value);
+    target << value;
     populate(target, rest...);
 }
 
