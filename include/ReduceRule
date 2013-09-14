@@ -18,20 +18,14 @@ class ReduceRule : public RuleTraits<Input, Token>
 {
     typedef SubToken subtoken_type;
 
-    const Reducer _reducer;
     const Rule _rule;
+    const Reducer _reducer;
 
 public:
-    ReduceRule(const Reducer& reducer, const Rule& rule) :
-        _reducer(reducer),
-        _rule(rule)
+    ReduceRule(const Rule& rule, const Reducer& reducer) :
+        _rule(rule),
+        _reducer(reducer)
     {
-    }
-
-    const Result<Token> _eof;
-    const Result<Token>& end() const
-    {
-        return _eof;
     }
 
     bool operator()(Cursor<Input>& orig, Result<Token>& result) const
@@ -48,15 +42,15 @@ public:
 namespace make {
 
 template <class Token, class Rule, class Reducer>
-ReduceRule<Rule, Reducer, Token> reduce(const Reducer& reducer, const Rule& rule)
+ReduceRule<Rule, Reducer, Token> reduce(const Rule& rule, const Reducer& reducer)
 {
-    return ReduceRule<Rule, Reducer, Token>(reducer, rule);
+    return ReduceRule<Rule, Reducer, Token>(rule, reducer);
 }
 
 template <class Token, class Input, class SubToken, class Rule, class Reducer>
-ReduceRule<Rule, Reducer, Token, Input, SubToken> reduce(const Reducer& reducer, const Rule& rule)
+ReduceRule<Rule, Reducer, Token, Input, SubToken> reduce(const Rule& rule, const Reducer& reducer)
 {
-    return ReduceRule<Rule, Reducer, Token, Input, SubToken>(reducer, rule);
+    return ReduceRule<Rule, Reducer, Token, Input, SubToken>(rule, reducer);
 }
 
 template <class Reducer, class Token>
@@ -82,16 +76,16 @@ public:
 
 template <class Token, class Rule, class Reducer>
 ReduceRule<Rule, AggregatingReducer<Reducer, Token>, Token>
-aggregate(const Reducer& reducer, const Rule& rule)
+aggregate(const Rule& rule, const Reducer& reducer)
 {
-    return reduce<Token>(AggregatingReducer<Reducer, Token>(reducer), rule);
+    return reduce<Token>(rule, AggregatingReducer<Reducer, Token>(reducer));
 }
 
 template <class Token, class Input, class SubToken, class Rule, class Reducer>
 ReduceRule<Rule, AggregatingReducer<Reducer, Token>, Token, Input, SubToken>
-aggregate(const Reducer& reducer, const Rule& rule)
+aggregate(const Rule& rule, const Reducer& reducer)
 {
-    return reduce<Token, Input, SubToken>(AggregatingReducer<Reducer, Token>(reducer), rule);
+    return reduce<Token, Input, SubToken>(rule, AggregatingReducer<Reducer, Token>(reducer));
 }
 
 template <class Reducer, class Token>
@@ -115,16 +109,16 @@ public:
 
 template <class Token, class Rule, class Reducer>
 ReduceRule<Rule, ConvertingReducer<Reducer, Token>, Token>
-convert(const Reducer& reducer, const Rule& rule)
+convert(const Rule& rule, const Reducer& reducer)
 {
-    return reduce<Token>(ConvertingReducer<Reducer, Token>(reducer), rule);
+    return reduce<Token>(rule, ConvertingReducer<Reducer, Token>(reducer));
 }
 
 template <class Token, class Input, class SubToken, class Rule, class Reducer>
 ReduceRule<Rule, ConvertingReducer<Reducer, Token>, Token, Input, SubToken>
-convert(const Reducer& reducer, const Rule& rule)
+convert(const Rule& rule, const Reducer& reducer)
 {
-    return reduce<Token, Input, SubToken>(ConvertingReducer<Reducer, Token>(reducer), rule);
+    return reduce<Token, Input, SubToken>(rule, ConvertingReducer<Reducer, Token>(reducer));
 }
 
 } // namespace make

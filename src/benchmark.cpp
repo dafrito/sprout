@@ -49,12 +49,12 @@ int main()
     );
 
     auto name = aggregate<QString>(
-        [](QString& aggregate, const QChar& c) {
-            aggregate += c;
-        },
         multiple(simplePredicate<QChar>([](const QChar& input) {
             return input.isLetter() || input == '_';
-        }))
+        })),
+        [](QString& aggregate, const QChar& c) {
+            aggregate += c;
+        }
     );
 
     auto fastName = [](Cursor<QChar>& orig, Result<QString>& result) {

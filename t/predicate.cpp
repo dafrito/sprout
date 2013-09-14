@@ -26,12 +26,12 @@ BOOST_AUTO_TEST_CASE(testPredicateWithMultiple)
 {
     using namespace make;
     auto rule = aggregate<QString>(
-        [](QString& str, const QChar& c) {
-            str += c;
-        },
         multiple(simplePredicate<QChar, QChar>([](const QChar& input) {
             return input.isLetter();
-        }))
+        })),
+        [](QString& str, const QChar& c) {
+            str += c;
+        }
     );
     Result<QString> tokens;
 

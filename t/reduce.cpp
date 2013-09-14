@@ -11,6 +11,12 @@ using namespace sprout;
 BOOST_AUTO_TEST_CASE(testReduce)
 {
     auto rule = make::reduce<std::string>(
+        make::multiple(
+            make::alternate(
+                OrderedTokenRule<char, char>("-", '-'),
+                OrderedTokenRule<char, char>("_", '_')
+            )
+        ),
         [](Result<std::string>& result, Result<char>& subResult) {
             std::string str;
             for (auto token : subResult) {
@@ -19,13 +25,7 @@ BOOST_AUTO_TEST_CASE(testReduce)
                 }
             }
             result << str;
-        },
-        make::multiple(
-            make::alternate(
-                OrderedTokenRule<char, char>("-", '-'),
-                OrderedTokenRule<char, char>("_", '_')
-            )
-        )
+        }
     );
     Result<std::string> tokens;
 
@@ -42,15 +42,6 @@ BOOST_AUTO_TEST_CASE(testReduce)
 BOOST_AUTO_TEST_CASE(testReduceWithLambda)
 {
     auto rule = make::reduce<std::string, char, char>(
-        [](Result<std::string>& result, Result<char>& subResult) {
-            std::string str;
-            for (auto token : subResult) {
-                if (token == '_') {
-                    str += token;
-                }
-            }
-            result << str;
-        },
         [](Cursor<char>& iter, Result<char>& tokens) {
             bool found = false;
             while (iter) {
@@ -63,6 +54,15 @@ BOOST_AUTO_TEST_CASE(testReduceWithLambda)
                 ++iter;
             }
             return found;
+        },
+        [](Result<std::string>& result, Result<char>& subResult) {
+            std::string str;
+            for (auto token : subResult) {
+                if (token == '_') {
+                    str += token;
+                }
+            }
+            result << str;
         }
     );
     Result<std::string> tokens;
@@ -80,15 +80,6 @@ BOOST_AUTO_TEST_CASE(testReduceWithLambda)
 BOOST_AUTO_TEST_CASE(testReduceWithWrappedRule)
 {
     auto rule = make::reduce<std::string>(
-        [](Result<std::string>& result, Result<char>& subResult) {
-            std::string str;
-            for (auto token : subResult) {
-                if (token == '_') {
-                    str += token;
-                }
-            }
-            result << str;
-        },
         make::rule<char, char>([](Cursor<char>& iter, Result<char>& tokens) {
             bool found = false;
             while (iter) {
@@ -101,7 +92,16 @@ BOOST_AUTO_TEST_CASE(testReduceWithWrappedRule)
                 ++iter;
             }
             return found;
-        })
+        }),
+        [](Result<std::string>& result, Result<char>& subResult) {
+            std::string str;
+            for (auto token : subResult) {
+                if (token == '_') {
+                    str += token;
+                }
+            }
+            result << str;
+        }
     );
     Result<std::string> tokens;
 
