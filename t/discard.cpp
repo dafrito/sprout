@@ -47,10 +47,11 @@ BOOST_AUTO_TEST_CASE(testDiscardWithLambda)
                 str += *input;
                 ++input;
             }
-            if (!str.empty()) {
+            auto found = !str.empty();
+            if (found) {
                 result << str;
             }
-            return str;
+            return found;
         }
     );
     Result<std::string> tokens;
