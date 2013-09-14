@@ -1,3 +1,5 @@
+#include "rules.hpp"
+
 #include <iostream>
 #include <cassert>
 
@@ -9,6 +11,7 @@
 #include "TokenRule"
 #include "DiscardRule"
 #include "MultipleRule"
+#include "OptionalRule"
 #include "PredicateRule"
 #include "ProxyRule"
 #include "AlternativeRule"
@@ -19,114 +22,103 @@
 
 using namespace sprout;
 
+enum class TokenType {
+    Unknown,
+    Name,
+    Equal,
+    StringConstant,
+    Assignment
+};
+
+struct Token {
+    TokenType type;
+    QString value;
+
+    Token() :
+        type(TokenType::Unknown)
+    {
+    }
+
+    Token(const TokenType& type) :
+        type(type)
+    {
+    }
+
+    Token(const TokenType& type, const QString& value) :
+        type(type),
+        value(value)
+    {
+    }
+};
+
+struct Node {
+    Token token;
+    std::vector<Node*> children;
+
+    Node(const Token& token) :
+        token(token)
+    {
+    }
+
+    TokenType tokenType() const
+    {
+        return token.type;
+    }
+
+    QString value() const
+    {
+        return token.value;
+    }
+
+    void add(Node* const child)
+    {
+        children.push_back(child);
+    }
+
+    Node* operator[](const int index) const
+    {
+        return children[index];
+    }
+
+    ~Node()
+    {
+        for (auto child : children) {
+            delete child;
+        }
+    }
+};
+
 int main(int argc, char* argv[])
 {
     using namespace make;
 
-    auto whitespace = discard(
-        multiple(simplePredicate<QChar, QString>([](const QChar& input) {
-            return input.isSpace();
-        }))
-    );
-
     auto name = aggregate<QString>(
-        [](QString& aggregate, const QChar& c) {
-            aggregate += c;
-        },
         multiple(simplePredicate<QChar>([](const QChar& input) {
             return input.isLetter() || input == '_';
-        }))
+        })),
+        [](QString& target, const QChar& c) {
+            target += c;
+        }
     );
 
-    auto definition = reduce<QString>(
-        [](Result<QString>& result, Result<QString>& subresults) {
-            QString aggregate;
-            for (auto c : subresults) {
-                aggregate += c;
-            }
-
-            result.insert(aggregate);
-        },
-        proxySequence<QChar, QString>(
+    auto definition = proxySequence<QChar, QString>(
+        discard(proxySequence<QChar, QString>(
             OrderedTokenRule<QChar, QString>("var"),
-            whitespace,
-            name
-        )
+            rule::whitespace
+        )),
+        name
     );
 
-    auto quotedString = [](Cursor<QChar>& orig, Result<QString>& result) {
-        auto iter = orig;
-
-        if (!iter) {
-            return false;
-        }
-        auto quote = *iter++;
-
-        if (quote != '\'' && quote != '"') {
-            return false;
-        }
-
-        QString str;
-        while (iter) {
-            auto c = *iter++;
-
-            if (c == quote) {
-                result.insert(str);
-                orig = iter;
-                return true;
-            }
-
-            if (c == '\\') {
-                // Escaped string, so parse it accordingly
-                if (!iter) {
-                    break;
-                }
-
-                auto escape = *iter++;
-                if (escape == 'n') {
-                    c = '\n';
-                } else if (escape == 'b') {
-                    c = '\b';
-                } else if (escape == 'f') {
-                    c = '\f';
-                } else if (escape == 'r') {
-                    c = '\r';
-                } else if (escape == 't') {
-                    c = '\t';
-                } else if (escape == 'u') {
-                    // Unicode
-                    QString unicodeValue;
-                    for (int i = 0; i < 4; ++i) {
-                        if (!iter) {
-                            return false;
-                        }
-                        unicodeValue += *iter++;
-                    }
-                    bool ok;
-                    auto realValue = unicodeValue.toInt(&ok, 16);
-                    if (!ok) {
-                        return false;
-                    }
-                    c = QChar(realValue);
-                }
-            }
-
-            str += c;
-        }
-
-        // Ran out of data before we could complete the string
-        return false;
-    };
-
-    auto parser = multiple(
-        proxySequence<QChar, QString>(
-            definition,
-            whitespace,
+    auto assignment = proxySequence<QChar, QString>(
+        definition,
+        discard(proxySequence<QChar, QString>(
+            optional(rule::whitespace),
             OrderedTokenRule<QChar, QString>("="),
-            whitespace,
-            quotedString,
-            whitespace
-        )
+            optional(rule::whitespace)
+        )),
+        rule::quotedString,
+        optional(rule::whitespace),
+        optional(discard(OrderedTokenRule<QChar, QString>(";"))),
     );
 
     QTextStream stream(stdin);
@@ -134,24 +126,13 @@ int main(int argc, char* argv[])
 
     QString line;
     while (true) {
+        std::cout << "sprout> ";
         line = stream.readLine();
         if (line.isNull()) {
             break;
         }
         QTextStream lineStream(&line);
         auto cursor = makeCursor<QChar>(&lineStream);
-        Result<QString> results;
-
-        if (parser(cursor, results) && results) {
-            std::cout << "I came up with ";
-            while (results) {
-                std::cout << results->toUtf8().constData() << " ";
-                ++results;
-            }
-            std::cout << std::endl;
-        } else {
-            std::cout << "I didn't match anything. :(" << std::endl;
-        }
     }
 
     return 0;
