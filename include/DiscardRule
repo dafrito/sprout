@@ -33,8 +33,7 @@ public:
     bool operator()(Cursor<Input>& iter, Result<Token>& result) const
     {
         Result<Token> trash;
-        _rule(iter, trash);
-        return true;
+        return _rule(iter, trash);
     }
 };
 
