@@ -10,12 +10,15 @@ namespace sprout {
 template <
     class Rule,
     class Reducer,
-    class Token = typename Rule::token_type
+    class Token,
+    class Input = typename Rule::input_type,
+    class SubToken = typename Rule::token_type
 >
-class ReduceRule : public RuleTraits<Rule>
+class ReduceRule
 {
-    typedef typename Rule::input_type Input;
-    typedef typename Rule::token_type SubToken;
+    typedef Input input_type;
+    typedef Token token_type;
+    typedef SubToken subtoken_type;
 
     const Reducer _reducer;
     const Rule _rule;
@@ -50,6 +53,12 @@ template <class Token, class Rule, class Reducer>
 ReduceRule<Rule, Reducer, Token> reduce(const Reducer& reducer, const Rule& rule)
 {
     return ReduceRule<Rule, Reducer, Token>(reducer, rule);
+}
+
+template <class Token, class Input, class SubToken, class Rule, class Reducer>
+ReduceRule<Rule, Reducer, Token, Input, SubToken> reduce(const Reducer& reducer, const Rule& rule)
+{
+    return ReduceRule<Rule, Reducer, Token, Input, SubToken>(reducer, rule);
 }
 
 template <class Reducer, class Token>
