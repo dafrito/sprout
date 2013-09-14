@@ -43,8 +43,9 @@ public:
         return *this;
     }
 
-    bool operator()(Cursor<Input>& iter, Result<Token>& result) const
+    bool operator()(Cursor<Input>& orig, Result<Token>& result) const
     {
+        auto iter = orig;
         Result<Token> aggregate;
         for (auto rule : _rules) {
             if (!rule(iter, aggregate)) {
@@ -52,6 +53,7 @@ public:
             }
         }
         result.insert(aggregate);
+        orig = iter;
         return true;
     }
 };

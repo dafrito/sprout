@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(partialSequencesAlsoFailCompletely)
     auto rule = createRule();
     Result<std::string> tokens;
 
-    auto cursor = makeCursor<char>("CatDogCat");
+    auto cursor = makeCursor<char>("CatDogWeb");
     BOOST_CHECK(!rule(cursor, tokens));
 
     BOOST_CHECK(!tokens);
