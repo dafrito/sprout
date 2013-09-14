@@ -67,18 +67,24 @@ public:
 
 namespace make {
 
+template <class Input, class Token>
+using ProxySequenceRule = SequenceRule<ProxyRule<Input, Token>>;
+
 template <class Input, class Token, typename... Values>
-SequenceRule<ProxyRule<Input, Token>> proxySequence(Values... rest)
+ProxySequenceRule<Input, Token> proxySequence(Values... rest)
 {
-    SequenceRule<ProxyRule<Input, Token>> sequence;
+    ProxySequenceRule<Input, Token> sequence;
     populate(sequence, rest...);
     return sequence;
 }
 
+template <class Input, class Token>
+using ProxyAlternateRule = AlternativeRule<ProxyRule<Input, Token>>;
+
 template <class Input, class Token, typename... Rules>
-AlternativeRule<ProxyRule<Input, Token>> proxyAlternate(Rules... rest)
+ProxyAlternateRule<Input, Token> proxyAlternate(Rules... rest)
 {
-    AlternativeRule<ProxyRule<Input, Token>> alternative;
+    ProxyAlternateRule<Input, Token> alternative;
     populate(alternative, rest...);
     return alternative;
 }
