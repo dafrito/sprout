@@ -20,14 +20,11 @@ template <
     class Input = typename Rule::input_type,
     class Token = typename Rule::token_type
 >
-class DiscardRule
+class DiscardRule : public RuleTraits<Input, Token>
 {
     const Rule _rule;
 
 public:
-    typedef Input input_type;
-    typedef Token token_type;
-
     DiscardRule(const Rule& rule) :
         _rule(rule)
     {

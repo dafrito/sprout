@@ -7,6 +7,7 @@
 #include "Result"
 #include "SequenceRule"
 #include "AlternativeRule"
+#include "RuleTraits"
 
 namespace sprout {
 
@@ -40,13 +41,8 @@ public:
  * to std::function.
  */
 template <class Input, class Token>
-class ProxyRule
+class ProxyRule : public RuleTraits<Input, Token>
 {
-public:
-    typedef Input input_type;
-    typedef Token token_type;
-
-private:
     std::shared_ptr<RulePlaceholder<Input, Token>> _rule;
 
 public:

@@ -3,17 +3,13 @@
 
 #include "Cursor"
 #include "Result"
+#include "RuleTraits"
 
 namespace sprout {
 
 template <class Input, class Token, class Matcher>
-class PredicateRule
+class PredicateRule : public RuleTraits<Input, Token>
 {
-public:
-    typedef Input input_type;
-    typedef Token token_type;
-
-private:
     const Matcher _matcher;
 
 public:

@@ -19,14 +19,11 @@ template <
     class Input = typename Rule::input_type,
     class Token = typename Rule::token_type
 >
-class SequenceRule
+class SequenceRule : public RuleTraits<Input, Token>
 {
     std::vector<Rule> _rules;
 
 public:
-    typedef Input input_type;
-    typedef Token token_type;
-
     template <class Container>
     SequenceRule(const Container& rules)
     {

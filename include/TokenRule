@@ -6,6 +6,7 @@
 
 #include "Cursor"
 #include "Result"
+#include "RuleTraits"
 
 namespace sprout {
 
@@ -55,13 +56,8 @@ struct AnyTokenMatcher
  * different API.
  */
 template <class Input, class Token, class Matcher>
-class TokenRule
+class TokenRule : public RuleTraits<Input, Token>
 {
-public:
-    typedef Input input_type;
-    typedef Token token_type;
-
-private:
     std::vector<Input> _target;
     Token _token;
 

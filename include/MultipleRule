@@ -16,14 +16,11 @@ template <
     class Input = typename Rule::input_type,
     class Token = typename Rule::token_type
 >
-class MultipleRule
+class MultipleRule : public RuleTraits<Input, Token>
 {
     Rule _rule;
 
 public:
-    typedef Input input_type;
-    typedef Token token_type;
-
     MultipleRule(const Rule& rule) :
         _rule(rule)
     {

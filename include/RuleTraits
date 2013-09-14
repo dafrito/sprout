@@ -6,11 +6,10 @@
 
 namespace sprout {
 
-template <class Rule>
+template <class Input, class Token>
 struct RuleTraits {
-    typedef typename Rule::input_type input_type;
-    typedef typename Rule::token_type token_type;
-    typedef Rule rule_type;
+    typedef Input input_type;
+    typedef Token token_type;
 };
 
 namespace make {
@@ -20,12 +19,7 @@ template <
     class Input,
     class Token
 >
-class InlineRule {
-public:
-    typedef Input input_type;
-    typedef Token token_type;
-
-private:
+class InlineRule : public RuleTraits<Input, Token> {
     Rule _rule;
 
 public:

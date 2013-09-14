@@ -14,10 +14,8 @@ template <
     class Input = typename Rule::input_type,
     class SubToken = typename Rule::token_type
 >
-class ReduceRule
+class ReduceRule : public RuleTraits<Input, Token>
 {
-    typedef Input input_type;
-    typedef Token token_type;
     typedef SubToken subtoken_type;
 
     const Reducer _reducer;
