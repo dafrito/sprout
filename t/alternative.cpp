@@ -82,7 +82,7 @@ bool twoAlternative(Cursor<char>& iter, Result<std::string>& result) {
 
 BOOST_AUTO_TEST_CASE(testAlternativeWithLambda)
 {
-    auto rule = make::alternate<char, std::string, std::function<decltype(oneAlternative)>>(
+    auto rule = make::alternative<char, std::string, std::function<decltype(oneAlternative)>>(
         oneAlternative,
         twoAlternative
     );

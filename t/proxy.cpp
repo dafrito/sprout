@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(testSplittingByWhitespace)
     auto rule = multiple(
         proxySequence<char, std::string>(
             whitespace,
-            alternate(
+            alternative(
                 OrderedTokenRule<char, std::string>("Cat", "Heathen"),
                 OrderedTokenRule<char, std::string>("Dog", "Civilized"),
                 OrderedTokenRule<char, std::string>("Calf", "Cow")

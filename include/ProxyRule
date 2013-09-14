@@ -79,12 +79,12 @@ ProxySequenceRule<Input, Token> proxySequence(Values... rest)
 }
 
 template <class Input, class Token>
-using ProxyAlternateRule = AlternativeRule<ProxyRule<Input, Token>>;
+using ProxyAlternativeRule = AlternativeRule<ProxyRule<Input, Token>>;
 
 template <class Input, class Token, typename... Rules>
-ProxyAlternateRule<Input, Token> proxyAlternate(Rules... rest)
+ProxyAlternativeRule<Input, Token> proxyAlternative(Rules... rest)
 {
-    ProxyAlternateRule<Input, Token> alternative;
+    ProxyAlternativeRule<Input, Token> alternative;
     populate(alternative, rest...);
     return alternative;
 }

@@ -56,7 +56,7 @@ public:
 namespace make {
 
 template <class Rule, typename... Rules>
-AlternativeRule<Rule> alternate(const Rule& rule, Rules... rest)
+AlternativeRule<Rule> alternative(const Rule& rule, Rules... rest)
 {
     AlternativeRule<Rule> alternative;
     populate(alternative, rule, rest...);
@@ -64,7 +64,7 @@ AlternativeRule<Rule> alternate(const Rule& rule, Rules... rest)
 }
 
 template <class Input, class Token, class Rule, typename... Rules>
-AlternativeRule<Rule, Input, Token> alternate(const Rule& rule, Rules... rest)
+AlternativeRule<Rule, Input, Token> alternative(const Rule& rule, Rules... rest)
 {
     AlternativeRule<Rule, Input, Token> alternative;
     populate(alternative, rule, rest...);

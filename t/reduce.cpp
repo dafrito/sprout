@@ -12,7 +12,7 @@ BOOST_AUTO_TEST_CASE(testReduce)
 {
     auto rule = make::reduce<std::string>(
         make::multiple(
-            make::alternate(
+            make::alternative(
                 OrderedTokenRule<char, char>("-", '-'),
                 OrderedTokenRule<char, char>("_", '_')
             )
