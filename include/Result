@@ -185,6 +185,13 @@ public:
     }
 };
 
+template <class Token, class T>
+Result<Token>& operator<<(Result<Token>& result, const T& value)
+{
+    result.insert(value);
+    return result;
+}
+
 template <class Data, class Token>
 Cursor<Data> makeCursor(Result<Token>& stream)
 {
