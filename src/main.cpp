@@ -31,6 +31,21 @@ enum class TokenType {
     Assignment
 };
 
+const char* tokenTypeName(const TokenType type)
+{
+    switch (type) {
+        case TokenType::Unknown: return "Unknown";
+        case TokenType::Name: return "Name";
+        case TokenType::Equal: return "Equal";
+        case TokenType::StringConstant: return "StringConstant";
+        case TokenType::Assignment: return "Assignment";
+        default:
+            std::stringstream str;
+            str << "Unexpected TokenType: " << static_cast<int>(type);
+            throw std::logic_error(str.str());
+    }
+}
+
 struct Token {
     TokenType type;
     QString value;
@@ -70,6 +85,11 @@ struct Node {
     TokenType type() const
     {
         return token.type;
+    }
+
+    const char* typeName() const
+    {
+        return tokenTypeName(type());
     }
 
     QString value() const
@@ -210,16 +230,18 @@ int main(int argc, char* argv[])
                                     globals[name] = result.value();
                                     break;
                                 default:
-                                    std::cout << "Unhandled type: " << static_cast<int>(node.type()) << std::endl;
+                                    std::cout << "Unhandled type: " << result.typeName() << std::endl;
                                     break;
                             }
                             break;
                         }
                     default:
-                        std::cout << "Unhandled type: " << static_cast<int>(node.type()) << std::endl;
+                        std::cout << "Unhandled type: " << node.typeName() << std::endl;
                         break;
                 }
             }
+        } else {
+            std::cout << "Failed to parse\n";
         }
     }
 
