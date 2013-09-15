@@ -10,6 +10,7 @@
 #include "StreamIterator"
 #include "TokenRule"
 #include "DiscardRule"
+#include "SharedRule"
 #include "MultipleRule"
 #include "OptionalRule"
 #include "PredicateRule"
@@ -27,6 +28,7 @@ enum class TokenType {
     Unknown,
     Name,
     Equal,
+    List,
     StringConstant,
     Assignment
 };
@@ -37,6 +39,7 @@ const char* tokenTypeName(const TokenType type)
         case TokenType::Unknown: return "Unknown";
         case TokenType::Name: return "Name";
         case TokenType::Equal: return "Equal";
+        case TokenType::List: return "List";
         case TokenType::StringConstant: return "StringConstant";
         case TokenType::Assignment: return "Assignment";
         default:
@@ -143,7 +146,7 @@ int main(int argc, char* argv[])
         }
     );
 
-    auto rvalue = proxyAlternative<QChar, Node>(
+    auto rvalue = shared(proxyAlternative<QChar, Node>(
         convert<Node>(
             rule::floating,
             [](const float& value) {
@@ -162,7 +165,38 @@ int main(int argc, char* argv[])
         ),
         stringConstant,
         name
+    ));
+
+    auto ws = discard(optional(whitespace));
+
+    auto list = reduce<Node>(
+        proxySequence<QChar, Node>(
+            discard(OrderedTokenRule<QChar, QString>("[")),
+            optional(proxySequence<QChar, Node>(
+                ws,
+                rvalue,
+                ws,
+                optional(multiple(proxySequence<QChar, Node>(
+                    discard(OrderedTokenRule<QChar, QString>(",")),
+                    ws,
+                    rvalue,
+                    ws
+                ))),
+                ws,
+                discard(optional(OrderedTokenRule<QChar, QString>(",")))
+            )),
+            ws,
+            discard(OrderedTokenRule<QChar, QString>("]"))
+        ),
+        [](Result<Node>& target, Result<Node>& items) {
+            target << Node(
+                TokenType::List,
+                items.data()
+            );
+        }
     );
+
+    rvalue << list;
 
     auto assignment = reduce<Node>(
         proxySequence<QChar, Node>(
