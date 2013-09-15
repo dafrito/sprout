@@ -2,6 +2,7 @@
 
 #include <QChar>
 #include <QString>
+#include <cmath>
 
 namespace sprout {
 namespace rule {
@@ -69,6 +70,105 @@ bool parseQuotedString(Cursor<QChar>& orig, Result<QString>& result)
 
     // Ran out of data before we could complete the string
     return false;
+}
+
+bool parseInteger(Cursor<QChar>& orig, Result<long>& tokens)
+{
+    auto iter = orig;
+
+    if (!iter) {
+        return false;
+    }
+
+    int sign = 1;
+    long cumulative = 0;
+
+    if (*iter == '-') {
+        sign = -1;
+        ++iter;
+    }
+
+    bool found = false;
+    while (iter) {
+        auto digit = (*iter).digitValue();
+        if (digit == -1) {
+            break;
+        }
+        found = true;
+
+        cumulative *= 10;
+        cumulative += digit;
+
+        ++iter;
+    }
+
+    if (!found) {
+        return false;
+    }
+
+    orig = iter;
+    tokens << (sign * cumulative);
+    return true;
+}
+
+bool parseFloating(Cursor<QChar>& orig, Result<double>& tokens)
+{
+    auto iter = orig;
+
+    if (!iter) {
+        return false;
+    }
+
+    Result<long> nums;
+    if (*iter != '.' && !parseInteger(iter, nums)) {
+        return false;
+    }
+
+    long whole = *nums++;
+
+    double fractionValue = 0;
+    if (iter && *iter == '.') {
+        ++iter;
+
+        long fraction = 0;
+        int magnitude = 0;
+        while (iter) {
+            auto digit = (*iter).digitValue();
+            if (digit < 0) {
+                break;
+            }
+            fraction *= 10;
+            fraction += digit;
+            ++magnitude;
+            ++iter;
+        }
+
+        if (magnitude == 0) {
+            // Nothing in the fractional component was found, so fail
+            return false;
+        }
+
+        fractionValue = fraction * std::pow(10, -magnitude);
+    }
+
+    int exponent = 0;
+    if (iter && (*iter == 'e' || *iter == 'E')) {
+        ++iter;
+
+        if (*iter == '+') {
+            ++iter;
+        }
+
+        if (!parseInteger(iter, nums)) {
+            return false;
+        }
+
+        exponent = *nums;
+    }
+
+    orig = iter;
+    tokens << (whole + fractionValue) * std::pow(10, exponent);
+    return true;
 }
 
 } // namespace rule

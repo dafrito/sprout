@@ -124,8 +124,24 @@ int main(int argc, char* argv[])
     );
 
     auto rvalue = proxyAlternative<QChar, Node>(
-        name,
-        stringConstant
+        convert<Node>(
+            rule::floating,
+            [](const float& value) {
+                return Node(
+                    Token(TokenType::StringConstant, QString::number(value))
+                );
+            }
+        ),
+        convert<Node>(
+            rule::integer,
+            [](const long value) {
+                return Node(
+                    Token(TokenType::StringConstant, QString::number(value))
+                );
+            }
+        ),
+        stringConstant,
+        name
     );
 
     auto assignment = reduce<Node>(

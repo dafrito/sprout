@@ -32,6 +32,12 @@ auto whitespace() -> decltype(make::rule<QChar, Token>(&parseWhitespace<Token>))
 bool parseQuotedString(Cursor<QChar>& input, Result<QString>& result);
 auto quotedString = make::rule<QChar, QString>(&parseQuotedString);
 
+bool parseInteger(Cursor<QChar>& input, Result<long>& result);
+auto integer = make::rule<QChar, long>(&parseInteger);
+
+bool parseFloating(Cursor<QChar>& input, Result<double>& result);
+auto floating = make::rule<QChar, double>(&parseFloating);
+
 } // namespace rule
 } // namespace sprout
 
