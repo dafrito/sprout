@@ -168,6 +168,7 @@ int main(int argc, char* argv[])
         if (line.isNull()) {
             break;
         }
+
         QTextStream lineStream(&line);
         auto cursor = makeCursor<QChar>(&lineStream);
 
