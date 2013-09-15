@@ -109,6 +109,32 @@ struct Node {
     {
         return children[index];
     }
+
+    void dump(std::stringstream& str, const std::string& indent) const
+    {
+        str << typeName();
+        if (!value().isNull()) {
+            str << ":" << value().toUtf8().constData();
+        }
+        if (!children.empty()) {
+            auto childIndent = indent + "    ";
+            str << " [\n" << childIndent;
+            for (int i = 0; i < children.size(); ++i) {
+                if (i > 0) {
+                    str << ",\n" << childIndent;
+                }
+                children[i].dump(str, childIndent);
+            }
+            str << "\n" << indent << "]";
+        }
+    }
+
+    std::string dump() const
+    {
+        std::stringstream str;
+        dump(str, "");
+        return str.str();
+    }
 };
 
 int main(int argc, char* argv[])
