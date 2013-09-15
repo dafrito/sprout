@@ -11,4 +11,5 @@ nobase_pkginclude_HEADERS = \
 	CatchingRule \
 	ReduceRule \
 	OptionalRule \
+	SharedRule \
 	MultipleRule
