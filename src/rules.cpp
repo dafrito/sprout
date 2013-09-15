@@ -6,7 +6,7 @@
 namespace sprout {
 namespace rule {
 
-bool _quotedString(Cursor<QChar>& orig, Result<QString>& result)
+bool parseQuotedString(Cursor<QChar>& orig, Result<QString>& result)
 {
     auto iter = orig;
 

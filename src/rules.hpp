@@ -29,8 +29,8 @@ auto whitespace() -> decltype(make::rule<QChar, Token>(&parseWhitespace<Token>))
     return make::rule<QChar, Token>(&parseWhitespace<Token>);
 }
 
-bool _quotedString(Cursor<QChar>& input, Result<QString>& result);
-auto quotedString = make::rule<QChar, QString>(&_quotedString);
+bool parseQuotedString(Cursor<QChar>& input, Result<QString>& result);
+auto quotedString = make::rule<QChar, QString>(&parseQuotedString);
 
 } // namespace rule
 } // namespace sprout
