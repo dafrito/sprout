@@ -86,147 +86,155 @@ int main()
     };
 
     std::cout << "Running " << RUNS << " iteration" << (RUNS == 1 ? "" : "s") << "\n";
-
     std::cout << std::endl;
-    std::cout << "=== Parser Benchmarks ===\n";
-
-    const QString inputString("var bar");
-    const QString targetString("bar");
 
     {
-        QRegExp re("^var\\s+(\\w+)");
-        runBenchmark("RegExp", [&]() {
-            assert(re.indexIn(inputString, 0) == 0);
-            assert(re.cap(1) == targetString);
-        });
-    }
+        std::cout << "=== Parser Benchmarks ===\n";
 
-    {
-        auto benchmark = proxySequence<QChar, QString>(
-            discard(OrderedTokenRule<QChar, QString>("var")),
-            whitespace,
-            name
-        );
-        runBenchmark("Sprout", [&]() {
-            auto cursor = makeCursor<QChar>(&inputString);
-            Result<QString> results;
+        const QString inputString("var bar");
+        const QString targetString("bar");
 
-            assert(benchmark(cursor, results));
-            assert(targetString == *results);
-        });
-    }
+        {
+            QRegExp re("^var\\s+(\\w+)");
+            runBenchmark("RegExp", [&]() {
+                assert(re.indexIn(inputString, 0) == 0);
+                assert(re.cap(1) == targetString);
+            });
+        }
 
-    {
-        auto benchmark = proxySequence<QChar, QString>(
-            discard(OrderedTokenRule<QChar, QString>("var")),
-            fastWhitespace,
-            fastName
-        );
-        runBenchmark("Spfast", [&]() {
-            auto cursor = makeCursor<QChar>(&inputString);
-            Result<QString> results;
-
-            assert(benchmark(cursor, results));
-            assert(targetString == *results);
-        });
-    }
-
-    {
-        runBenchmark("Inline", [&]() {
-            QString result;
-
-            if (!inputString.startsWith("var")) {
-                assert(false);
-            }
-            int mark = 3;
-            while (mark < inputString.size() && inputString.at(mark).isSpace()) {
-                ++mark;
-            }
-            QString aggr;
-            while (mark < inputString.size() && inputString.at(mark).isLetter()) {
-                aggr += inputString.at(mark++);
-            }
-            assert(aggr == targetString);
-        });
-    }
-
-    std::cout << std::endl;
-    std::cout << "=== Direct Match Benchmarks ===\n";
-
-    const QString simpleTarget("var");
-
-    {
-        QRegExp re("^var");
-        runBenchmark("RegExp", [&]() {
-            assert(re.indexIn(inputString, 0) == 0);
-            assert(re.cap(0) == simpleTarget);
-        });
-    }
-
-    {
-        auto benchmark = OrderedTokenRule<QChar, QString>("var", "var");
-        runBenchmark("Sprout", [&]() {
-            auto cursor = makeCursor<QChar>(&inputString);
-            Result<QString> results;
-
-            assert(benchmark(cursor, results));
-            assert(*results == simpleTarget);
-        });
-    }
-
-    {
-        QString varStr("var");
-        auto benchmark = [&](Cursor<QChar>& orig, Result<QString>& results) {
-            auto iter = orig;
-            for (int i = 0; i < varStr.size(); ++i) {
-                if (!iter || *iter++ != varStr.at(i)) {
-                    return false;
-                }
-            }
-            orig = iter;
-            results.insert(varStr);
-            return true;
-        };
-        runBenchmark("Spfast", [&]() {
-            auto cursor = makeCursor<QChar>(&inputString);
-            Result<QString> results;
-
-            assert(benchmark(cursor, results));
-            assert(*results == simpleTarget);
-        });
-    }
-
-    #ifdef HAVE_BOOST
-    {
-        std::string input("varbar");
-        std::string target("bar");
-        runBenchmark("Booost", [&]() {
-            namespace qi = boost::spirit::qi;
-            namespace ascii = boost::spirit::ascii;
-            namespace phoenix = boost::phoenix;
-
-            using qi::_1;
-
-            std::string word;
-            auto result = qi::phrase_parse(
-                input.begin(),
-                input.end(),
-                (
-                    "var" >> qi::string("bar")[phoenix::ref(word) = "bar"]
-                ),
-                ascii::space
+        {
+            auto benchmark = proxySequence<QChar, QString>(
+                discard(OrderedTokenRule<QChar, QString>("var")),
+                whitespace,
+                name
             );
+            runBenchmark("Sprout", [&]() {
+                auto cursor = makeCursor<QChar>(&inputString);
+                Result<QString> results;
 
-            assert(result);
-            assert(word == target);
-        });
+                assert(benchmark(cursor, results));
+                assert(targetString == *results);
+            });
+        }
+
+        {
+            auto benchmark = proxySequence<QChar, QString>(
+                discard(OrderedTokenRule<QChar, QString>("var")),
+                fastWhitespace,
+                fastName
+            );
+            runBenchmark("Spfast", [&]() {
+                auto cursor = makeCursor<QChar>(&inputString);
+                Result<QString> results;
+
+                assert(benchmark(cursor, results));
+                assert(targetString == *results);
+            });
+        }
+
+        {
+            runBenchmark("Inline", [&]() {
+                QString result;
+
+                if (!inputString.startsWith("var")) {
+                    assert(false);
+                }
+                int mark = 3;
+                while (mark < inputString.size() && inputString.at(mark).isSpace()) {
+                    ++mark;
+                }
+                QString aggr;
+                while (mark < inputString.size() && inputString.at(mark).isLetter()) {
+                    aggr += inputString.at(mark++);
+                }
+                assert(aggr == targetString);
+            });
+        }
+
+        std::cout << std::endl;
     }
-    #endif
-
-    std::cout << std::endl;
-    std::cout << "=== Aggregating Match Benchmarks ===\n";
 
     {
+        std::cout << "=== Direct Match Benchmarks ===\n";
+
+        const QString inputString("var");
+        const QString targetString("var");
+
+        {
+            QRegExp re("^var");
+            runBenchmark("RegExp", [&]() {
+                assert(re.indexIn(inputString, 0) == 0);
+                assert(re.cap(0) == targetString);
+            });
+        }
+
+        {
+            auto benchmark = OrderedTokenRule<QChar, QString>("var", "var");
+            runBenchmark("Sprout", [&]() {
+                auto cursor = makeCursor<QChar>(&inputString);
+                Result<QString> results;
+
+                assert(benchmark(cursor, results));
+                assert(*results == targetString);
+            });
+        }
+
+        {
+            QString varStr("var");
+            auto benchmark = [&](Cursor<QChar>& orig, Result<QString>& results) {
+                auto iter = orig;
+                for (int i = 0; i < varStr.size(); ++i) {
+                    if (!iter || *iter++ != varStr.at(i)) {
+                        return false;
+                    }
+                }
+                orig = iter;
+                results.insert(varStr);
+                return true;
+            };
+            runBenchmark("Spfast", [&]() {
+                auto cursor = makeCursor<QChar>(&inputString);
+                Result<QString> results;
+
+                assert(benchmark(cursor, results));
+                assert(*results == targetString);
+            });
+        }
+
+        #ifdef HAVE_BOOST
+        {
+            std::string input("varbar");
+            std::string target("bar");
+            runBenchmark("Booost", [&]() {
+                namespace qi = boost::spirit::qi;
+                namespace ascii = boost::spirit::ascii;
+                namespace phoenix = boost::phoenix;
+
+                using qi::_1;
+
+                std::string word;
+                auto result = qi::phrase_parse(
+                    input.begin(),
+                    input.end(),
+                    (
+                        "var" >> qi::string("bar")[phoenix::ref(word) = "bar"]
+                    ),
+                    ascii::space
+                );
+
+                assert(result);
+                assert(word == target);
+            });
+        }
+        #endif
+
+        std::cout << std::endl;
+    }
+
+
+    {
+        std::cout << "=== Aggregating Match Benchmarks ===\n";
+
         const QString inputString("varbar");
         const QString targetString("bar");
 
@@ -296,12 +304,13 @@ int main()
             });
         }
         #endif
+
+        std::cout << std::endl;
     }
 
-    std::cout << std::endl;
-    std::cout << "=== Whitespace Match Benchmarks ===\n";
-
     {
+        std::cout << "=== Whitespace Match Benchmarks ===\n";
+
         const QString inputString(" foo");
         const QString targetString("foo");
 
@@ -369,12 +378,13 @@ int main()
             });
         }
         #endif
+
+        std::cout << std::endl;
     }
 
-    std::cout << std::endl;
-    std::cout << "=== Lazy Match Benchmarks ===\n";
-
     {
+        std::cout << "=== Lazy Match Benchmarks ===\n";
+
         const QString inputString("foo #notime");
         const QString targetString("foo");
 
@@ -463,37 +473,40 @@ int main()
             });
         }
         #endif
-    }
 
-    std::cout << std::endl;
-    std::cout << "=== Cursor Benchmarks ===\n";
-
-    {
-        QString target("var foo");
-        QString str("var foo");
-        runBenchmark("Sprout", [&]() {
-            auto cursor = makeCursor<QChar>(&str);
-            for (int j = 0; j < target.size(); ++j) {
-                if (target.at(j) != *cursor++) {
-                    assert(false);
-                }
-            }
-        });
+        std::cout << std::endl;
     }
 
     {
-        QString target("var foo");
-        QString str("var foo");
-        runBenchmark("Inline", [&]() {
-            QString result;
-            auto cursor = makeCursor<QChar>(&str);
-            result = "foo";
-            for (int j = 0; j < target.size(); ++j) {
-                if (target.at(j) != str.at(j)) {
-                    result = "";
+        std::cout << "=== Cursor Benchmarks ===\n";
+
+        {
+            QString target("var foo");
+            QString str("var foo");
+            runBenchmark("Sprout", [&]() {
+                auto cursor = makeCursor<QChar>(&str);
+                for (int j = 0; j < target.size(); ++j) {
+                    if (target.at(j) != *cursor++) {
+                        assert(false);
+                    }
                 }
-            }
-        });
+            });
+        }
+
+        {
+            QString target("var foo");
+            QString str("var foo");
+            runBenchmark("Inline", [&]() {
+                QString result;
+                auto cursor = makeCursor<QChar>(&str);
+                result = "foo";
+                for (int j = 0; j < target.size(); ++j) {
+                    if (target.at(j) != str.at(j)) {
+                        result = "";
+                    }
+                }
+            });
+        }
     }
 
     return 0;
