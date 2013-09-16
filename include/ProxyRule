@@ -7,6 +7,7 @@
 #include "Result"
 #include "SequenceRule"
 #include "AlternativeRule"
+#include "LazyRule"
 #include "RuleTraits"
 
 namespace sprout {
@@ -87,6 +88,15 @@ ProxyAlternativeRule<Input, Token> proxyAlternative(Rules... rest)
     ProxyAlternativeRule<Input, Token> alternative;
     populate(alternative, rest...);
     return alternative;
+}
+
+template <class Input, class Token>
+using ProxyLazyRule = LazyRule<ProxyRule<Input, Token>>;
+
+template <class Input, class Token, class Consumer, class Condition>
+ProxyLazyRule<Input, Token> proxyLazy(Consumer consumer, Condition condition)
+{
+    return ProxyLazyRule<Input, Token>(consumer, condition);
 }
 
 } // namespace make

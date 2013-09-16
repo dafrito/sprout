@@ -12,4 +12,5 @@ nobase_pkginclude_HEADERS = \
 	ReduceRule \
 	OptionalRule \
 	SharedRule \
+	LazyRule \
 	MultipleRule
