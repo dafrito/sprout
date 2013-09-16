@@ -136,10 +136,29 @@ bool EndRule(Cursor<Input>& iter, Result<Token>& result)
 }
 
 template <class Input, class Token>
+bool AnyRule(Cursor<Input>& iter, Result<Token>& result)
+{
+    if (!iter) {
+        return false;
+    }
+    result << *iter;
+    ++iter;
+    return true;
+}
+
+template <class Input, class Token>
 Rule<Input, Token> end()
 {
     return EndRule<Input, Token>;
 }
+
+template <class Input, class Token>
+Rule<Input, Token> any()
+{
+    return AnyRule<Input, Token>;
+}
+
+
 
 } // namespace make
 
