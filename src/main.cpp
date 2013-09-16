@@ -232,9 +232,7 @@ int main(int argc, char* argv[])
                 OrderedTokenRule<QChar, QString>("="),
                 optional(whitespace)
             )),
-            rvalue,
-            discard(optional(whitespace)),
-            discard(optional(OrderedTokenRule<QChar, QString>(";")))
+            rvalue
         ),
         [](Result<Node>& results, Result<Node>& subresults) {
             results << Node(
@@ -249,6 +247,9 @@ int main(int argc, char* argv[])
             assignment,
             name
         ),
+        ws,
+        discard(optional(OrderedTokenRule<QChar, QString>(";"))),
+        ws,
         make::end<QChar, Node>()
     );
 
