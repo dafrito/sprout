@@ -14,9 +14,17 @@
 #include "ProxyRule"
 #include "AlternativeRule"
 #include "ReduceRule"
+#include "config.h"
 
 #include <QRegExp>
 #include <QElapsedTimer>
+
+#ifdef HAVE_BOOST
+#include <boost/config/warning_disable.hpp>
+#include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/phoenix_core.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+#endif
 
 #include "rules.hpp"
 
@@ -188,6 +196,33 @@ int main()
         });
     }
 
+    #ifdef HAVE_BOOST
+    {
+        std::string input("varbar");
+        std::string target("bar");
+        runBenchmark("Booost", [&]() {
+            namespace qi = boost::spirit::qi;
+            namespace ascii = boost::spirit::ascii;
+            namespace phoenix = boost::phoenix;
+
+            using qi::_1;
+
+            std::string word;
+            auto result = qi::phrase_parse(
+                input.begin(),
+                input.end(),
+                (
+                    "var" >> qi::string("bar")[phoenix::ref(word) = "bar"]
+                ),
+                ascii::space
+            );
+
+            assert(result);
+            assert(word == target);
+        });
+    }
+    #endif
+
     std::cout << std::endl;
     std::cout << "=== Aggregating Match Benchmarks ===\n";
 
@@ -232,6 +267,35 @@ int main()
                 assert(*results == targetString);
             });
         }
+
+        #ifdef HAVE_BOOST
+        {
+            std::string inputString = "varbar";
+            std::string targetString = "bar";
+            runBenchmark("Booost", [&]() {
+                namespace qi = boost::spirit::qi;
+                namespace ascii = boost::spirit::ascii;
+                namespace phoenix = boost::phoenix;
+
+                using qi::double_;
+                using qi::_1;
+
+                std::vector<char> letters;
+                auto result = qi::phrase_parse(
+                    inputString.begin(),
+                    inputString.end(),
+                    (
+                        "var" >> (+ascii::char_)[phoenix::ref(letters) = _1]
+                    ),
+                    ascii::space
+                );
+                std::string word(letters.begin(), letters.end());
+
+                assert(result);
+                assert(word == targetString);
+            });
+        }
+        #endif
     }
 
     std::cout << std::endl;
@@ -278,6 +342,33 @@ int main()
                 assert(*results == targetString);
             });
         }
+
+        #ifdef HAVE_BOOST
+        {
+            std::string input(" foo");
+            std::string target("foo");
+            runBenchmark("Booost", [&]() {
+                namespace qi = boost::spirit::qi;
+                namespace ascii = boost::spirit::ascii;
+                namespace phoenix = boost::phoenix;
+
+                using qi::_1;
+
+                std::string word;
+                auto result = qi::phrase_parse(
+                    input.begin(),
+                    input.end(),
+                    (
+                        *ascii::space >> qi::string("foo")[phoenix::ref(word) = "foo"]
+                    ),
+                    ascii::space
+                );
+
+                assert(result);
+                assert(word == target);
+            });
+        }
+        #endif
     }
 
     std::cout << std::endl;
@@ -344,6 +435,34 @@ int main()
                 assert(*results == targetString);
             });
         }
+
+        #ifdef HAVE_BOOST
+        {
+            auto input = inputString.toStdString();
+            auto target = targetString.toStdString();
+            runBenchmark("Booost", [&]() {
+                namespace qi = boost::spirit::qi;
+                namespace ascii = boost::spirit::ascii;
+                namespace phoenix = boost::phoenix;
+
+                using qi::double_;
+                using qi::_1;
+
+                std::string word;
+                auto result = qi::phrase_parse(
+                    input.begin(),
+                    input.end(),
+                    (
+                        qi::string("foo")[phoenix::ref(word) = "foo"] >> *ascii::space >> -("#" >> *ascii::char_)
+                    ),
+                    ascii::space
+                );
+
+                assert(result);
+                assert(word == target);
+            });
+        }
+        #endif
     }
 
     std::cout << std::endl;
