@@ -119,7 +119,7 @@ struct Node {
         if (!children.empty()) {
             auto childIndent = indent + "    ";
             str << " [\n" << childIndent;
-            for (int i = 0; i < children.size(); ++i) {
+            for (unsigned int i = 0; i < children.size(); ++i) {
                 if (i > 0) {
                     str << ",\n" << childIndent;
                 }
