@@ -24,16 +24,18 @@ class DiscardRule : public RuleTraits<Input, Token>
 {
     const Rule _rule;
 
+    mutable Result<Token> trash;
+
 public:
     DiscardRule(const Rule& rule) :
         _rule(rule)
     {
+        trash.suppress();
     }
 
     template <class Ignored>
     bool operator()(Cursor<Input>& iter, Result<Ignored>& result) const
     {
-        Result<Token> trash;
         return _rule(iter, trash);
     }
 };

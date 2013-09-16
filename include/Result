@@ -21,16 +21,24 @@ class Result : public std::iterator<std::input_iterator_tag, Token>
     Tokens _data;
     mutable int _pos;
 
+    int _insertionPos;
+
+    bool _suppress;
+
 public:
     Result() :
         _data(),
-        _pos(0)
+        _pos(0),
+        _insertionPos(0),
+        _suppress(false)
     {
     }
 
     Result(const Tokens& tokens) :
         _data(tokens),
-        _pos(0)
+        _pos(0),
+        _insertionPos(0),
+        _suppress(false)
     {
     }
 
@@ -46,6 +54,16 @@ public:
         _data(*begin._data),
         _pos(0)
     {
+    }
+
+    void suppress(const bool suppressed = true)
+    {
+        _suppress = suppressed;
+    }
+
+    bool suppressed() const
+    {
+        return _suppress;
     }
 
     const Tokens empty_tokens;
@@ -70,32 +88,60 @@ public:
         return _pos;
     }
 
+    void moveHead(const int pos)
+    {
+        _insertionPos = pos >= _data.size() ? _data.size() : pos;
+    }
+
+    int head() const
+    {
+        return _insertionPos;
+    }
+
     template <class T>
     void insert(const T& value)
     {
-        _data.push_back(value);
+        if (suppressed()) {
+            return;
+        }
+        if (_insertionPos >= _data.size()) {
+            _data.push_back(value);
+        } else {
+            _data[_insertionPos] = value;
+        }
+        ++_insertionPos;
     }
 
     template <class T>
     void insert(const Result<T>& value)
     {
-        insert(value.begin(), value.end());
+        if (suppressed()) {
+            return;
+        }
+        for (auto v : value) {
+            insert(v);
+        }
     }
 
     template <class Iterator>
     void insert(Iterator begin, Iterator end)
     {
-        std::copy(begin, end, std::back_inserter(_data));
+        if (suppressed()) {
+            return;
+        }
+        for (auto i = begin; i != end; ++i) {
+            insert(*i);
+        }
     }
 
     operator bool() const
     {
-        return !_data.empty() && _pos < _data.size();
+        return !_data.empty() && _pos < head();
     }
 
     const Token& get() const
     {
-        if (_pos >= _data.size()) {
+        if (_pos >= head()) {
             throw std::runtime_error("Position must not be dereferenced out of range");
         }
         return _data[_pos];
