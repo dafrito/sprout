@@ -7,6 +7,7 @@
 
 #include "StreamIterator"
 #include "TokenRule"
+#include "OptionalRule"
 #include "DiscardRule"
 #include "MultipleRule"
 #include "PredicateRule"
@@ -267,6 +268,72 @@ int main()
             auto benchmark = proxySequence<QChar, QString>(
                 fastWhitespace,
                 OrderedTokenRule<QChar, QString>("foo", "foo")
+            );
+
+            runBenchmark("Spfast", [&]() {
+                auto cursor = makeCursor<QChar>(&inputString);
+                Result<QString> results;
+
+                assert(benchmark(cursor, results));
+                assert(*results == targetString);
+            });
+        }
+    }
+
+    std::cout << std::endl;
+    std::cout << "=== Lazy Match Benchmarks ===\n";
+
+    {
+        const QString inputString("foo #notime");
+        const QString targetString("foo");
+
+        {
+            QRegExp re("^(foo)\\s*(#.*)?$");
+            runBenchmark("RegExp", [&]() {
+                assert(re.indexIn(inputString, 0) == 0);
+                assert(re.cap(1) == targetString);
+            });
+        }
+
+        {
+            auto benchmark = proxySequence<QChar, QString>(
+                OrderedTokenRule<QChar, QString>("foo", "foo"),
+                discard(rule::whitespace<QString>()),
+                discard(proxySequence<QChar, QString>(
+                    OrderedTokenRule<QChar, QString>("#"),
+                    proxyLazy<QChar, QString>(
+                        any<QChar, QString>(),
+                        proxyAlternative<QChar, QString>(
+                            OrderedTokenRule<QChar, QString>("\n"),
+                            make::end<QChar, QString>()
+                        )
+                    )
+                ))
+            );
+
+            runBenchmark("Sprout", [&]() {
+                auto cursor = makeCursor<QChar>(&inputString);
+                Result<QString> results;
+
+                assert(benchmark(cursor, results));
+                assert(*results == targetString);
+            });
+        }
+
+        {
+            auto benchmark = proxySequence<QChar, QString>(
+                OrderedTokenRule<QChar, QString>("foo", "foo"),
+                discard(optional(fastWhitespace)),
+                [](Cursor<QChar>& iter, Result<QString>& result) {
+                    if (!iter || *iter != '#') {
+                        return false;
+                    }
+                    while (iter && *iter != '\n') {
+                        // Skip commented characters
+                        ++iter;
+                    }
+                    return true;
+                }
             );
 
             runBenchmark("Spfast", [&]() {
