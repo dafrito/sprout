@@ -10,7 +10,9 @@ nobase_pkginclude_HEADERS = \
 	PredicateRule \
 	CatchingRule \
 	ReduceRule \
+	LogRule \
 	OptionalRule \
+	JoinRule \
 	SharedRule \
 	LazyRule \
 	MultipleRule
