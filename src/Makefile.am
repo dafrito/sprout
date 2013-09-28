@@ -20,6 +20,12 @@ sprout_LDADD = libsproutcommon.la
 sprout_SOURCES = \
 	main.cpp
 
+bin_PROGRAMS += luaparse
+luaparse_CPPFLAGS = $(libsproutcommon_la_CPPFLAGS)
+luaparse_LDADD = libsproutcommon.la
+luaparse_SOURCES = \
+	luaparse.cpp
+
 noinst_PROGRAMS = benchmark
 benchmark_CPPFLAGS = $(libsproutcommon_la_CPPFLAGS)
 benchmark_LDADD = libsproutcommon.la

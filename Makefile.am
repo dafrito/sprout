@@ -21,6 +21,12 @@ debug: $(TESTS)
 valgrind:
 	cd src && valgrind -v --leak-check=full --trace-children=yes sprout
 
+lua:
+	./src/luaparse $(top_srcdir)/src/simple.lua
+
+luavalgrind:
+	valgrind -v --leak-check=full --trace-children=yes ./src/luaparse $(top_srcdir)/src/simple.lua
+
 # This is a common typo for me
 cehck: check
 .PHONY: cehck
