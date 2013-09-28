@@ -211,6 +211,18 @@ public:
         return tmp;
     }
 
+    Cursor& operator--()
+    {
+        return *this -= 1;
+    }
+
+    Cursor operator--(int)
+    {
+        Cursor tmp(*this);
+        --(*this);
+        return tmp;
+    }
+
     Cursor& operator+=(const int delta)
     {
         _data->advanceTo(_pos += delta);
