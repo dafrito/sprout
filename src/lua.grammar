@@ -1,0 +1,4 @@
+Rule main = assign;
+Rule assign = variable '=' expression;
+Rule expression = number | variable;
+Token variable = (alpha | '_') alnum*;

@@ -1,4 +1,5 @@
 #include "rules.hpp"
+#include "tokens.hpp"
 
 #include <iostream>
 #include <cassert>
@@ -46,155 +47,41 @@ enum class TokenType {
     ReturnStatement
 };
 
-const char* tokenTypeName(const TokenType type)
+std::ostream& operator<<(std::ostream& stream, const TokenType& type)
 {
     switch (type) {
-        case TokenType::Unknown: return "Unknown";
-        case TokenType::Variable: return "Variable";
-        case TokenType::Equal: return "Equal";
-        case TokenType::EqualOperator: return "EqualOperator";
-        case TokenType::UnequalOperator: return "UnequalOperator";
-        case TokenType::TableLiteral: return "TableLiteral";
-        case TokenType::StringLiteral: return "StringLiteral";
-        case TokenType::Assignment: return "Assignment";
-        case TokenType::ReturnStatement: return "ReturnStatement";
-        case TokenType::Nil: return "Nil";
-        case TokenType::True: return "True";
-        case TokenType::False: return "False";
-        case TokenType::Vararg: return "Vararg";
-        case TokenType::IfStatement: return "IfStatement";
-        case TokenType::FunctionCall: return "FunctionCall";
+        case TokenType::Unknown: stream << "Unknown";
+        case TokenType::Variable: stream << "Variable";
+        case TokenType::Equal: stream << "Equal";
+        case TokenType::EqualOperator: stream << "EqualOperator";
+        case TokenType::UnequalOperator: stream << "UnequalOperator";
+        case TokenType::TableLiteral: stream << "TableLiteral";
+        case TokenType::StringLiteral: stream << "StringLiteral";
+        case TokenType::Assignment: stream << "Assignment";
+        case TokenType::ReturnStatement: stream << "ReturnStatement";
+        case TokenType::Nil: stream << "Nil";
+        case TokenType::True: stream << "True";
+        case TokenType::False: stream << "False";
+        case TokenType::Vararg: stream << "Vararg";
+        case TokenType::IfStatement: stream << "IfStatement";
+        case TokenType::FunctionCall: stream << "FunctionCall";
         default:
             std::stringstream str;
             str << "Unexpected TokenType: " << static_cast<int>(type);
             throw std::logic_error(str.str());
     }
+
+    return stream;
 }
 
-struct Token {
-    TokenType type;
-    QString value;
-
-    Token() :
-        type(TokenType::Unknown)
-    {
-    }
-
-    Token(const TokenType& type) :
-        type(type)
-    {
-    }
-
-    Token(const TokenType& type, const QString& value) :
-        type(type),
-        value(value)
-    {
-    }
-};
-
-struct Node {
-    Token token;
-    std::vector<Node> children;
-
-    Node() :
-        Node(Token())
-    {
-    }
-
-    Node(const Token& token) :
-        token(token)
-    {
-    }
-
-    Node(const Token& token, std::vector<Node> children) :
-        token(token),
-        children(children)
-    {
-    }
-
-    TokenType type() const
-    {
-        return token.type;
-    }
-
-    const char* typeName() const
-    {
-        return tokenTypeName(type());
-    }
-
-    QString value() const
-    {
-        return token.value;
-    }
-
-    void add(const Node& child)
-    {
-        children.push_back(child);
-    }
-
-    Node operator[](const int index) const
-    {
-        return children[index];
-    }
-
-    void dump(std::stringstream& str, const std::string& indent) const
-    {
-        str << typeName();
-        if (!value().isNull()) {
-            str << ":" << value().toUtf8().constData();
-        }
-        if (!children.empty()) {
-            auto childIndent = indent + "    ";
-            str << " [\n" << childIndent;
-            for (unsigned int i = 0; i < children.size(); ++i) {
-                if (i > 0) {
-                    str << ",\n" << childIndent;
-                }
-                children[i].dump(str, childIndent);
-            }
-            str << "\n" << indent << "]";
-        }
-    }
-
-    std::string dump() const
-    {
-        std::stringstream str;
-        dump(str, "");
-        return str.str();
-    }
-};
-
-bool neighborhood(Cursor<QChar>& orig, Result<Node>& results)
+std::ostream& operator<<(std::ostream& stream, const QString& value)
 {
-    auto iter = orig;
-    QString str;
-    QString indicator;
-
-    const int NEIGHBOR_SIZE = 10;
-
-    iter -= NEIGHBOR_SIZE;
-    for (int i = 0; iter && i < NEIGHBOR_SIZE * 2 + 1; ++i) {
-        auto c = *iter++;
-
-        int size = 1;
-        if (c == '\n') {
-            str += "\\n";
-            size = 2;
-        } else if (c == '\t') {
-            str += "\\t";
-            size = 2;
-        } else {
-            str += c;
-        }
-
-        for (int j = 0; j < size; ++j) {
-            indicator += i == NEIGHBOR_SIZE ? '^' : ' ';
-        }
-    }
-    std::cout << str.toUtf8().constData() << std::endl;
-    std::cout << indicator.toUtf8().constData() << std::endl;
-    return true;
+    stream << value.toUtf8().constData();
+    return stream;
 }
+
+typedef Token<TokenType, QString> LuaToken;
+typedef Node<TokenType, QString> LuaNode;
 
 int main(int argc, char* argv[])
 {
@@ -215,14 +102,14 @@ int main(int argc, char* argv[])
         lineComment
     ));
 
-    auto stringLiteral = convert<Node>(
+    auto stringLiteral = convert<LuaNode>(
         rule::quotedString,
         [](QString& value) {
-            return Node(Token(TokenType::StringLiteral, value));
+            return LuaNode(LuaToken(TokenType::StringLiteral, value));
         }
     );
 
-    auto variable = convert<Node>(
+    auto variable = convert<LuaNode>(
         aggregate<QString>(
             multiple(simplePredicate<QChar>([](const QChar& input) {
                 return input.isLetter() || input == '_';
@@ -232,43 +119,43 @@ int main(int argc, char* argv[])
             }
         ),
         [](QString& value) {
-            return Node(Token(TokenType::Variable, value));
+            return LuaNode(LuaToken(TokenType::Variable, value));
         }
     );
 
-    auto singleExpression = shared(proxyAlternative<QChar, Node>(
-        OrderedTokenRule<QChar, Node>("nil", Node(TokenType::Nil)),
-        OrderedTokenRule<QChar, Node>("true", Node(TokenType::True)),
-        OrderedTokenRule<QChar, Node>("false", Node(TokenType::False)),
-        OrderedTokenRule<QChar, Node>("...", Node(TokenType::Vararg)),
+    auto singleExpression = shared(proxyAlternative<QChar, LuaNode>(
+        OrderedTokenRule<QChar, LuaNode>("nil", LuaNode(TokenType::Nil)),
+        OrderedTokenRule<QChar, LuaNode>("true", LuaNode(TokenType::True)),
+        OrderedTokenRule<QChar, LuaNode>("false", LuaNode(TokenType::False)),
+        OrderedTokenRule<QChar, LuaNode>("...", LuaNode(TokenType::Vararg)),
         stringLiteral,
-        convert<Node>(
+        convert<LuaNode>(
             rule::floating,
             [](const float& value) {
-                return Node(
-                    Token(TokenType::StringLiteral, QString::number(value))
+                return LuaNode(
+                    LuaToken(TokenType::StringLiteral, QString::number(value))
                 );
             }
         ),
-        convert<Node>(
+        convert<LuaNode>(
             rule::integer,
             [](const long value) {
-                return Node(
-                    Token(TokenType::StringLiteral, QString::number(value))
+                return LuaNode(
+                    LuaToken(TokenType::StringLiteral, QString::number(value))
                 );
             }
         ),
         variable
     ));
 
-    auto compoundExpression = shared(proxyAlternative<QChar, Node>());
+    auto compoundExpression = shared(proxyAlternative<QChar, LuaNode>());
 
-    auto expression = alternative<QChar, Node>(
+    auto expression = alternative<QChar, LuaNode>(
         compoundExpression,
         singleExpression
     );
 
-    auto definition = proxySequence<QChar, Node>(
+    auto definition = proxySequence<QChar, LuaNode>(
         discard(proxySequence<QChar, QString>(
             OrderedTokenRule<QChar, QString>("local"),
             whitespace
@@ -278,14 +165,14 @@ int main(int argc, char* argv[])
 
     auto ws = discard(optional(whitespace));
 
-    auto tableLiteral = reduce<Node>(
-        proxySequence<QChar, Node>(
+    auto tableLiteral = reduce<LuaNode>(
+        proxySequence<QChar, LuaNode>(
             discard(OrderedTokenRule<QChar, QString>("[")),
-            optional(proxySequence<QChar, Node>(
+            optional(proxySequence<QChar, LuaNode>(
                 ws,
                 expression,
                 ws,
-                optional(multiple(proxySequence<QChar, Node>(
+                optional(multiple(proxySequence<QChar, LuaNode>(
                     discard(OrderedTokenRule<QChar, QString>(",")),
                     ws,
                     expression,
@@ -297,8 +184,8 @@ int main(int argc, char* argv[])
             ws,
             discard(OrderedTokenRule<QChar, QString>("]"))
         ),
-        [](Result<Node>& target, Result<Node>& items) {
-            target << Node(
+        [](Result<LuaNode>& target, Result<LuaNode>& items) {
+            target << LuaNode(
                 TokenType::TableLiteral,
                 items.data()
             );
@@ -307,31 +194,31 @@ int main(int argc, char* argv[])
 
     singleExpression << tableLiteral;
 
-    auto statement = shared(proxyAlternative<QChar, Node>());
+    auto statement = shared(proxyAlternative<QChar, LuaNode>());
 
-    auto statementLine = proxySequence<QChar, Node>(
+    auto statementLine = proxySequence<QChar, LuaNode>(
         statement,
         ws,
-        discard(optional(OrderedTokenRule<QChar, Node>(";"))),
+        discard(optional(OrderedTokenRule<QChar, LuaNode>(";"))),
         ws
     );
 
     auto block = multiple(statementLine);
 
-    auto ifStatement = reduce<Node>(
-        proxySequence<QChar, Node>(
-            discard(OrderedTokenRule<QChar, Node>("if")),
+    auto ifStatement = reduce<LuaNode>(
+        proxySequence<QChar, LuaNode>(
+            discard(OrderedTokenRule<QChar, LuaNode>("if")),
             ws,
             expression,
             ws,
-            discard(OrderedTokenRule<QChar, Node>("then")),
+            discard(OrderedTokenRule<QChar, LuaNode>("then")),
             ws,
             block,
-            discard(OrderedTokenRule<QChar, Node>("end")),
+            discard(OrderedTokenRule<QChar, LuaNode>("end")),
             ws
         ),
-        [](Result<Node>& results, Result<Node>& subresults) {
-            results << Node(
+        [](Result<LuaNode>& results, Result<LuaNode>& subresults) {
+            results << LuaNode(
                 TokenType::IfStatement,
                 subresults.data()
             );
@@ -339,34 +226,34 @@ int main(int argc, char* argv[])
     );
     statement << ifStatement;
 
-    auto functionCall = reduce<Node>(
-        proxySequence<QChar, Node>(
+    auto functionCall = reduce<LuaNode>(
+        proxySequence<QChar, LuaNode>(
             variable,
             ws,
-            proxyAlternative<QChar, Node>(
-                proxySequence<QChar, Node>(
-                    discard(OrderedTokenRule<QChar, Node>("(")),
+            proxyAlternative<QChar, LuaNode>(
+                proxySequence<QChar, LuaNode>(
+                    discard(OrderedTokenRule<QChar, LuaNode>("(")),
                     ws,
-                    optional(join<QChar, Node>(
-                        proxySequence<QChar, Node>(
+                    optional(join<QChar, LuaNode>(
+                        proxySequence<QChar, LuaNode>(
                             expression,
                             ws
                         ),
-                        discard(proxySequence<QChar, Node>(
+                        discard(proxySequence<QChar, LuaNode>(
                             discard(OrderedTokenRule<QChar, QString>(",")),
                             ws
                         ))
                     )),
                     ws,
-                    discard(OrderedTokenRule<QChar, Node>(")"))
+                    discard(OrderedTokenRule<QChar, LuaNode>(")"))
                 ),
                 tableLiteral,
                 stringLiteral
             ),
             ws
         ),
-        [](Result<Node>& results, Result<Node>& subresults) {
-            results << Node(
+        [](Result<LuaNode>& results, Result<LuaNode>& subresults) {
+            results << LuaNode(
                 TokenType::FunctionCall,
                 subresults.data()
             );
@@ -375,15 +262,15 @@ int main(int argc, char* argv[])
     statement << functionCall;
     compoundExpression << functionCall;
 
-    auto returnStatement = reduce<Node>(
-        proxySequence<QChar, Node>(
-            discard(OrderedTokenRule<QChar, Node>("return")),
+    auto returnStatement = reduce<LuaNode>(
+        proxySequence<QChar, LuaNode>(
+            discard(OrderedTokenRule<QChar, LuaNode>("return")),
             ws,
             expression,
             ws
         ),
-        [](Result<Node>& results, Result<Node>& subresults) {
-            results << Node(
+        [](Result<LuaNode>& results, Result<LuaNode>& subresults) {
+            results << LuaNode(
                 TokenType::ReturnStatement,
                 subresults.data()
             );
@@ -391,8 +278,8 @@ int main(int argc, char* argv[])
     );
     statement << returnStatement;
 
-    auto assignment = reduce<Node>(
-        proxySequence<QChar, Node>(
+    auto assignment = reduce<LuaNode>(
+        proxySequence<QChar, LuaNode>(
             variable,
             discard(proxySequence<QChar, QString>(
                 optional(whitespace),
@@ -402,28 +289,28 @@ int main(int argc, char* argv[])
             expression,
             ws
         ),
-        [](Result<Node>& results, Result<Node>& subresults) {
-            results << Node(
+        [](Result<LuaNode>& results, Result<LuaNode>& subresults) {
+            results << LuaNode(
                 TokenType::Assignment,
                 subresults.data()
             );
         }
     );
 
-    auto operatorExpression = reduce<Node>(
-        proxySequence<QChar, Node>(
+    auto operatorExpression = reduce<LuaNode>(
+        proxySequence<QChar, LuaNode>(
             singleExpression,
             ws,
-            alternative<QChar, Node>(
-                OrderedTokenRule<QChar, Node>("==", TokenType::EqualOperator),
-                OrderedTokenRule<QChar, Node>("~=", TokenType::UnequalOperator)
+            alternative<QChar, LuaNode>(
+                OrderedTokenRule<QChar, LuaNode>("==", TokenType::EqualOperator),
+                OrderedTokenRule<QChar, LuaNode>("~=", TokenType::UnequalOperator)
             ),
             ws,
             expression,
             ws
         ),
-        [](Result<Node>& results, Result<Node>& subresults) {
-            results << Node(
+        [](Result<LuaNode>& results, Result<LuaNode>& subresults) {
+            results << LuaNode(
                 TokenType::Assignment,
                 subresults.data()
             );
@@ -431,10 +318,10 @@ int main(int argc, char* argv[])
     );
     compoundExpression << operatorExpression;
 
-    auto parser = proxySequence<QChar, Node>(
+    auto parser = proxySequence<QChar, LuaNode>(
         ws,
         block,
-        make::end<QChar, Node>()
+        make::end<QChar, LuaNode>()
     );
 
     QString content;
@@ -449,9 +336,9 @@ int main(int argc, char* argv[])
         stream.setCodec("UTF-8");
         content = stream.readAll();
     }
-    auto cursor = makeCursor<QChar>(&content);
 
-    Result<Node> nodes;
+    auto cursor = makeCursor<QChar>(&content);
+    Result<LuaNode> nodes;
 
     QElapsedTimer timer;
     timer.start();

@@ -7,7 +7,7 @@ pkgdata_DATA = \
 export RPMDIR ?= $$HOME/rpmbuild
 
 run:
-	cd src && ./sprout
+	./src/sprout $(top_srcdir)/src/lua.grammar
 
 checkdebug: $(TESTS)
 	cd t && gdb .libs/lt-runtest
@@ -19,7 +19,7 @@ debug: $(TESTS)
 	cd src && gdb ./.libs/lt-sprout
 
 valgrind:
-	cd src && valgrind -v --leak-check=full --trace-children=yes sprout
+	cd src && valgrind -v --leak-check=full --trace-children=yes ./sprout
 
 lua:
 	./src/luaparse $(top_srcdir)/src/simple.lua

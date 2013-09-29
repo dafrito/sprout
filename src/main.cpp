@@ -1,11 +1,14 @@
+#include "tokens.hpp"
 #include "rules.hpp"
 
 #include <iostream>
 #include <cassert>
+#include <unordered_map>
 
 #include <QChar>
 #include <QTextStream>
 #include <QString>
+#include <QFile>
 
 #include "StreamIterator"
 #include "TokenRule"
@@ -17,6 +20,8 @@
 #include "ProxyRule"
 #include "AlternativeRule"
 #include "ReduceRule"
+#include "JoinRule"
+#include "LogRule"
 
 #include <QRegExp>
 #include <QHash>
@@ -27,123 +32,172 @@ using namespace sprout;
 enum class TokenType {
     Unknown,
     Name,
-    Equal,
-    List,
-    StringConstant,
-    Assignment
+    StringLiteral,
+    Rule,
+    TokenRule,
+    ZeroOrMore,
+    OneOrMore,
+    Optional,
+    Alternative,
+    Sequence
 };
 
-const char* tokenTypeName(const TokenType type)
+namespace std {
+
+template<>
+struct hash<TokenType> {
+
+    int operator()(const TokenType& type) const
+    {
+        return (int)type;
+    }
+};
+
+} // namespace std
+
+std::ostream& operator<<(std::ostream& stream, const TokenType& type)
 {
-    switch (type) {
-        case TokenType::Unknown: return "Unknown";
-        case TokenType::Name: return "Name";
-        case TokenType::Equal: return "Equal";
-        case TokenType::List: return "List";
-        case TokenType::StringConstant: return "StringConstant";
-        case TokenType::Assignment: return "Assignment";
+    std::unordered_map<TokenType, const char*> names = {
+        { TokenType::Unknown, "Unknown" },
+        { TokenType::Name, "Name" },
+        { TokenType::StringLiteral, "StringLiteral" },
+        { TokenType::TokenRule, "TokenRule" },
+        { TokenType::Rule, "Rule" },
+        { TokenType::ZeroOrMore, "ZeroOrMore" },
+        { TokenType::OneOrMore, "OneOrMore" },
+        { TokenType::Optional, "Optional" },
+        { TokenType::Alternative, "Alternative" },
+        { TokenType::Sequence, "Sequence" },
+    };
+
+    stream << names.at(type);
+    return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, const QString& value)
+{
+    stream << value.toUtf8().constData();
+    return stream;
+}
+
+typedef Token<TokenType, QString> GToken;
+typedef Node<TokenType, QString> GNode;
+typedef ProxyRule<QChar, QString> GRule;
+typedef QHash<QString, SharedRule<GRule>> RulesMap;
+
+static GNode NOOP(TokenType::Unknown);
+
+void flattenRule(GNode& node)
+{
+    switch (node.type()) {
+        case TokenType::Sequence:
+        case TokenType::Alternative:
+            if (node.children().size() == 1) {
+                node = node[0];
+            }
+            break;
         default:
-            std::stringstream str;
-            str << "Unexpected TokenType: " << static_cast<int>(type);
-            throw std::logic_error(str.str());
+            break;
     }
 }
 
-struct Token {
-    TokenType type;
-    QString value;
-
-    Token() :
-        type(TokenType::Unknown)
-    {
-    }
-
-    Token(const TokenType& type) :
-        type(type)
-    {
-    }
-
-    Token(const TokenType& type, const QString& value) :
-        type(type),
-        value(value)
-    {
-    }
-};
-
-struct Node {
-    Token token;
-    std::vector<Node> children;
-
-    Node(const Token& token) :
-        token(token)
-    {
-    }
-
-    Node(const Token& token, std::vector<Node> children) :
-        token(token),
-        children(children)
-    {
-    }
-
-    TokenType type() const
-    {
-        return token.type;
-    }
-
-    const char* typeName() const
-    {
-        return tokenTypeName(type());
-    }
-
-    QString value() const
-    {
-        return token.value;
-    }
-
-    void add(const Node& child)
-    {
-        children.push_back(child);
-    }
-
-    Node operator[](const int index) const
-    {
-        return children[index];
-    }
-
-    void dump(std::stringstream& str, const std::string& indent) const
-    {
-        str << typeName();
-        if (!value().isNull()) {
-            str << ":" << value().toUtf8().constData();
-        }
-        if (!children.empty()) {
-            auto childIndent = indent + "    ";
-            str << " [\n" << childIndent;
-            for (unsigned int i = 0; i < children.size(); ++i) {
-                if (i > 0) {
-                    str << ",\n" << childIndent;
-                }
-                children[i].dump(str, childIndent);
-            }
-            str << "\n" << indent << "]";
-        }
-    }
-
-    std::string dump() const
-    {
-        std::stringstream str;
-        dump(str, "");
-        return str.str();
-    }
-};
-
-int main(int argc, char* argv[])
+void optimize(GNode& node)
 {
-    using namespace make;
+    for (GNode& child : node.children()) {
+        optimize(child);
+    }
+    flattenRule(node);
+}
 
-    auto whitespace = rule::whitespace<QString>();
+ProxyRule<QChar, QString> buildRule(RulesMap& rules, const GNode& node, const TokenType& ruleType)
+{
+    using namespace sprout::make;
 
-    auto name = convert<Node>(
+    bool excludeWhitespace = ruleType == TokenType::Rule;
+    auto ws = discard(optional(rule::whitespace<QString>()));
+
+    switch (node.type()) {
+        case TokenType::Sequence:
+        {
+            ProxySequenceRule<QChar, QString> rule;
+            for (auto child : node.children()) {
+                rule << buildRule(rules, child, ruleType);
+                if (excludeWhitespace) {
+                    rule << ws;
+                }
+            }
+            if (ruleType == TokenType::TokenRule) {
+                return reduce<QString>(
+                    rule,
+                    [](Result<QString>& dest, Result<QString>& src) {
+                        QString cumulative;
+                        while (src) {
+                            cumulative += *src++;
+                        }
+                        dest.insert(cumulative);
+                    }
+                );
+            }
+            return rule;
+        }
+        case TokenType::Alternative:
+        {
+            ProxyAlternativeRule<QChar, QString> rule;
+            for (auto child : node.children()) {
+                rule << buildRule(rules, child, ruleType);
+            }
+            return rule;
+        }
+        case TokenType::ZeroOrMore:
+        {
+            return optional(multiple(buildRule(rules, node[0], ruleType)));
+        }
+        case TokenType::Optional:
+        {
+            return optional(buildRule(rules, node[0], ruleType));
+        }
+        case TokenType::OneOrMore:
+        {
+            return multiple(buildRule(rules, node[0], ruleType));
+        }
+        case TokenType::Name:
+        {
+            return rules[node.value()];
+        }
+        case TokenType::StringLiteral:
+        {
+            return discard(OrderedTokenRule<QChar, QString>(node.value()));
+        }
+        default:
+        {
+            std::stringstream str;
+            str << "I don't know how to build a " << node.type() << " rule";
+            throw std::runtime_error(str.str());
+        }
+    }
+}
+
+void parseGrammar(RulesMap& rules, const char* filename)
+{
+    using namespace sprout::make;
+
+    auto lineComment = proxySequence<QChar, QString>(
+        OrderedTokenRule<QChar, QString>("#"),
+        [](Cursor<QChar>& iter, Result<QString>& result) {
+            while (iter && *iter++ != '\n') {
+                ;
+            }
+            return true;
+        }
+    );
+
+    auto whitespace = multiple(proxyAlternative<QChar, QString>(
+        rule::whitespace<QString>(),
+        lineComment
+    ));
+    auto ws = discard(optional(whitespace));
+
+    auto name = convert<GNode>(
         aggregate<QString>(
             multiple(simplePredicate<QChar>([](const QChar& input) {
                 return input.isLetter() || input == '_';
@@ -153,110 +207,189 @@ int main(int argc, char* argv[])
             }
         ),
         [](QString& value) {
-            return Node(Token(TokenType::Name, value));
+            return GNode(TokenType::Name, value);
         }
     );
 
-    auto definition = proxySequence<QChar, Node>(
-        discard(proxySequence<QChar, QString>(
-            OrderedTokenRule<QChar, QString>("var"),
-            whitespace
-        )),
-        name
-    );
-
-    auto stringConstant = convert<Node>(
+    auto stringLiteral = convert<GNode>(
         rule::quotedString,
         [](QString& value) {
-            return Node(Token(TokenType::StringConstant, value));
+            return GNode(TokenType::StringLiteral, value);
         }
     );
 
-    auto rvalue = shared(proxyAlternative<QChar, Node>(
-        convert<Node>(
-            rule::floating,
-            [](const float& value) {
-                return Node(
-                    Token(TokenType::StringConstant, QString::number(value))
-                );
-            }
-        ),
-        convert<Node>(
-            rule::integer,
-            [](const long value) {
-                return Node(
-                    Token(TokenType::StringConstant, QString::number(value))
-                );
-            }
-        ),
-        stringConstant,
-        name
-    ));
+    auto expression = shared(proxyAlternative<QChar, GNode>());
 
-    auto ws = discard(optional(whitespace));
-
-    auto list = reduce<Node>(
-        proxySequence<QChar, Node>(
-            discard(OrderedTokenRule<QChar, QString>("[")),
-            optional(proxySequence<QChar, Node>(
-                ws,
-                rvalue,
-                ws,
-                optional(multiple(proxySequence<QChar, Node>(
-                    discard(OrderedTokenRule<QChar, QString>(",")),
-                    ws,
-                    rvalue,
-                    ws
-                ))),
-                ws,
-                discard(optional(OrderedTokenRule<QChar, QString>(",")))
-            )),
+    auto singleExpression = reduce<GNode>(
+        proxySequence<QChar, GNode>(
+            proxyAlternative<QChar, GNode>(
+                stringLiteral,
+                name,
+                reduce<GNode>(
+                    proxySequence<QChar, GNode>(
+                        discard(OrderedTokenRule<QChar, GNode>("(")),
+                        ws,
+                        multiple(expression),
+                        ws,
+                        discard(OrderedTokenRule<QChar, GNode>(")")),
+                        ws
+                    ),
+                    [](Result<GNode>& dest, Result<GNode>& src) {
+                        GNode parenNode(TokenType::Sequence);
+                        while (src) {
+                            parenNode.insert(*src++);
+                        }
+                        dest.insert(parenNode);
+                    }
+                )
+            ),
             ws,
-            discard(OrderedTokenRule<QChar, QString>("]"))
-        ),
-        [](Result<Node>& target, Result<Node>& items) {
-            target << Node(
-                TokenType::List,
-                items.data()
-            );
-        }
-    );
-
-    rvalue << list;
-
-    auto assignment = reduce<Node>(
-        proxySequence<QChar, Node>(
-            name,
-            discard(proxySequence<QChar, QString>(
-                optional(whitespace),
-                OrderedTokenRule<QChar, QString>("="),
-                optional(whitespace)
+            optional(proxyAlternative<QChar, GNode>(
+                OrderedTokenRule<QChar, GNode>("*", TokenType::ZeroOrMore),
+                OrderedTokenRule<QChar, GNode>("+", TokenType::OneOrMore),
+                OrderedTokenRule<QChar, GNode>("?", TokenType::Optional)
             )),
-            rvalue
+            ws
         ),
-        [](Result<Node>& results, Result<Node>& subresults) {
-            results << Node(
-                TokenType::Assignment,
-                subresults.data()
-            );
+        [](Result<GNode>& results, Result<GNode>& src) {
+            if (src.size() == 2) {
+                GNode node(src[1].type());
+                node.insert(src[0]);
+                results.insert(node);
+            } else {
+                results.insert(src);
+            }
         }
     );
 
-    auto parser = proxySequence<QChar, Node>(
-        proxyAlternative<QChar, Node>(
-            assignment,
-            name
+    expression << reduce<GNode>(
+        proxySequence<QChar, GNode>(
+            join<QChar, GNode>(
+                proxySequence<QChar, GNode>(
+                    singleExpression,
+                    ws
+                ),
+                discard(proxySequence<QChar, GNode>(
+                    discard(OrderedTokenRule<QChar, QString>("|")),
+                    ws
+                ))
+            ),
+            ws
         ),
-        ws,
-        discard(optional(OrderedTokenRule<QChar, QString>(";"))),
-        ws,
-        make::end<QChar, Node>()
+        [](Result<GNode>& dest, Result<GNode>& src) {
+            if (src.size() > 1) {
+                dest.insert(GNode(TokenType::Alternative, src.data()));
+            } else {
+                dest.insert(*src);
+            }
+        }
     );
+
+    auto rule = reduce<GNode>(
+        proxySequence<QChar, GNode>(
+            proxyAlternative<QChar, GNode>(
+                OrderedTokenRule<QChar, GNode>("Rule", TokenType::Rule),
+                OrderedTokenRule<QChar, GNode>("Token", TokenType::TokenRule)
+            ),
+            ws,
+            name,
+            ws,
+            discard(OrderedTokenRule<QChar, QString>("=")),
+            ws,
+            multiple(expression),
+            ws,
+            discard(OrderedTokenRule<QChar, QString>(";")),
+            ws
+        ),
+        [](Result<GNode>& results, Result<GNode>& subresults) {
+            GNode rule = *subresults++;
+
+            rule.setValue(subresults->value());
+            ++subresults;
+
+            GNode sequence(TokenType::Sequence);
+            while (subresults) {
+                sequence.insert(*subresults++);
+            }
+            rule.insert(sequence);
+
+            results << rule;
+        }
+    );
+
+    auto parser = proxySequence<QChar, GNode>(
+        ws,
+        multiple(rule),
+        make::end<QChar, GNode>()
+    );
+
+    QFile file(filename);
+    if (!file.open(QFile::ReadOnly)) {
+        std::stringstream str;
+        str << "I couldn't open " << filename << " for reading";
+        throw std::runtime_error(str.str());
+    }
+    QTextStream stream(&file);
+    stream.setCodec("UTF-8");
+
+    auto cursor = makeCursor<QChar>(&stream);
+    Result<GNode> nodes;
+
+    QElapsedTimer timer;
+    timer.start();
+    auto parseSuccessful = parser(cursor, nodes);
+    std::cout << "Parsing completed in " << timer.nsecsElapsed() << " ns\n";
+
+    if (!parseSuccessful) {
+        throw std::runtime_error("Failed to parse. :(");
+    }
+
+    for (GNode& node : nodes) {
+        optimize(node);
+        std::cout << node.dump() << std::endl;
+        rules[node.value()] = buildRule(rules, node[0], node.type());
+    }
+}
+
+int main(int argc, char* argv[])
+{
+    using namespace make;
+
+    QHash<QString, SharedRule<ProxyRule<QChar, QString>>> rules;
+
+    rules["alpha"] = ProxyRule<QChar, QString>([](Cursor<QChar>& iter, Result<QString>& result) {
+        if (iter && (*iter).isLetter()) {
+            result << *iter++;
+            return true;
+        }
+        return false;
+    });
+
+    rules["alnum"] = ProxyRule<QChar, QString>([](Cursor<QChar>& iter, Result<QString>& result) {
+        if (iter && (*iter).isLetterOrNumber()) {
+            result << *iter++;
+            return true;
+        }
+        return false;
+    });
+
+    rules["number"] = convert<QString>(
+        rule::floating,
+        [](const float& value) {
+            return QString::number(value);
+        }
+    );
+
+    if (argc <= 1) {
+        throw std::logic_error("A grammar must be provided");
+    } else {
+        parseGrammar(rules, argv[1]);
+    }
+
+    auto parser = rules["main"];
 
     QTextStream stream(stdin);
     stream.setCodec("UTF-8");
-
-    QHash<QString, QString> globals;
 
     QString line;
     while (true) {
@@ -267,44 +400,25 @@ int main(int argc, char* argv[])
         }
 
         QTextStream lineStream(&line);
-        auto cursor = makeCursor<QChar>(&lineStream);
 
-        Result<Node> nodes;
-        if (parser(cursor, nodes)) {
+        auto cursor = makeCursor<QChar>(&lineStream);
+        Result<QString> nodes;
+
+        QElapsedTimer timer;
+        timer.start();
+        auto parseSuccessful = parser(cursor, nodes);
+        std::cout << "Parsing completed in " << timer.nsecsElapsed() << " ns\n";
+
+        if (parseSuccessful) {
             for (auto node : nodes) {
-                switch (node.type()) {
-                    case TokenType::Name:
-                        {
-                            auto name = node.value();
-                            std::cout << globals[name].toUtf8().constData() << std::endl;
-                            break;
-                        }
-                    case TokenType::Assignment:
-                        {
-                            auto name = node[0].value();
-                            auto result = node[1];
-                            switch (result.type()) {
-                                case TokenType::Name:
-                                    globals[name] = globals[result.value()];
-                                    break;
-                                case TokenType::StringConstant:
-                                    globals[name] = result.value();
-                                    break;
-                                default:
-                                    std::cout << "Unhandled type: " << result.typeName() << std::endl;
-                                    break;
-                            }
-                            break;
-                        }
-                    default:
-                        std::cout << "Unhandled type: " << node.typeName() << std::endl;
-                        break;
-                }
+                std::cout << node.toUtf8().constData() << std::endl;
             }
         } else {
-            std::cout << "Failed to parse\n";
+            std::cout << "Failed to parse. :(\n";
         }
     }
+
+    std::cout << std::endl;
 
     return 0;
 }
