@@ -83,6 +83,16 @@ public:
         return std::end(_data);
     }
 
+    typename Tokens::iterator begin()
+    {
+        return std::begin(_data);
+    }
+
+    typename Tokens::iterator end()
+    {
+        return std::end(_data);
+    }
+
     int pos() const
     {
         return _pos;
