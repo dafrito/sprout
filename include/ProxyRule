@@ -47,6 +47,8 @@ class ProxyRule : public RuleTraits<Input, Token>
     std::shared_ptr<RulePlaceholder<Input, Token>> _rule;
 
 public:
+    ProxyRule() = default;
+
     ProxyRule(const ProxyRule& other) :
         _rule(other._rule)
     {
@@ -62,7 +64,17 @@ public:
 
     bool operator()(Cursor<Input>& iter, Result<Token>& result) const
     {
+        if (!_rule) {
+            return false;
+        }
         return (*_rule)(iter, result);
+    }
+
+    template <class Rule>
+    ProxyRule& operator=(const Rule& other)
+    {
+        _rule = decltype(_rule)(new RulePlaceholderImpl<Rule, Input, Token>(other));
+        return *this;
     }
 };
 

@@ -21,6 +21,11 @@ class SharedRule : public RuleTraits<Input, Token>
     std::shared_ptr<Rule> _rule;
 
 public:
+    SharedRule() :
+        _rule(new Rule)
+    {
+    }
+
     SharedRule(const Rule& rule) :
         _rule(new Rule(rule))
     {
@@ -29,6 +34,13 @@ public:
     bool operator()(Cursor<Input>& iter, Result<Token>& result) const
     {
         return (*_rule)(iter, result);
+    }
+
+    template <class InternalRule>
+    SharedRule& operator=(const InternalRule& other)
+    {
+        *_rule = other;
+        return *this;
     }
 
     template <class T>
