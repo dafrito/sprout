@@ -5,8 +5,49 @@
 #include "Result"
 #include "RuleTraits"
 
+#include <iostream>
+
 namespace sprout {
 namespace rule {
+
+template <class Token>
+bool parseNeighborhood(Cursor<QChar>& orig, Result<Token>& results)
+{
+    auto iter = orig;
+    QString str;
+    QString indicator;
+
+    const int NEIGHBOR_SIZE = 10;
+
+    iter -= NEIGHBOR_SIZE;
+    for (int i = 0; iter && i < NEIGHBOR_SIZE * 2 + 1; ++i) {
+        auto c = *iter++;
+
+        int size = 1;
+        if (c == '\n') {
+            str += "\\n";
+            size = 2;
+        } else if (c == '\t') {
+            str += "\\t";
+            size = 2;
+        } else {
+            str += c;
+        }
+
+        for (int j = 0; j < size; ++j) {
+            indicator += i == NEIGHBOR_SIZE ? '^' : ' ';
+        }
+    }
+    std::cout << str.toUtf8().constData() << std::endl;
+    std::cout << indicator.toUtf8().constData() << std::endl;
+    return true;
+}
+
+template <class Token>
+auto neighborhood() -> decltype(make::rule<QChar, Token>(&parseNeighborhood<Token>))
+{
+    return make::rule<QChar, Token>(&parseNeighborhood<Token>);
+}
 
 template <class Token>
 bool parseWhitespace(Cursor<QChar>& iter, Result<Token>& result)
