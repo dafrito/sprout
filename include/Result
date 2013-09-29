@@ -98,6 +98,11 @@ public:
         return _insertionPos;
     }
 
+    int size() const
+    {
+        return head() - pos();
+    }
+
     template <class T>
     void insert(const T& value)
     {
