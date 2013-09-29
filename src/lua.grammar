@@ -1,4 +1,5 @@
-Rule main = assign;
 Rule assign = variable '=' expression;
-Rule expression = number | variable;
+Rule expression = binop | number | variable | list;
+Rule list = '[' {expression ','}? ','? ']';
+Rule binop = expression ('==' | '~=') expression;
 Token variable = (alpha | '_') alnum*;
