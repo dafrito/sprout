@@ -162,6 +162,14 @@ public:
         return _data[_pos];
     }
 
+    Token& get()
+    {
+        if (_pos >= head()) {
+            throw std::runtime_error("Position must not be dereferenced out of range");
+        }
+        return _data[_pos];
+    }
+
     const Token operator*() const
     {
         // Convert to a value to ensure the memory is not destroyed if our vector is reallocated
@@ -171,6 +179,14 @@ public:
     const Token* operator->() const
     {
         return &get();
+    }
+
+    Token& operator[](const int pos)
+    {
+        *this += pos;
+        Token& ref = get();
+        *this -= pos;
+        return ref;
     }
 
     const Result<Token>& operator++() const
