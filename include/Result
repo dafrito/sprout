@@ -149,6 +149,13 @@ public:
         }
     }
 
+    void clear()
+    {
+        _data.clear();
+        _pos = 0;
+        _insertionPos = 0;
+    }
+
     operator bool() const
     {
         return !_data.empty() && _pos < head();
