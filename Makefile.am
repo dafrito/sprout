@@ -19,7 +19,7 @@ debug: $(TESTS)
 	cd src && gdb ./.libs/lt-sprout
 
 valgrind:
-	cd src && valgrind -v --leak-check=full --trace-children=yes ./sprout
+	valgrind -v --leak-check=full --trace-children=yes ./src/sprout $(top_srcdir)/src/lua.grammar
 
 lua:
 	./src/luaparse $(top_srcdir)/src/simple.lua
