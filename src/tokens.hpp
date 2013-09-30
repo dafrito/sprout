@@ -60,6 +60,11 @@ struct Node {
         return token.type;
     }
 
+    void setType(const Type& type)
+    {
+        token.type = type;
+    }
+
     std::string typeName() const
     {
         std::stringstream str;
