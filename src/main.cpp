@@ -4,8 +4,11 @@
 #include <iostream>
 #include <cassert>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <QChar>
+#include <QSet>
+#include <QHash>
 #include <QTextStream>
 #include <QString>
 #include <QFile>
@@ -22,6 +25,7 @@
 #include "ReduceRule"
 #include "JoinRule"
 #include "LogRule"
+#include "RecursiveRule"
 
 #include <QRegExp>
 #include <QHash>
@@ -32,13 +36,18 @@ using namespace sprout;
 enum class TokenType {
     Unknown,
     Name,
+    Fundamental,
     StringLiteral,
     Rule,
+    GroupRule,
     TokenRule,
     ZeroOrMore,
+    Discard,
     OneOrMore,
     Optional,
     Alternative,
+    Recursive,
+    Join,
     Sequence
 };
 
@@ -49,7 +58,7 @@ struct hash<TokenType> {
 
     int operator()(const TokenType& type) const
     {
-        return (int)type;
+        return static_cast<int>(type);
     }
 };
 
@@ -60,14 +69,19 @@ std::ostream& operator<<(std::ostream& stream, const TokenType& type)
     std::unordered_map<TokenType, const char*> names = {
         { TokenType::Unknown, "Unknown" },
         { TokenType::Name, "Name" },
+        { TokenType::Fundamental, "Fundamental" },
         { TokenType::StringLiteral, "StringLiteral" },
         { TokenType::TokenRule, "TokenRule" },
         { TokenType::Rule, "Rule" },
+        { TokenType::GroupRule, "GroupRule" },
         { TokenType::ZeroOrMore, "ZeroOrMore" },
         { TokenType::OneOrMore, "OneOrMore" },
+        { TokenType::Discard, "Discard" },
         { TokenType::Optional, "Optional" },
         { TokenType::Alternative, "Alternative" },
+        { TokenType::Join, "Join" },
         { TokenType::Sequence, "Sequence" },
+        { TokenType::Recursive, "Recursive" },
     };
 
     stream << names.at(type);
@@ -85,10 +99,15 @@ typedef Node<TokenType, QString> GNode;
 typedef ProxyRule<QChar, QString> GRule;
 typedef QHash<QString, SharedRule<GRule>> RulesMap;
 
-static GNode NOOP(TokenType::Unknown);
+typedef Node<QString, QString> PNode;
+typedef ProxyRule<QChar, PNode> PRule;
+typedef QHash<QString, SharedRule<PRule>> PRulesMap;
 
 void flattenRule(GNode& node)
 {
+    for (GNode& child : node.children()) {
+        flattenRule(child);
+    }
     switch (node.type()) {
         case TokenType::Sequence:
         case TokenType::Alternative:
@@ -101,52 +120,233 @@ void flattenRule(GNode& node)
     }
 }
 
-void optimize(GNode& node)
+/*
+
+Left-recursive:
+Rule expression = binop | number;
+Rule binop = expression ('>' | '~=') expression;
+
+Fixed:
+Rule expression = binop | number;
+Rule binop = number ('>' | '~=') expression;
+
+AltFixed:
+Rule expression = number (('>' | '~=') expression)?;
+
+Left-recursive:
+Rule prefixExpression = functionCall | variable;
+Rule functionCall = prefixExpression arguments;
+
+
+Incorrect:
+Rule functionCall = variable arguments;
+
+Fixed:
+
+
+ */
+
+enum class RecursionState {
+    Unknown,
+    Pending,
+    Recursive,
+    Terminal
+};
+
+bool hasRecursions(const QString& name, GNode& node, QHash<QString, GNode>& ruleMap, QHash<QString, RecursionState>& stateMap)
 {
-    for (GNode& child : node.children()) {
-        optimize(child);
+    switch (node.type()) {
+        case TokenType::Name:
+            switch (stateMap[node.value()]) {
+                case RecursionState::Unknown:
+                    return hasRecursions(node.value(), ruleMap[node.value()], ruleMap, stateMap);
+                case RecursionState::Pending:
+                case RecursionState::Recursive:
+                    return true;
+                case RecursionState::Terminal:
+                    return false;
+                default:
+                    throw std::logic_error("Impossible");
+            }
+        case TokenType::Alternative:
+            for (auto child : node.children()) {
+                if (hasRecursions(name, child, ruleMap, stateMap)) {
+                    return true;
+                }
+            }
+            return false;
+        case TokenType::Fundamental:
+        case TokenType::StringLiteral:
+            return false;
+        case TokenType::Rule:
+        case TokenType::GroupRule:
+        case TokenType::TokenRule:
+        {
+            stateMap[node.value()] = RecursionState::Pending;
+            auto result = hasRecursions(node.value(), node[0], ruleMap, stateMap);
+            stateMap[node.value()] = result ? RecursionState::Recursive : RecursionState::Terminal;
+            return result;
+        }
+        case TokenType::Sequence:
+        {
+            while (hasRecursions(name, node[0], ruleMap, stateMap)) {
+                GNode& first = node[0];
+                switch (first.type()) {
+                    case TokenType::GroupRule:
+                    case TokenType::Rule:
+                        node[0] = first[0];
+                        break;
+                    case TokenType::Name:
+                        if (first.value() == name) {
+                            node.erase(0);
+                        } else {
+                            node[0] = ruleMap[first.value()];
+                        }
+                        break;
+                    case TokenType::Alternative:
+                    {
+                        int removable = -1;
+                        for (unsigned int i = 0; i < first.children().size(); ++i) {
+                            GNode& child = first[i];
+                            if (child.type() == TokenType::Name && child.value() == name) {
+                                // It's an alternative that's referring to us, so remove it
+                                removable = i;
+                                break;
+                            }
+                        }
+                        if (removable >= 0) {
+                            first.erase(removable);
+                        } else {
+                            throw std::runtime_error("I can't fix the recursion for this Alternative node");
+                        }
+
+                        GNode recursor(TokenType::Recursive, name);
+                        recursor.insert(first);
+                        node.erase(0);
+                        recursor.insert(node);
+
+                        node = recursor;
+                        break;
+                    }
+                    default:
+                        std::stringstream str;
+                        str << "I don't know how to fix a recursion for a " << first.type() << " node";
+                        throw std::logic_error(str.str());
+                }
+            }
+            return false;
+        }
+        case TokenType::Recursive:
+        case TokenType::ZeroOrMore:
+        case TokenType::OneOrMore:
+        case TokenType::Optional:
+        case TokenType::Discard:
+            return hasRecursions(name, node[0], ruleMap, stateMap);
+        case TokenType::Unknown:
+            throw std::logic_error("Unknown tokens must not be present");
+        default:
+            std::stringstream str;
+            str << "I found an unsupported " << node.type() << " token while looking for recursions";
+            throw std::logic_error(str.str());
     }
-    flattenRule(node);
 }
 
-ProxyRule<QChar, QString> buildRule(RulesMap& rules, const GNode& node, const TokenType& ruleType)
+void optimize(QHash<QString, GNode>& ruleMap)
+{
+    QHash<QString, RecursionState> stateMap;
+    for (auto iter = ruleMap.begin(); iter != ruleMap.end(); ++iter) {
+        GNode& node = iter.value();
+        flattenRule(node);
+    }
+    for (auto iter = ruleMap.begin(); iter != ruleMap.end(); ++iter) {
+        GNode& node = iter.value();
+        hasRecursions(iter.key(), node, ruleMap, stateMap);
+    }
+    for (auto iter = ruleMap.begin(); iter != ruleMap.end(); ++iter) {
+        GNode& node = iter.value();
+        flattenRule(node);
+    }
+}
+
+ProxyRule<QChar, PNode> buildRule(PRulesMap& rules, const GNode& node, const TokenType& ruleType)
 {
     using namespace sprout::make;
 
-    bool excludeWhitespace = ruleType == TokenType::Rule;
+    bool excludeWhitespace = ruleType != TokenType::TokenRule;
     auto ws = discard(optional(rule::whitespace<QString>()));
 
     switch (node.type()) {
         case TokenType::Sequence:
         {
-            ProxySequenceRule<QChar, QString> rule;
+            ProxySequenceRule<QChar, PNode> rule;
             for (auto child : node.children()) {
-                rule << buildRule(rules, child, ruleType);
+                auto childRule = buildRule(rules, child, ruleType);
+                if (child.type() == TokenType::StringLiteral) {
+                    rule << discard(childRule);
+                } else {
+                    rule << childRule;
+                }
                 if (excludeWhitespace) {
                     rule << ws;
                 }
             }
             if (ruleType == TokenType::TokenRule) {
-                return reduce<QString>(
+                return reduce<PNode>(
                     rule,
-                    [](Result<QString>& dest, Result<QString>& src) {
+                    [](Result<PNode>& dest, Result<PNode>& src) {
                         QString cumulative;
                         while (src) {
-                            cumulative += *src++;
+                            cumulative += src->value();
+                            ++src;
                         }
-                        dest.insert(cumulative);
+                        dest.insert(PNode("", cumulative));
                     }
                 );
             }
             return rule;
         }
+        case TokenType::Recursive:
+        {
+            ProxyRule<QChar, PNode> terminal = buildRule(rules, node[0], ruleType);
+            if (excludeWhitespace) {
+                terminal = make::proxySequence<QChar, PNode>(
+                    terminal,
+                    ws
+                );
+            }
+            return make::recursive(
+                terminal,
+                buildRule(rules, node[1], ruleType),
+                [node](Result<PNode>& result) {
+                    PNode recursiveNode(node.value());
+                    while (result) {
+                        recursiveNode.insert(*result++);
+                    }
+                    result.clear();
+                    result.insert(recursiveNode);
+                }
+            );
+        }
         case TokenType::Alternative:
         {
-            ProxyAlternativeRule<QChar, QString> rule;
+            ProxyAlternativeRule<QChar, PNode> rule;
             for (auto child : node.children()) {
                 rule << buildRule(rules, child, ruleType);
             }
             return rule;
+        }
+        case TokenType::Join:
+        {
+            auto content = buildRule(rules, node[0], ruleType);
+            auto separator = buildRule(rules, node[1], ruleType);
+            if (node[1].type() == TokenType::StringLiteral) {
+                separator = discard(separator);
+            }
+            if (excludeWhitespace) {
+                content = make::proxySequence<QChar, PNode>(content, ws);
+                separator = make::proxySequence<QChar, PNode>(separator, ws);
+            }
+            return join(content, separator);
         }
         case TokenType::ZeroOrMore:
         {
@@ -156,17 +356,22 @@ ProxyRule<QChar, QString> buildRule(RulesMap& rules, const GNode& node, const To
         {
             return optional(buildRule(rules, node[0], ruleType));
         }
+        case TokenType::Discard:
+        {
+            return discard(buildRule(rules, node[0], ruleType));
+        }
         case TokenType::OneOrMore:
         {
             return multiple(buildRule(rules, node[0], ruleType));
         }
+        case TokenType::Fundamental:
         case TokenType::Name:
         {
             return rules[node.value()];
         }
         case TokenType::StringLiteral:
         {
-            return discard(OrderedTokenRule<QChar, QString>(node.value()));
+            return OrderedTokenRule<QChar, PNode>(node.value(), PNode("", node.value()));
         }
         default:
         {
@@ -177,9 +382,15 @@ ProxyRule<QChar, QString> buildRule(RulesMap& rules, const GNode& node, const To
     }
 }
 
-void parseGrammar(RulesMap& rules, const char* filename)
+void parseGrammar(PRulesMap& rules, const char* filename)
 {
     using namespace sprout::make;
+
+    QSet<QString> fundamentals;
+
+    for (auto key : rules.keys()) {
+        fundamentals << key;
+    }
 
     auto lineComment = proxySequence<QChar, QString>(
         OrderedTokenRule<QChar, QString>("#"),
@@ -206,7 +417,10 @@ void parseGrammar(RulesMap& rules, const char* filename)
                 target += c;
             }
         ),
-        [](QString& value) {
+        [&fundamentals](QString& value) {
+            if (fundamentals.contains(value)) {
+                return GNode(TokenType::Fundamental, value);
+            }
             return GNode(TokenType::Name, value);
         }
     );
@@ -222,9 +436,29 @@ void parseGrammar(RulesMap& rules, const char* filename)
 
     auto singleExpression = reduce<GNode>(
         proxySequence<QChar, GNode>(
+            optional(OrderedTokenRule<QChar, GNode>("-", TokenType::Discard)),
+            ws,
             proxyAlternative<QChar, GNode>(
                 stringLiteral,
                 name,
+                reduce<GNode>(
+                    proxySequence<QChar, GNode>(
+                        discard(OrderedTokenRule<QChar, GNode>("{")),
+                        ws,
+                        expression,
+                        expression,
+                        ws,
+                        discard(OrderedTokenRule<QChar, GNode>("}")),
+                        ws
+                    ),
+                    [](Result<GNode>& dest, Result<GNode>& src) {
+                        GNode joinNode(TokenType::Join);
+                        while (src) {
+                            joinNode.insert(*src++);
+                        }
+                        dest.insert(joinNode);
+                    }
+                ),
                 reduce<GNode>(
                     proxySequence<QChar, GNode>(
                         discard(OrderedTokenRule<QChar, GNode>("(")),
@@ -252,7 +486,17 @@ void parseGrammar(RulesMap& rules, const char* filename)
             ws
         ),
         [](Result<GNode>& results, Result<GNode>& src) {
-            if (src.size() == 2) {
+            if (src[0].type() == TokenType::Discard) {
+                GNode discardNode(TokenType::Discard);
+                if (src.size() == 3) {
+                    GNode node(src[2].type());
+                    node.insert(src[1]);
+                    discardNode.insert(node);
+                } else {
+                    discardNode.insert(src[1]);
+                }
+                results.insert(discardNode);
+            } else if (src.size() == 2) {
                 GNode node(src[1].type());
                 node.insert(src[0]);
                 results.insert(node);
@@ -289,7 +533,8 @@ void parseGrammar(RulesMap& rules, const char* filename)
         proxySequence<QChar, GNode>(
             proxyAlternative<QChar, GNode>(
                 OrderedTokenRule<QChar, GNode>("Rule", TokenType::Rule),
-                OrderedTokenRule<QChar, GNode>("Token", TokenType::TokenRule)
+                OrderedTokenRule<QChar, GNode>("Token", TokenType::TokenRule),
+                OrderedTokenRule<QChar, GNode>("Group", TokenType::GroupRule)
             ),
             ws,
             name,
@@ -344,10 +589,48 @@ void parseGrammar(RulesMap& rules, const char* filename)
         throw std::runtime_error("Failed to parse. :(");
     }
 
+    QHash<QString, GNode> nodeMap;
     for (GNode& node : nodes) {
-        optimize(node);
+        nodeMap[node.value()] = node;
+    }
+
+    optimize(nodeMap);
+
+    for (GNode& node : nodeMap.values()) {
         std::cout << node.dump() << std::endl;
-        rules[node.value()] = buildRule(rules, node[0], node.type());
+        rules[node.value()] = reduce<PNode>(
+            buildRule(rules, node[0], node.type()),
+            [node](Result<PNode>& dest, Result<PNode>& src) {
+                switch (node.type()) {
+                    case TokenType::GroupRule:
+                        dest.insert(src);
+                        break;
+                    case TokenType::TokenRule:
+                        if (src.size() == 1 && src[0].type() == "") {
+                            src[0].setType(node.value());
+                            dest << src[0];
+                            break;
+                        }
+                        // Otherwise, fall through
+                    case TokenType::Rule:
+                    {
+                        if (node[0].type() == TokenType::Recursive) {
+                            // Recursive rules already create a group node, so don't double-nest it
+                            dest.insert(src);
+                            break;
+                        }
+                        PNode rv(node.value());
+                        while (src) {
+                            rv.insert(*src++);
+                        }
+                        dest << rv;
+                        break;
+                    }
+                    default:
+                        throw std::logic_error("Unexpected rule type");
+                }
+            }
+        );
     }
 }
 
@@ -355,28 +638,28 @@ int main(int argc, char* argv[])
 {
     using namespace make;
 
-    QHash<QString, SharedRule<ProxyRule<QChar, QString>>> rules;
+    PRulesMap rules;
 
-    rules["alpha"] = ProxyRule<QChar, QString>([](Cursor<QChar>& iter, Result<QString>& result) {
+    rules["alpha"] = ProxyRule<QChar, PNode>([](Cursor<QChar>& iter, Result<PNode>& result) {
         if (iter && (*iter).isLetter()) {
-            result << *iter++;
+            result << PNode("", *iter++);
             return true;
         }
         return false;
     });
 
-    rules["alnum"] = ProxyRule<QChar, QString>([](Cursor<QChar>& iter, Result<QString>& result) {
+    rules["alnum"] = ProxyRule<QChar, PNode>([](Cursor<QChar>& iter, Result<PNode>& result) {
         if (iter && (*iter).isLetterOrNumber()) {
-            result << *iter++;
+            result << PNode("", *iter++);
             return true;
         }
         return false;
     });
 
-    rules["number"] = convert<QString>(
+    rules["number"] = convert<PNode>(
         rule::floating,
         [](const float& value) {
-            return QString::number(value);
+            return PNode("number", QString::number(value));
         }
     );
 
@@ -402,7 +685,7 @@ int main(int argc, char* argv[])
         QTextStream lineStream(&line);
 
         auto cursor = makeCursor<QChar>(&lineStream);
-        Result<QString> nodes;
+        Result<PNode> nodes;
 
         QElapsedTimer timer;
         timer.start();
@@ -411,7 +694,7 @@ int main(int argc, char* argv[])
 
         if (parseSuccessful) {
             for (auto node : nodes) {
-                std::cout << node.toUtf8().constData() << std::endl;
+                std::cout << node.dump() << std::endl;
             }
         } else {
             std::cout << "Failed to parse. :(\n";

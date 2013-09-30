@@ -1,5 +1,12 @@
-Rule assign = variable '=' expression;
-Rule expression = binop | number | variable | list;
-Rule list = '[' {expression ','}? ','? ']';
-Rule binop = expression ('==' | '~=') expression;
+Group main = statement+;
+
+Group statement = (assign | functionCall) -';'?;
+Group expression = binop | number | variable | list;
+Rule list = '[' {expression ','}? -','? ']';
 Token variable = (alpha | '_') alnum*;
+Rule binop = expression ('==' | '~=') expression;
+
+Rule prefixExpression = variable | functionCall | ( '(' expression ')' );
+Rule assign = variable '=' expression;
+Rule functionCall = prefixExpression arguments;
+Rule arguments = '(' {expression ','}? ')';
