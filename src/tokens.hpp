@@ -94,6 +94,11 @@ struct Node {
         _children.push_back(child);
     }
 
+    void erase(const int pos)
+    {
+        _children.erase(_children.begin() + pos);
+    }
+
     const Node<Type, Value>& operator[](const int index) const
     {
         return _children[index];
