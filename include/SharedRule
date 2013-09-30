@@ -59,6 +59,11 @@ public:
     {
         return *_rule;
     }
+
+    explicit operator bool() const
+    {
+        return static_cast<bool>(_rule);
+    }
 };
 
 namespace make {

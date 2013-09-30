@@ -76,6 +76,11 @@ public:
         _rule = decltype(_rule)(new RulePlaceholderImpl<Rule, Input, Token>(other));
         return *this;
     }
+
+    explicit operator bool() const
+    {
+        return static_cast<bool>(_rule);
+    }
 };
 
 namespace make {
