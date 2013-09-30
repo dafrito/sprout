@@ -10,9 +10,18 @@ libsproutcommon_la_CPPFLAGS = -Wall -Werror @QT_CXXFLAGS@ -I$(top_srcdir)/includ
 libsproutcommon_la_LIBADD = @QT_LIBS@
 libsproutcommon_la_LDFLAGS = -version-info 0:0:0
 
-libsproutcommon_la_SOURCES = \
+nobase_pkginclude_HEADERS = \
 	rules.hpp \
-	rules.cpp
+	tokens.hpp \
+	Grammar.hpp \
+	LeftRecursionPass.hpp
+	FlattenPass.hpp
+
+libsproutcommon_la_SOURCES = \
+	rules.cpp \
+	Grammar.cpp \
+	LeftRecursionPass.cpp \
+	FlattenPass.cpp
 
 bin_PROGRAMS = sprout
 sprout_CPPFLAGS = $(libsproutcommon_la_CPPFLAGS)

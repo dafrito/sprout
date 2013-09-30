@@ -4,6 +4,7 @@
 #include "Cursor"
 #include "Result"
 #include "RuleTraits"
+#include "ProxyRule"
 
 #include <iostream>
 
@@ -71,13 +72,12 @@ auto whitespace() -> decltype(make::rule<QChar, Token>(&parseWhitespace<Token>))
 }
 
 bool parseQuotedString(Cursor<QChar>& input, Result<QString>& result);
-auto quotedString = make::rule<QChar, QString>(&parseQuotedString);
+
+ProxyRule<QChar, QString> lineComment(const QString& delimiter);
 
 bool parseInteger(Cursor<QChar>& input, Result<long>& result);
-auto integer = make::rule<QChar, long>(&parseInteger);
 
 bool parseFloating(Cursor<QChar>& input, Result<double>& result);
-auto floating = make::rule<QChar, double>(&parseFloating);
 
 } // namespace rule
 } // namespace sprout

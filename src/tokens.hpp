@@ -5,6 +5,8 @@
 #include <sstream>
 #include <iostream>
 
+namespace sprout {
+
 template <class Type, class Value>
 struct Token {
     Type type;
@@ -155,6 +157,8 @@ struct Node {
         return str.str();
     }
 };
+
+} // namespace sprout
 
 #endif // SPROUT_TOKENS_HEADER
 

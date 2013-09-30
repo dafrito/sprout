@@ -3,6 +3,8 @@
 #include <QChar>
 #include <QString>
 #include <cmath>
+#include <TokenRule>
+#include <DiscardRule>
 
 namespace sprout {
 namespace rule {
@@ -120,11 +122,15 @@ bool parseFloating(Cursor<QChar>& orig, Result<double>& tokens)
     }
 
     Result<long> nums;
-    if (*iter != '.' && !parseInteger(iter, nums)) {
-        return false;
-    }
 
-    long whole = *nums++;
+    long whole = 0;
+    if (*iter != '.') {
+        if (parseInteger(iter, nums)) {
+            whole = *nums++;
+        } else {
+            return false;
+        }
+    }
 
     double fractionValue = 0;
     if (iter && *iter == '.') {
@@ -169,6 +175,23 @@ bool parseFloating(Cursor<QChar>& orig, Result<double>& tokens)
     orig = iter;
     tokens << (whole + fractionValue) * std::pow(10, exponent);
     return true;
+}
+
+ProxyRule<QChar, QString> lineComment(const QString& delimiter)
+{
+    auto delimiterRule = make::discard(OrderedTokenRule<QChar, QString>(delimiter));
+    return [delimiterRule](Cursor<QChar>& iter, Result<QString>& result) {
+        if (!delimiterRule(iter, result)) {
+            return false;
+        }
+        QString str;
+        while (iter && *iter != '\n') {
+            str += *iter;
+            ++iter;
+        }
+        result << str;
+        return true;
+    };
 }
 
 } // namespace rule
