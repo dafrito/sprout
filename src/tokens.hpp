@@ -183,6 +183,13 @@ struct Node {
     }
 };
 
+template <class Type, class Value, class T>
+Node<Type, Value>& operator<<(Node<Type, Value>& parent, const T& child)
+{
+    parent.insert(child);
+    return parent;
+}
+
 } // namespace sprout
 
 #endif // SPROUT_TOKENS_HEADER
