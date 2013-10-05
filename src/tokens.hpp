@@ -1,6 +1,8 @@
 #ifndef SPROUT_TOKENS_HEADER
 #define SPROUT_TOKENS_HEADER
 
+#include "Result.hpp"
+
 #include <vector>
 #include <sstream>
 #include <iostream>
@@ -94,6 +96,14 @@ struct Node {
     void insert(const Node<Type, Value>& child)
     {
         _children.push_back(child);
+    }
+
+    void insert(const sprout::Result<Node<Type, Value>>& result)
+    {
+        while (result) {
+            insert(*result);
+            ++result;
+        }
     }
 
     void erase(const int pos)
