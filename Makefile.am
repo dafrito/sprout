@@ -27,6 +27,17 @@ lua:
 luavalgrind:
 	valgrind -v --leak-check=full --trace-children=yes ./src/luaparse $(top_srcdir)/src/simple.lua
 
+doc: sprout.doxygen
+	doxygen $<
+.PHONY: doc
+
+sprout.doxygen: sprout.doxygen.in Makefile.am
+	rm -f $@.tmp;
+	cat $< >> $@.tmp;
+	echo "INPUT += $(top_srcdir)/include $(top_srcdir)/src" >> $@.tmp;
+	echo "INPUT += $(top_srcdir)/sprout.doc" >>$@.tmp
+	mv $@.tmp $@
+
 # This is a common typo for me
 cehck: check
 .PHONY: cehck

@@ -1,0 +1,56 @@
+/**
+\mainpage Sprout
+
+Sprout is a parser toolkit and framework for C++11.
+
+- **Sprout is fast.** In benchmarks, naive Sprout is as fast or faster than Qt's regular expressions. If C++11 closures are used for common rules, Sprout can be much faster than regular expressions.
+- **Sprout is easy.** Sprout's rules are modular and quick to understand. This allows parsers to be written easily and incrementally within C++ without needing to learn a whole new language.
+- **Sprout is powerful.** If you'd prefer to express your language using a grammar, Sprout provides a framework for implementing it. You can mix and match rules expressed in C++ with those expressed in a grammar; Sprout does not lock you in.
+
+\section getting_started Getting started with Sprout
+
+\code
+
+auto parser = sprout::make::multiple(
+    sprout::OrderedTokenRule<QChar, QString>(" ");
+);
+
+bool skipWhitespace(sprout::Cursor<QChar>& iter, sprout::Result<QString>& result)
+{
+    while (iter && (*iter).isSpace()) {
+        ++iter;
+    }
+    return true;
+}
+
+\endcode
+
+- sprout::SequenceRule
+- sprout::AlternativeRule
+- sprout::MultipleRule
+
+\section install Installing Sprout
+
+Sprout lives on Github at https://github.com/dafrito/sprout. Cloning and building it works as follows:
+
+\code{.sh}
+git clone "https://github.com/dafrito/sprout.git"
+cd sprout
+autoreconf -i
+./configure --prefix=$HOME
+make -j
+make install
+
+\endcode
+
+\section tips Sprout in practice
+
+I prefer using QString and QChar for Qt's Unicode support, though char and std::string can be substituted if desired. The performance hit for supporting Unicode is negligible, so I recommend using Unicode whenever possible.
+
+Sprout's rules are very fast, but there's no need to only use Sprout rules when writing your parser. In practice, I usually write primitive rules with C++ lambdas. There are also some rules that would be tedious to express using Sprout rules, like those for parsing numbers, so writing those by hand is usually a better choice.
+
+Since Sprout is templated, it's possible that you could write a lexer to convert a stream of characters into tokens, then parse those tokens in a subsequent pass. In practice, I haven't had a need for writing a separate lexer. Sprout's rules are expressive enough to allow parsing to be done in a single pass, from QChars into an AST of your design.
+
+gcc 4.8.1 yields around 20% better performance Sprout binaries than clang++ 3.3 (the latest versions I have on hand). Sprout is very fast with either compiler, so the difference is not noticeable unless you're running benchmarks.
+
+*/
