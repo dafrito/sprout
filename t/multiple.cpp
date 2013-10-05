@@ -1,7 +1,7 @@
 #include "init.hpp"
 
-#include "MultipleRule"
-#include "TokenRule"
+#include "MultipleRule.hpp"
+#include "TokenRule.hpp"
 
 using namespace sprout;
 

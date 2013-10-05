@@ -1,15 +1,20 @@
 #ifndef SPROUT_MULTIPLERULE_HEADER
 #define SPROUT_MULTIPLERULE_HEADER
 
-#include "RuleTraits"
-#include "Cursor"
-#include "Result"
+#include "RuleTraits.hpp"
+#include "Cursor.hpp"
+#include "Result.hpp"
 
 namespace sprout {
 
 /**
- * MultipleRule matches as many instances of a specified rule
- * as possible, aggregating all results into a single result.
+ * \brief A rule that matches as many instance of a rule as possible.
+ *
+ * MultipleRule matches as many instances of a specified rule as possible,
+ * concatenating results of each match. This rule must match at least once to
+ * successfully match.
+ *
+ *
  */
 template <
     class Rule,
@@ -38,6 +43,9 @@ public:
 
 namespace make {
 
+/**
+ * Construct a MultipleRule.
+ */
 template <class Rule>
 MultipleRule<Rule> multiple(const Rule& rule)
 {

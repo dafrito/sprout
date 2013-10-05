@@ -4,9 +4,9 @@
 #include <vector>
 
 #include "composite.hpp"
-#include "RuleTraits"
-#include "Cursor"
-#include "Result"
+#include "RuleTraits.hpp"
+#include "Cursor.hpp"
+#include "Result.hpp"
 
 namespace sprout {
 

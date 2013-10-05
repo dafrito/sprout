@@ -4,15 +4,19 @@
 #include <vector>
 
 #include "composite.hpp"
-#include "RuleTraits"
-#include "Cursor"
-#include "Result"
+#include "RuleTraits.hpp"
+#include "Cursor.hpp"
+#include "Result.hpp"
 
 namespace sprout {
 
 /**
+ * \brief An ordered list of subrules.
+ *
  * SequenceRule matches input against an ordered list of subrules.
- * All required subrules to match for SequenceRule to match.
+ * All required subrules must match for SequenceRule to match. If
+ * any subrule fails to match, the iterator is reset to its original
+ * position.
  */
 template <
     class Rule,

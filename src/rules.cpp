@@ -3,8 +3,8 @@
 #include <QChar>
 #include <QString>
 #include <cmath>
-#include <TokenRule>
-#include <DiscardRule>
+#include <TokenRule.hpp>
+#include <DiscardRule.hpp>
 
 namespace sprout {
 namespace rule {

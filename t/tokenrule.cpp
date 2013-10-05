@@ -3,10 +3,10 @@
 #include <iterator>
 #include <sstream>
 
-#include "TokenRule"
-#include "SequenceRule"
-#include "ProxyRule"
-#include "MultipleRule"
+#include "TokenRule.hpp"
+#include "SequenceRule.hpp"
+#include "ProxyRule.hpp"
+#include "MultipleRule.hpp"
 
 using namespace sprout;
 

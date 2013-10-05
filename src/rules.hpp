@@ -1,10 +1,10 @@
 #ifndef SPROUT_RULES_HEADER
 #define SPROUT_RULES_HEADER
 
-#include "Cursor"
-#include "Result"
-#include "RuleTraits"
-#include "ProxyRule"
+#include "Cursor.hpp"
+#include "Result.hpp"
+#include "RuleTraits.hpp"
+#include "ProxyRule.hpp"
 
 #include <iostream>
 

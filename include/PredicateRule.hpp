@@ -1,9 +1,9 @@
 #ifndef SPROUT_PREDICATERULE_HEADER
 #define SPROUT_PREDICATERULE_HEADER
 
-#include "Cursor"
-#include "Result"
-#include "RuleTraits"
+#include "Cursor.hpp"
+#include "Result.hpp"
+#include "RuleTraits.hpp"
 
 namespace sprout {
 

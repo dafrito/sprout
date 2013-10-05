@@ -3,12 +3,12 @@
 
 #include <memory>
 
-#include "Cursor"
-#include "Result"
-#include "SequenceRule"
-#include "AlternativeRule"
-#include "LazyRule"
-#include "RuleTraits"
+#include "Cursor.hpp"
+#include "Result.hpp"
+#include "SequenceRule.hpp"
+#include "AlternativeRule.hpp"
+#include "LazyRule.hpp"
+#include "RuleTraits.hpp"
 
 namespace sprout {
 

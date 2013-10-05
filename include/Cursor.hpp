@@ -6,7 +6,7 @@
 #include <memory>
 #include <cstring>
 
-#include "StreamIterator"
+#include "StreamIterator.hpp"
 
 namespace sprout {
 

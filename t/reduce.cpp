@@ -1,10 +1,10 @@
 #include "init.hpp"
 
-#include "ReduceRule"
-#include "MultipleRule"
-#include "AlternativeRule"
-#include "DiscardRule"
-#include "TokenRule"
+#include "ReduceRule.hpp"
+#include "MultipleRule.hpp"
+#include "AlternativeRule.hpp"
+#include "DiscardRule.hpp"
+#include "TokenRule.hpp"
 
 using namespace sprout;
 

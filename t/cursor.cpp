@@ -1,6 +1,6 @@
 #include "init.hpp"
-#include "Cursor"
-#include "StreamIterator"
+#include "Cursor.hpp"
+#include "StreamIterator.hpp"
 #include <QTextStream>
 
 using namespace sprout;

@@ -1,8 +1,8 @@
 #ifndef SPROUT_RULETRAITS_HEADER
 #define SPROUT_RULETRAITS_HEADER
 
-#include "Cursor"
-#include "Result"
+#include "Cursor.hpp"
+#include "Result.hpp"
 
 namespace sprout {
 

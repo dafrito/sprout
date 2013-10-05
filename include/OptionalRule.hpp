@@ -4,10 +4,10 @@
 #include <vector>
 #include <algorithm>
 
-#include "RuleTraits"
-#include "SequenceRule"
-#include "Cursor"
-#include "Result"
+#include "RuleTraits.hpp"
+#include "SequenceRule.hpp"
+#include "Cursor.hpp"
+#include "Result.hpp"
 
 namespace sprout {
 

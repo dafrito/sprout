@@ -1,8 +1,8 @@
 #include "init.hpp"
 
-#include "PredicateRule"
-#include "MultipleRule"
-#include "ReduceRule"
+#include "PredicateRule.hpp"
+#include "MultipleRule.hpp"
+#include "ReduceRule.hpp"
 
 using namespace sprout;
 

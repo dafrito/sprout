@@ -5,9 +5,9 @@
 #include <memory>
 #include <algorithm>
 
-#include "RuleTraits"
-#include "Cursor"
-#include "Result"
+#include "RuleTraits.hpp"
+#include "Cursor.hpp"
+#include "Result.hpp"
 
 namespace sprout {
 

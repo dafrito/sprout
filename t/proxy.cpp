@@ -1,12 +1,12 @@
 #include "init.hpp"
 
-#include "DiscardRule"
-#include "TokenRule"
-#include "MultipleRule"
-#include "AlternativeRule"
-#include "SequenceRule"
-#include "OptionalRule"
-#include "ProxyRule"
+#include "DiscardRule.hpp"
+#include "TokenRule.hpp"
+#include "MultipleRule.hpp"
+#include "AlternativeRule.hpp"
+#include "SequenceRule.hpp"
+#include "OptionalRule.hpp"
+#include "ProxyRule.hpp"
 
 using namespace sprout;
 

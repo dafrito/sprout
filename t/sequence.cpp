@@ -1,7 +1,7 @@
 #include "init.hpp"
 
-#include "SequenceRule"
-#include "TokenRule"
+#include "SequenceRule.hpp"
+#include "TokenRule.hpp"
 
 using namespace sprout;
 

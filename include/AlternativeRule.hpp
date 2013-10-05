@@ -4,16 +4,20 @@
 #include <vector>
 
 #include "composite.hpp"
-#include "RuleTraits"
-#include "Cursor"
-#include "Result"
+#include "RuleTraits.hpp"
+#include "Cursor.hpp"
+#include "Result.hpp"
 
 namespace sprout {
 
 /**
- * AlternativeRule matches input against an ordered list of
- * candidate rules. The first rule that matches will provide
- * AlternativeRule's result.
+ * \brief A rule that provides multiple choices for matching.
+ *
+ * AlternativeRule matches input against an ordered list of candidate rules.
+ * The first rule that matches will provide AlternativeRule's result. The order
+ * of alternatives will determine the precedence of those rules; this rule
+ * makes no attempt to match the "longest" match, nor will it attempt to detect
+ * if a rule is shadowed by a previous rule.
  */
 template <
     class Rule,

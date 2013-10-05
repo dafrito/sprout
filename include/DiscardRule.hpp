@@ -4,16 +4,19 @@
 #include <vector>
 #include <algorithm>
 
-#include "RuleTraits"
-#include "Cursor"
-#include "Result"
+#include "RuleTraits.hpp"
+#include "Cursor.hpp"
+#include "Result.hpp"
 
 namespace sprout {
 
 /**
+ * \brief A rule that ignores any results from its subrule.
+ *
  * Runs the specified rule, but discards any matches. The cursor will be
  * moved on successful matches, so this is useful for skipping unnecessary
- * content like whitespace.
+ * content like whitespace. The success of the subrule is forwarded to
+ * this rule, and the iterator will be moved accordingly.
  */
 template <
     class Rule,

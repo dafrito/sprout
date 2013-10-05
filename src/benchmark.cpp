@@ -5,15 +5,15 @@
 #include <QTextStream>
 #include <QString>
 
-#include "StreamIterator"
-#include "TokenRule"
-#include "OptionalRule"
-#include "DiscardRule"
-#include "MultipleRule"
-#include "PredicateRule"
-#include "ProxyRule"
-#include "AlternativeRule"
-#include "ReduceRule"
+#include "StreamIterator.hpp"
+#include "TokenRule.hpp"
+#include "OptionalRule.hpp"
+#include "DiscardRule.hpp"
+#include "MultipleRule.hpp"
+#include "PredicateRule.hpp"
+#include "ProxyRule.hpp"
+#include "AlternativeRule.hpp"
+#include "ReduceRule.hpp"
 #include "config.h"
 
 #include <QRegExp>

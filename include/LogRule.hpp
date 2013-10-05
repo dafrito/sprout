@@ -1,9 +1,9 @@
 #ifndef SPROUT_LOGRULE_HEADER
 #define SPROUT_LOGRULE_HEADER
 
-#include "Cursor"
-#include "Result"
-#include "RuleTraits"
+#include "Cursor.hpp"
+#include "Result.hpp"
+#include "RuleTraits.hpp"
 
 namespace sprout {
 

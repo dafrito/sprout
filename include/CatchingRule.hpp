@@ -4,12 +4,15 @@
 #include <vector>
 #include <algorithm>
 
-#include "RuleTraits"
-#include "Cursor"
-#include "Result"
+#include "RuleTraits.hpp"
+#include "Cursor.hpp"
+#include "Result.hpp"
 
 namespace sprout {
 
+/**
+ * \brief A rule that catches a specified exception, using it to indicate failure.
+ */
 template <
     class Rule,
     class Exception,

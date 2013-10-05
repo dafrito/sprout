@@ -1,7 +1,7 @@
 #include "init.hpp"
 
-#include "CatchingRule"
-#include "PredicateRule"
+#include "CatchingRule.hpp"
+#include "PredicateRule.hpp"
 
 using namespace sprout;
 

@@ -5,7 +5,7 @@
 #include <iterator>
 #include <algorithm>
 
-#include "Cursor"
+#include "Cursor.hpp"
 
 namespace sprout {
 
