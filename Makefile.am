@@ -27,6 +27,9 @@ llvm:
 llvmvalgrind:
 	valgrind -v --leak-check=full --trace-children=yes ./src/sproutllvm
 
+benchmark:
+	./src/benchmark
+
 doc: sprout.doxygen
 	doxygen $<
 .PHONY: doc
