@@ -111,14 +111,24 @@ struct Node {
         _children.erase(_children.begin() + pos);
     }
 
+    const Node<Type, Value>& at(const int index) const
+    {
+        return _children.at(index);
+    }
+
+    Node<Type, Value>& at(const int index)
+    {
+        return _children.at(index);
+    }
+
     const Node<Type, Value>& operator[](const int index) const
     {
-        return _children[index];
+        return _children.at(index);
     }
 
     Node<Type, Value>& operator[](const int index)
     {
-        return _children[index];
+        return _children.at(index);
     }
 
     Node<Type, Value>& operator=(const Node<Type, Value>& other)
