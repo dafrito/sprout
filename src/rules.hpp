@@ -75,6 +75,8 @@ bool parseQuotedString(Cursor<QChar>& input, Result<QString>& result);
 
 ProxyRule<QChar, QString> lineComment(const QString& delimiter);
 
+ProxyRule<QChar, QString> variable();
+
 bool parseInteger(Cursor<QChar>& input, Result<long>& result);
 
 bool parseFloating(Cursor<QChar>& input, Result<double>& result);

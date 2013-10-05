@@ -194,6 +194,25 @@ ProxyRule<QChar, QString> lineComment(const QString& delimiter)
     };
 }
 
+ProxyRule<QChar, QString> variable()
+{
+    return [](Cursor<QChar>& iter, Result<QString>& result) {
+        if (!iter) {
+            return false;
+        }
+        if (!(*iter).isLetter() && *iter != '_') {
+            return false;
+        }
+        QString name;
+        name += *iter++;
+        while (iter && (*iter).isLetterOrNumber()) {
+            name += *iter++;
+        }
+        result << name;
+        return true;
+    };
+}
+
 } // namespace rule
 } // namespace sprout
 
