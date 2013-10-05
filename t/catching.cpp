@@ -1,16 +1,15 @@
+#include <rule/Catching.hpp>
+#include <rule/Predicate.hpp>
+
 #include "init.hpp"
 
-#include "CatchingRule.hpp"
-#include "PredicateRule.hpp"
-
 using namespace sprout;
+using namespace rule;
 
 struct FakeException {};
 
 BOOST_AUTO_TEST_CASE(testCatching)
 {
-    using namespace make;
-
     auto rule = catching<FakeException>(
         simplePredicate<char, std::string>([](const char& input) {
             if (input == 'a') {
@@ -42,8 +41,6 @@ BOOST_AUTO_TEST_CASE(testCatching)
 
 BOOST_AUTO_TEST_CASE(testCatchingWithLambda)
 {
-    using namespace make;
-
     auto rule = catching<FakeException, char, std::string>(
         [](Cursor<char>& iter, Result<std::string>& result) -> bool {
             throw FakeException();

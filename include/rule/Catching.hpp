@@ -1,14 +1,16 @@
-#ifndef SPROUT_CATCHINGRULE_HEADER
-#define SPROUT_CATCHINGRULE_HEADER
+#ifndef SPROUT_RULE_CATCHING_HEADER
+#define SPROUT_RULE_CATCHING_HEADER
+
+#include "RuleTraits.hpp"
+
+#include "../Cursor.hpp"
+#include "../Result.hpp"
 
 #include <vector>
 #include <algorithm>
 
-#include "RuleTraits.hpp"
-#include "Cursor.hpp"
-#include "Result.hpp"
-
 namespace sprout {
+namespace rule {
 
 /**
  * \brief A rule that catches a specified exception, using it to indicate failure.
@@ -19,12 +21,12 @@ template <
     class Input = typename Rule::input_type,
     class Token = typename Rule::token_type
 >
-class CatchingRule : public RuleTraits<Input, Token>
+class Catching : public RuleTraits<Input, Token>
 {
     Rule _rule;
 
 public:
-    CatchingRule(const Rule& rule) :
+    Catching(const Rule& rule) :
         _rule(rule)
     {
     }
@@ -39,24 +41,21 @@ public:
     }
 };
 
-namespace make {
-
 template <class Exception, class Rule>
-CatchingRule<Rule, Exception> catching(const Rule& rule)
+Catching<Rule, Exception> catching(const Rule& rule)
 {
-    return CatchingRule<Rule, Exception>(rule);
+    return Catching<Rule, Exception>(rule);
 }
 
 template <class Exception, class Input, class Token, class Rule>
-CatchingRule<Rule, Exception, Input, Token> catching(const Rule& rule)
+Catching<Rule, Exception, Input, Token> catching(const Rule& rule)
 {
-    return CatchingRule<Rule, Exception, Input, Token>(rule);
+    return Catching<Rule, Exception, Input, Token>(rule);
 }
 
-} // namespace make
-
+} // namespace rule
 } // namespace sprout
 
-#endif // SPROUT_CATCHINGRULE_HEADER
+#endif // SPROUT_RULE_CATCHING_HEADER
 
 // vim: set ft=cpp ts=4 sw=4 :

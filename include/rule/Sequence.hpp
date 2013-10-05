@@ -1,20 +1,22 @@
-#ifndef SPROUT_SEQUENCERULE_HEADER
-#define SPROUT_SEQUENCERULE_HEADER
-
-#include <vector>
+#ifndef SPROUT_RULE_SEQUENCE_HEADER
+#define SPROUT_RULE_SEQUENCE_HEADER
 
 #include "composite.hpp"
 #include "RuleTraits.hpp"
-#include "Cursor.hpp"
-#include "Result.hpp"
+
+#include "../Cursor.hpp"
+#include "../Result.hpp"
+
+#include <vector>
 
 namespace sprout {
+namespace rule {
 
 /**
  * \brief An ordered list of subrules.
  *
- * SequenceRule matches input against an ordered list of subrules.
- * All required subrules must match for SequenceRule to match. If
+ * Sequence matches input against an ordered list of subrules.
+ * All required subrules must match for Sequence to match. If
  * any subrule fails to match, the iterator is reset to its original
  * position.
  */
@@ -23,25 +25,25 @@ template <
     class Input = typename Rule::input_type,
     class Token = typename Rule::token_type
 >
-class SequenceRule : public RuleTraits<Input, Token>
+class Sequence : public RuleTraits<Input, Token>
 {
     std::vector<Rule> _rules;
 
 public:
     template <class Container>
-    SequenceRule(const Container& rules)
+    Sequence(const Container& rules)
     {
         for (auto rule : rules) {
             *this << rule;
         }
     }
 
-    SequenceRule()
+    Sequence()
     {
     }
 
     template <class T>
-    SequenceRule& operator<<(const T& rule)
+    Sequence& operator<<(const T& rule)
     {
         _rules.push_back(rule);
         return *this;
@@ -62,34 +64,31 @@ public:
     }
 };
 
-namespace make {
-
 template <class Input, class Token, class Rule, typename... Rules>
-SequenceRule<Rule, Input, Token> sequence(const Rule& rule, Rules... rest)
+Sequence<Rule, Input, Token> sequence(const Rule& rule, Rules... rest)
 {
-    SequenceRule<Rule, Input, Token> sequence;
+    Sequence<Rule, Input, Token> sequence;
     populate(sequence, rule, rest...);
     return sequence;
 }
 
 template <class Rule, typename... Values>
-SequenceRule<Rule> sequence(const Rule& rule, Values... rest)
+Sequence<Rule> sequence(const Rule& rule, Values... rest)
 {
-    SequenceRule<Rule> sequence;
+    Sequence<Rule> sequence;
     populate(sequence, rule, rest...);
     return sequence;
 }
 
 template <class Rule>
-SequenceRule<Rule> sequence()
+Sequence<Rule> sequence()
 {
-    return SequenceRule<Rule>();
+    return Sequence<Rule>();
 }
 
-} // namespace make
-
+} // namespace rule
 } // namespace sprout
 
-#endif // SPROUT_SEQUENCERULE_HEADER
+#endif // SPROUT_RULE_SEQUENCE_HEADER
 
 // vim: set ft=cpp ts=4 sw=4 :

@@ -1,19 +1,21 @@
-#ifndef SPROUT_PREDICATERULE_HEADER
-#define SPROUT_PREDICATERULE_HEADER
+#ifndef SPROUT_RULE_PREDICATE_HEADER
+#define SPROUT_RULE_PREDICATE_HEADER
 
-#include "Cursor.hpp"
-#include "Result.hpp"
 #include "RuleTraits.hpp"
 
+#include "../Cursor.hpp"
+#include "../Result.hpp"
+
 namespace sprout {
+namespace rule {
 
 template <class Input, class Token, class Matcher>
-class PredicateRule : public RuleTraits<Input, Token>
+class Predicate : public RuleTraits<Input, Token>
 {
     const Matcher _matcher;
 
 public:
-    PredicateRule(const Matcher& matcher) :
+    Predicate(const Matcher& matcher) :
         _matcher(matcher)
     {
     }
@@ -59,26 +61,23 @@ public:
     }
 };
 
-namespace make {
-
 template <class Input, class Token = Input, class Matcher>
-PredicateRule<Input, Token, Matcher> predicate(const Matcher& matcher)
+Predicate<Input, Token, Matcher> predicate(const Matcher& matcher)
 {
-    return PredicateRule<Input, Token, Matcher>(matcher);
+    return Predicate<Input, Token, Matcher>(matcher);
 }
 
 template <class Input, class Token = Input, class Tester>
-PredicateRule<Input, Token, SimplePredicate<Input, Token, Tester>> simplePredicate(const Tester& tester)
+Predicate<Input, Token, SimplePredicate<Input, Token, Tester>> simplePredicate(const Tester& tester)
 {
     SimplePredicate<Input, Token, Tester> matcher(tester);
-    PredicateRule<Input, Token, decltype(matcher)> rule(matcher);
+    Predicate<Input, Token, decltype(matcher)> rule(matcher);
     return rule;
 }
 
-} // namespace make
-
+} // namespace rule
 } // namespace sprout
 
-#endif // SPROUT_PREDICATERULE_HEADER
+#endif // SPROUT_RULE_PREDICATE_HEADER
 
 // vim: set ft=cpp ts=4 sw=4 :

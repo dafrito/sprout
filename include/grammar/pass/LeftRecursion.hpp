@@ -1,12 +1,14 @@
-#ifndef SPROUT_LEFTRECURSIONPASS_HEADER
-#define SPROUT_LEFTRECURSIONPASS_HEADER
+#ifndef SPROUT_GRAMMAR_PASS_LEFTRECURSION_HEADER
+#define SPROUT_GRAMMAR_PASS_LEFTRECURSION_HEADER
 
-#include "Grammar.hpp"
+#include "../Grammar.hpp"
 
 #include <QHash>
 #include <QString>
 
 namespace sprout {
+namespace grammar {
+namespace pass {
 
 enum class RecursionState {
     Unknown,
@@ -15,7 +17,7 @@ enum class RecursionState {
     Terminal
 };
 
-class LeftRecursionPass
+class LeftRecursion
 {
     QHash<QString, RecursionState> stateMap;
 
@@ -32,8 +34,10 @@ public:
     }
 };
 
+} // namespace pass
+} // namespace grammar
 } // namespace sprout
 
-#endif // SPROUT_LEFTRECURSIONPASS_HEADER
+#endif // SPROUT_GRAMMAR_PASS_LEFTRECURSION_HEADER
 
 // vim: set ts=4 sw=4 :

@@ -1,8 +1,10 @@
-#include "FlattenPass.hpp"
+#include <grammar/pass/Flatten.hpp>
 
 namespace sprout {
+namespace grammar {
+namespace pass {
 
-void FlattenPass::flatten(GNode& node)
+void Flatten::flatten(GNode& node)
 {
     for (GNode& child : node.children()) {
         flatten(child);
@@ -19,6 +21,8 @@ void FlattenPass::flatten(GNode& node)
     }
 }
 
+} // namespace pass
+} // namespace grammar
 } // namespace sprout
 
 // vim: set ts=4 sw=4 :

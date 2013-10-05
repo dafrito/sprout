@@ -1,10 +1,10 @@
-#include "Grammar.hpp"
+#include "grammar/Grammar.hpp"
 
 namespace std {
 
-std::ostream& operator<<(std::ostream& stream, const sprout::TokenType& type)
+std::ostream& operator<<(std::ostream& stream, const sprout::grammar::TokenType& type)
 {
-    using namespace sprout;
+    using namespace sprout::grammar;
 
     std::unordered_map<TokenType, const char*> names = {
         { TokenType::Unknown, "Unknown" },

@@ -1,16 +1,16 @@
-#include "init.hpp"
+#include <rule/Sequence.hpp>
+#include <rule/Literal.hpp>
 
-#include "SequenceRule.hpp"
-#include "TokenRule.hpp"
+#include "init.hpp"
 
 using namespace sprout;
 
-SequenceRule<OrderedTokenRule<char, std::string>> createRule()
+rule::Sequence<rule::OrderedLiteral<char, std::string>> createRule()
 {
-    return make::sequence(
-        OrderedTokenRule<char, std::string>("Cat", "Heathen"),
-        OrderedTokenRule<char, std::string>("Dog", "Civilized"),
-        OrderedTokenRule<char, std::string>("Zebra", "Cow")
+    return rule::sequence(
+        rule::OrderedLiteral<char, std::string>("Cat", "Heathen"),
+        rule::OrderedLiteral<char, std::string>("Dog", "Civilized"),
+        rule::OrderedLiteral<char, std::string>("Zebra", "Cow")
     );
 }
 
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(sequenceWorksWithLambdas)
     // This test is slightly degenerate, since we can't actually store
     // more than one rule in this sequence, but it works to ensure
     // lambdas are supported.
-    auto rule = make::sequence<char, std::string>(
+    auto rule = rule::sequence<char, std::string>(
         [](Cursor<char>& iter, Result<std::string>& results) {
             if (iter && *iter == 'A') {
                 results << "First";

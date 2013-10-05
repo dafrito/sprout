@@ -1,11 +1,13 @@
-#ifndef SPROUT_FLATTENPASS_HEADER
-#define SPROUT_FLATTENPASS_HEADER
+#ifndef SPROUT_GRAMMAR_PASS_FLATTEN_HEADER
+#define SPROUT_GRAMMAR_PASS_FLATTEN_HEADER
 
-#include "Grammar.hpp"
+#include "../Grammar.hpp"
 
 namespace sprout {
+namespace grammar {
+namespace pass {
 
-class FlattenPass
+class Flatten
 {
     void flatten(GNode& node);
 public:
@@ -19,8 +21,10 @@ public:
 
 };
 
+} // namespace pass
+} // namespace grammar
 } // namespace sprout
 
-#endif // SPROUT_FLATTENPASS_HEADER
+#endif // SPROUT_GRAMMAR_PASS_FLATTEN_HEADER
 
 // vim: set ts=4 sw=4 :

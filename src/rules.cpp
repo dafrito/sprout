@@ -1,10 +1,11 @@
-#include "rules.hpp"
+#include <rule/rules.hpp>
+
+#include <rule/Literal.hpp>
+#include <rule/Discard.hpp>
 
 #include <QChar>
 #include <QString>
 #include <cmath>
-#include <TokenRule.hpp>
-#include <DiscardRule.hpp>
 
 namespace sprout {
 namespace rule {
@@ -177,9 +178,9 @@ bool parseFloating(Cursor<QChar>& orig, Result<double>& tokens)
     return true;
 }
 
-ProxyRule<QChar, QString> lineComment(const QString& delimiter)
+rule::Proxy<QChar, QString> lineComment(const QString& delimiter)
 {
-    auto delimiterRule = make::discard(OrderedTokenRule<QChar, QString>(delimiter));
+    auto delimiterRule = rule::discard(OrderedLiteral<QChar, QString>(delimiter));
     return [delimiterRule](Cursor<QChar>& iter, Result<QString>& result) {
         if (!delimiterRule(iter, result)) {
             return false;
@@ -194,7 +195,7 @@ ProxyRule<QChar, QString> lineComment(const QString& delimiter)
     };
 }
 
-ProxyRule<QChar, QString> variable()
+rule::Proxy<QChar, QString> variable()
 {
     return [](Cursor<QChar>& iter, Result<QString>& result) {
         if (!iter) {
@@ -215,6 +216,5 @@ ProxyRule<QChar, QString> variable()
 
 } // namespace rule
 } // namespace sprout
-
 
 // vim: set ts=4 sw=4 :

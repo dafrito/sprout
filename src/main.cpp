@@ -1,10 +1,23 @@
-#include "Node.hpp"
-#include "rules.hpp"
+#include <grammar/Grammar.hpp>
+#include <grammar/Node.hpp>
+#include <grammar/pass/Flatten.hpp>
+#include <grammar/pass/LeftRecursion.hpp>
 
-#include <iostream>
-#include <cassert>
-#include <unordered_map>
-#include <unordered_set>
+#include <rule/rules.hpp>
+#include <rule/Literal.hpp>
+#include <rule/Discard.hpp>
+#include <rule/Shared.hpp>
+#include <rule/Multiple.hpp>
+#include <rule/Optional.hpp>
+#include <rule/Predicate.hpp>
+#include <rule/Proxy.hpp>
+#include <rule/Alternative.hpp>
+#include <rule/Reduce.hpp>
+#include <rule/Join.hpp>
+#include <rule/Log.hpp>
+#include <rule/Recursive.hpp>
+
+#include <StreamIterator.hpp>
 
 #include <QChar>
 #include <QSet>
@@ -12,28 +25,14 @@
 #include <QTextStream>
 #include <QString>
 #include <QFile>
-
-#include "Grammar.hpp"
-#include "StreamIterator.hpp"
-#include "TokenRule.hpp"
-#include "DiscardRule.hpp"
-#include "SharedRule.hpp"
-#include "MultipleRule.hpp"
-#include "OptionalRule.hpp"
-#include "PredicateRule.hpp"
-#include "ProxyRule.hpp"
-#include "AlternativeRule.hpp"
-#include "ReduceRule.hpp"
-#include "JoinRule.hpp"
-#include "LogRule.hpp"
-#include "RecursiveRule.hpp"
-
-#include "FlattenPass.hpp"
-#include "LeftRecursionPass.hpp"
-
 #include <QRegExp>
 #include <QHash>
 #include <QElapsedTimer>
+
+#include <iostream>
+#include <cassert>
+#include <unordered_map>
+#include <unordered_set>
 
 using namespace sprout;
 
@@ -44,7 +43,7 @@ std::ostream& operator<<(std::ostream& stream, const QString& value)
 }
 
 template <class Node>
-void parseLine(ProxyRule<QChar, Node> parser, QString& line)
+void parseLine(rule::Proxy<QChar, Node> parser, QString& line)
 {
     QTextStream lineStream(&line);
 
@@ -67,7 +66,8 @@ void parseLine(ProxyRule<QChar, Node> parser, QString& line)
 
 int main(int argc, char* argv[])
 {
-    using namespace make;
+    using namespace rule;
+    using namespace grammar;
 
     Grammar<QString, QString> grammar;
     typedef Node<QString, QString> PNode;
@@ -89,17 +89,17 @@ int main(int argc, char* argv[])
         grammar.readGrammar(cursor);
     }
 
-    FlattenPass()(grammar);
+    pass::Flatten()(grammar);
 
     for (auto node : grammar) {
         std::cout << node.dump() << std::endl;
     }
-    LeftRecursionPass()(grammar);
-    FlattenPass()(grammar);
+    pass::LeftRecursion()(grammar);
+    pass::Flatten()(grammar);
     grammar.build();
 
     auto lineComment = proxySequence<QChar, PNode>(
-        OrderedTokenRule<QChar, PNode>("--"),
+        rule::OrderedLiteral<QChar, PNode>("--"),
         [](Cursor<QChar>& iter, Result<PNode>& result) {
             while (iter && *iter++ != '\n') {
                 ;

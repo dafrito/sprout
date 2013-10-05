@@ -1,21 +1,20 @@
-#include <iostream>
-#include <cassert>
-
-#include <QChar>
-#include <QTextStream>
-#include <QString>
-
-#include "StreamIterator.hpp"
-#include "TokenRule.hpp"
-#include "OptionalRule.hpp"
-#include "DiscardRule.hpp"
-#include "MultipleRule.hpp"
-#include "PredicateRule.hpp"
-#include "ProxyRule.hpp"
-#include "AlternativeRule.hpp"
-#include "ReduceRule.hpp"
 #include "config.h"
 
+#include <rule/rules.hpp>
+#include <rule/Literal.hpp>
+#include <rule/Optional.hpp>
+#include <rule/Discard.hpp>
+#include <rule/Multiple.hpp>
+#include <rule/Predicate.hpp>
+#include <rule/Proxy.hpp>
+#include <rule/Alternative.hpp>
+#include <rule/Reduce.hpp>
+
+#include <StreamIterator.hpp>
+
+#include <QString>
+#include <QChar>
+#include <QTextStream>
 #include <QRegExp>
 #include <QElapsedTimer>
 
@@ -26,7 +25,8 @@
 #include <boost/spirit/include/phoenix_operator.hpp>
 #endif
 
-#include "rules.hpp"
+#include <iostream>
+#include <cassert>
 
 using namespace sprout;
 
@@ -47,9 +47,9 @@ void runBenchmark(const char* name, Runner runner)
 
 int main()
 {
-    using namespace make;
+    using namespace rule;
 
-    auto fastWhitespace = rule::whitespace<QString>();
+    auto fastWhitespace = whitespace<QString>();
 
     auto whitespace = discard(
         multiple(predicate<QChar, QString>([](const QChar& input, QString&) {
@@ -104,7 +104,7 @@ int main()
 
         {
             auto benchmark = proxySequence<QChar, QString>(
-                discard(OrderedTokenRule<QChar, QString>("var")),
+                discard(OrderedLiteral<QChar, QString>("var")),
                 whitespace,
                 name
             );
@@ -119,7 +119,7 @@ int main()
 
         {
             auto benchmark = proxySequence<QChar, QString>(
-                discard(OrderedTokenRule<QChar, QString>("var")),
+                discard(OrderedLiteral<QChar, QString>("var")),
                 fastWhitespace,
                 fastName
             );
@@ -169,7 +169,7 @@ int main()
         }
 
         {
-            auto benchmark = OrderedTokenRule<QChar, QString>("var", "var");
+            auto benchmark = OrderedLiteral<QChar, QString>("var", "var");
             runBenchmark("Sprout", [&]() {
                 auto cursor = makeCursor<QChar>(&inputString);
                 Result<QString> results;
@@ -248,7 +248,7 @@ int main()
 
         {
             auto benchmark = proxySequence<QChar, QString>(
-                discard(OrderedTokenRule<QChar, QString>("var")),
+                discard(OrderedLiteral<QChar, QString>("var")),
                 name
             );
 
@@ -263,7 +263,7 @@ int main()
 
         {
             auto benchmark = proxySequence<QChar, QString>(
-                discard(OrderedTokenRule<QChar, QString>("var")),
+                discard(OrderedLiteral<QChar, QString>("var")),
                 fastName
             );
 
@@ -325,7 +325,7 @@ int main()
         {
             auto benchmark = proxySequence<QChar, QString>(
                 whitespace,
-                OrderedTokenRule<QChar, QString>("foo", "foo")
+                OrderedLiteral<QChar, QString>("foo", "foo")
             );
 
             runBenchmark("Sprout", [&]() {
@@ -340,7 +340,7 @@ int main()
         {
             auto benchmark = proxySequence<QChar, QString>(
                 fastWhitespace,
-                OrderedTokenRule<QChar, QString>("foo", "foo")
+                OrderedLiteral<QChar, QString>("foo", "foo")
             );
 
             runBenchmark("Spfast", [&]() {
@@ -398,15 +398,15 @@ int main()
 
         {
             auto benchmark = proxySequence<QChar, QString>(
-                OrderedTokenRule<QChar, QString>("foo", "foo"),
-                discard(rule::whitespace<QString>()),
+                OrderedLiteral<QChar, QString>("foo", "foo"),
+                rule::discard(rule::whitespace<QString>()),
                 discard(proxySequence<QChar, QString>(
-                    OrderedTokenRule<QChar, QString>("#"),
+                    OrderedLiteral<QChar, QString>("#"),
                     proxyLazy<QChar, QString>(
-                        any<QChar, QString>(),
+                        rule::any<QChar, QString>(),
                         proxyAlternative<QChar, QString>(
-                            OrderedTokenRule<QChar, QString>("\n"),
-                            make::end<QChar, QString>()
+                            OrderedLiteral<QChar, QString>("\n"),
+                            rule::end<QChar, QString>()
                         )
                     )
                 ))
@@ -423,7 +423,7 @@ int main()
 
         {
             auto benchmark = proxySequence<QChar, QString>(
-                OrderedTokenRule<QChar, QString>("foo", "foo"),
+                OrderedLiteral<QChar, QString>("foo", "foo"),
                 discard(optional(fastWhitespace)),
                 [](Cursor<QChar>& iter, Result<QString>& result) {
                     if (!iter || *iter != '#') {

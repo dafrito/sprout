@@ -1,27 +1,29 @@
-#ifndef SPROUT_LAZYRULE_HEADER
-#define SPROUT_LAZYRULE_HEADER
-
-#include <vector>
+#ifndef SPROUT_RULE_LAZY_HEADER
+#define SPROUT_RULE_LAZY_HEADER
 
 #include "composite.hpp"
 #include "RuleTraits.hpp"
-#include "Cursor.hpp"
-#include "Result.hpp"
+
+#include "../Cursor.hpp"
+#include "../Result.hpp"
+
+#include <vector>
 
 namespace sprout {
+namespace rule {
 
 template <
     class Rule,
     class Input = typename Rule::input_type,
     class Token = typename Rule::token_type
 >
-class LazyRule : public RuleTraits<Input, Token>
+class Lazy : public RuleTraits<Input, Token>
 {
     Rule _consumer;
     Rule _condition;
 
 public:
-    LazyRule(const Rule& consumer, const Rule& condition) :
+    Lazy(const Rule& consumer, const Rule& condition) :
         _consumer(consumer),
         _condition(condition)
     {
@@ -43,23 +45,21 @@ public:
     }
 };
 
-namespace make {
-
 template <class Input, class Token, class Rule>
-LazyRule<Rule, Input, Token> lazy(const Rule& consumer, const Rule& condition)
+Lazy<Rule, Input, Token> lazy(const Rule& consumer, const Rule& condition)
 {
-    return LazyRule<Rule, Input, Token>(consumer, condition);
+    return Lazy<Rule, Input, Token>(consumer, condition);
 }
 
 template <class Rule>
-LazyRule<Rule> lazy(const Rule& consumer, const Rule& condition)
+Lazy<Rule> lazy(const Rule& consumer, const Rule& condition)
 {
-    return LazyRule<Rule>(consumer, condition);
+    return Lazy<Rule>(consumer, condition);
 }
 
-} // namespace make
+} // namespace rule
 } // namespace sprout
 
-#endif // SPROUT_LAZYRULE_HEADER
+#endif // SPROUT_RULE_LAZY_HEADER
 
 // vim: set ft=cpp ts=4 sw=4 :

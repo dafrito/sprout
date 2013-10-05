@@ -1,6 +1,8 @@
-#include "LeftRecursionPass.hpp"
+#include <grammar/pass/LeftRecursion.hpp>
 
 namespace sprout {
+namespace grammar {
+namespace pass {
 
 /*
 
@@ -28,7 +30,7 @@ Fixed:
 
  */
 
-bool LeftRecursionPass::hasRecursions(const QString& name, GNode& node, QHash<QString, GNode>& ruleMap)
+bool LeftRecursion::hasRecursions(const QString& name, GNode& node, QHash<QString, GNode>& ruleMap)
 {
     switch (node.type()) {
         case TokenType::Name:
@@ -145,6 +147,8 @@ bool LeftRecursionPass::hasRecursions(const QString& name, GNode& node, QHash<QS
     }
 }
 
+} // namespace pass
+} // namespace grammar
 } // namespace sprout
 
 // vim: set ts=4 sw=4 :

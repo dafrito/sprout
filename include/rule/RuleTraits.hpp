@@ -1,10 +1,11 @@
 #ifndef SPROUT_RULETRAITS_HEADER
 #define SPROUT_RULETRAITS_HEADER
 
-#include "Cursor.hpp"
-#include "Result.hpp"
+#include "../Cursor.hpp"
+#include "../Result.hpp"
 
 namespace sprout {
+namespace rule {
 
 template <class Input, class Token>
 using Rule = bool (*)(Cursor<Input>&, Result<Token>&);
@@ -14,8 +15,6 @@ struct RuleTraits {
     typedef Input input_type;
     typedef Token token_type;
 };
-
-namespace make {
 
 template <
     class Rule,
@@ -43,8 +42,7 @@ InlineRule<Rule, Input, Token> rule(const Rule& rule)
     return InlineRule<Rule, Input, Token>(rule);
 }
 
-} // namespace make
-
+} // namespace rule
 } // namespace sprout
 
 #endif // SPROUT_RULETRAITS_HEADER

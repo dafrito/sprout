@@ -1,36 +1,27 @@
 #include "llvm.hpp"
 
-#include "Node.hpp"
-#include "rules.hpp"
+#include <grammar/Node.hpp>
 
-#include <iostream>
-#include <cassert>
-#include <unordered_map>
-#include <unordered_set>
-#include <cstdio>
-#include <map>
-#include <string>
-#include <vector>
+#include <rule/rules.hpp>
+#include <rule/Literal.hpp>
+#include <rule/Discard.hpp>
+#include <rule/Shared.hpp>
+#include <rule/Multiple.hpp>
+#include <rule/Optional.hpp>
+#include <rule/Predicate.hpp>
+#include <rule/Proxy.hpp>
+#include <rule/Alternative.hpp>
+#include <rule/Reduce.hpp>
+#include <rule/Join.hpp>
+#include <rule/Recursive.hpp>
+
+#include "StreamIterator.hpp"
 
 #include <QChar>
 #include <QSet>
 #include <QHash>
 #include <QTextStream>
 #include <QString>
-
-#include "StreamIterator.hpp"
-#include "TokenRule.hpp"
-#include "DiscardRule.hpp"
-#include "SharedRule.hpp"
-#include "MultipleRule.hpp"
-#include "OptionalRule.hpp"
-#include "PredicateRule.hpp"
-#include "ProxyRule.hpp"
-#include "AlternativeRule.hpp"
-#include "ReduceRule.hpp"
-#include "JoinRule.hpp"
-#include "RecursiveRule.hpp"
-
 #include <QHash>
 #include <QElapsedTimer>
 
@@ -46,6 +37,15 @@
 #include <llvm/PassManager.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Transforms/Scalar.h>
+
+#include <iostream>
+#include <cassert>
+#include <unordered_map>
+#include <unordered_set>
+#include <cstdio>
+#include <map>
+#include <string>
+#include <vector>
 
 using namespace sprout;
 
@@ -87,17 +87,16 @@ int sprout::compare(const ASTType& left, const ASTType& right)
     return operatorPrecedence[left] - operatorPrecedence[right];
 }
 
-typedef Node<ASTType, QString> ASTNode;
+typedef grammar::Node<ASTType, QString> ASTNode;
 
 int compare(const ASTNode& left, const ASTNode& right)
 {
     return sprout::compare(left.type(), right.type());
 }
 
-ProxyRule<QChar, ASTNode> buildParser()
+rule::Proxy<QChar, ASTNode> buildParser()
 {
-    using namespace make;
-    using namespace llvm;
+    using namespace rule;
 
     auto ws = discard(multiple(proxyAlternative<QChar, ASTNode>(
         rule::whitespace<ASTNode>(),
@@ -113,7 +112,7 @@ ProxyRule<QChar, ASTNode> buildParser()
 
     auto single = shared(proxyAlternative<QChar, ASTNode>(
         convert<ASTNode>(
-            make::rule<QChar, double>(&rule::parseFloating),
+            rule::rule<QChar, double>(&rule::parseFloating),
             [](const double& value) {
                 return ASTNode(ASTType::NumberLiteral, QString::number(value));
             }
@@ -126,13 +125,13 @@ ProxyRule<QChar, ASTNode> buildParser()
         proxySequence<QChar, ASTNode>(
             optional(ws),
             proxyAlternative<QChar, ASTNode>(
-                OrderedTokenRule<QChar, ASTNode>("||", ASTType::Or),
-                OrderedTokenRule<QChar, ASTNode>("&&", ASTType::And),
-                OrderedTokenRule<QChar, ASTNode>("+", ASTType::Add),
-                OrderedTokenRule<QChar, ASTNode>("-", ASTType::Subtract),
-                OrderedTokenRule<QChar, ASTNode>("/", ASTType::Divide),
-                OrderedTokenRule<QChar, ASTNode>("*", ASTType::Multiply),
-                OrderedTokenRule<QChar, ASTNode>("^", ASTType::Exponent)
+                rule::OrderedLiteral<QChar, ASTNode>("||", ASTType::Or),
+                rule::OrderedLiteral<QChar, ASTNode>("&&", ASTType::And),
+                rule::OrderedLiteral<QChar, ASTNode>("+", ASTType::Add),
+                rule::OrderedLiteral<QChar, ASTNode>("-", ASTType::Subtract),
+                rule::OrderedLiteral<QChar, ASTNode>("/", ASTType::Divide),
+                rule::OrderedLiteral<QChar, ASTNode>("*", ASTType::Multiply),
+                rule::OrderedLiteral<QChar, ASTNode>("^", ASTType::Exponent)
             ),
             optional(ws)
         )),
@@ -172,11 +171,11 @@ ProxyRule<QChar, ASTNode> buildParser()
     );
 
     single << proxySequence<QChar, ASTNode>(
-        discard(OrderedTokenRule<QChar, ASTNode>("(")),
+        discard(rule::OrderedLiteral<QChar, ASTNode>("(")),
         optional(ws),
         expression,
         optional(ws),
-        discard(OrderedTokenRule<QChar, ASTNode>(")"))
+        discard(rule::OrderedLiteral<QChar, ASTNode>(")"))
     );
 
     auto statement = shared(proxyAlternative<QChar, ASTNode>());
@@ -185,7 +184,7 @@ ProxyRule<QChar, ASTNode> buildParser()
         proxySequence<QChar, ASTNode>(
             name,
             optional(ws),
-            discard(OrderedTokenRule<QChar, QChar>("(")),
+            discard(rule::OrderedLiteral<QChar, QChar>("(")),
             optional(ws),
             optional(join(
                 proxySequence<QChar, ASTNode>(
@@ -193,9 +192,9 @@ ProxyRule<QChar, ASTNode> buildParser()
                     expression,
                     optional(ws)
                 ),
-                discard(OrderedTokenRule<QChar, ASTNode>(","))
+                discard(rule::OrderedLiteral<QChar, ASTNode>(","))
             )),
-            discard(OrderedTokenRule<QChar, QChar>(")"))
+            discard(rule::OrderedLiteral<QChar, QChar>(")"))
         ),
         [](Result<ASTNode>& dest, Result<ASTNode>& src) {
             ASTNode funcNode(ASTType::Call, src[0].value());
@@ -210,17 +209,17 @@ ProxyRule<QChar, ASTNode> buildParser()
 
     auto ifStatement = reduce<ASTNode>(
         proxySequence<QChar, ASTNode>(
-            discard(OrderedTokenRule<QChar, QChar>("if")),
+            discard(rule::OrderedLiteral<QChar, QChar>("if")),
             optional(ws),
             expression,
             optional(ws),
-            discard(OrderedTokenRule<QChar, QChar>("then")),
+            discard(rule::OrderedLiteral<QChar, QChar>("then")),
             optional(ws),
             expression,
             optional(ws),
             optional(proxySequence<QChar, ASTNode>(
                 optional(ws),
-                discard(OrderedTokenRule<QChar, QChar>("else")),
+                discard(rule::OrderedLiteral<QChar, QChar>("else")),
                 optional(ws),
                 expression
             )),
@@ -236,11 +235,11 @@ ProxyRule<QChar, ASTNode> buildParser()
 
     auto functionDeclaration = reduce<ASTNode>(
         proxySequence<QChar, ASTNode>(
-            discard(OrderedTokenRule<QChar, QChar>("def")),
+            discard(rule::OrderedLiteral<QChar, QChar>("def")),
             ws,
             name,
             optional(ws),
-            discard(OrderedTokenRule<QChar, QChar>("(")),
+            discard(rule::OrderedLiteral<QChar, QChar>("(")),
             optional(ws),
             reduce<ASTNode>(
                 optional(join(
@@ -249,7 +248,7 @@ ProxyRule<QChar, ASTNode> buildParser()
                         name,
                         optional(ws)
                     ),
-                    discard(OrderedTokenRule<QChar, ASTNode>(","))
+                    discard(rule::OrderedLiteral<QChar, ASTNode>(","))
                 )),
                 [](Result<ASTNode>& dest, Result<ASTNode>& src) {
                     ASTNode args(ASTType::ArgumentList);
@@ -257,7 +256,7 @@ ProxyRule<QChar, ASTNode> buildParser()
                     dest << args;
                 }
             ),
-            discard(OrderedTokenRule<QChar, QChar>(")")),
+            discard(rule::OrderedLiteral<QChar, QChar>(")")),
             optional(ws),
             proxyAlternative<QChar, ASTNode>(
                 statement,
@@ -280,7 +279,7 @@ ProxyRule<QChar, ASTNode> buildParser()
             statement,
             expression
         ),
-        make::end<QChar, ASTNode>()
+        rule::end<QChar, ASTNode>()
     );
 }
 
@@ -479,7 +478,7 @@ llvm::Value* LLVMBuilder::build(const ASTNode& node)
     }
 }
 
-void parseLine(LLVMBuilder& builder, ProxyRule<QChar, ASTNode> parser, QString& line)
+void parseLine(LLVMBuilder& builder, rule::Proxy<QChar, ASTNode> parser, QString& line)
 {
     QTextStream lineStream(&line);
 

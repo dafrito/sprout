@@ -1,7 +1,8 @@
-#ifndef SPROUT_COMPOSITERULE_HEADER
-#define SPROUT_COMPOSITERULE_HEADER
+#ifndef SPROUT_RULE_COMPOSITE_HEADER
+#define SPROUT_RULE_COMPOSITE_HEADER
 
 namespace sprout {
+namespace rule {
 
 template <class Target>
 void populate(Target& target)
@@ -16,8 +17,9 @@ void populate(Target& target, const T& value, Values... rest)
     populate(target, rest...);
 }
 
+} // namespace rule
 } // namespace sprout
 
-#endif // SPROUT_COMPOSITERULE_HEADER
+#endif // SPROUT_RULE_COMPOSITE_HEADER
 
 // vim: set ft=cpp ts=4 sw=4 :

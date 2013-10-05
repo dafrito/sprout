@@ -1,14 +1,16 @@
-#ifndef SPROUT_DISCARDRULE_HEADER
-#define SPROUT_DISCARDRULE_HEADER
+#ifndef SPROUT_RULE_DISCARD_HEADER
+#define SPROUT_RULE_DISCARD_HEADER
+
+#include "RuleTraits.hpp"
+
+#include "../Cursor.hpp"
+#include "../Result.hpp"
 
 #include <vector>
 #include <algorithm>
 
-#include "RuleTraits.hpp"
-#include "Cursor.hpp"
-#include "Result.hpp"
-
 namespace sprout {
+namespace rule {
 
 /**
  * \brief A rule that ignores any results from its subrule.
@@ -23,14 +25,14 @@ template <
     class Input = typename Rule::input_type,
     class Token = typename Rule::token_type
 >
-class DiscardRule : public RuleTraits<Input, Token>
+class Discard : public RuleTraits<Input, Token>
 {
     const Rule _rule;
 
     mutable Result<Token> trash;
 
 public:
-    DiscardRule(const Rule& rule) :
+    Discard(const Rule& rule) :
         _rule(rule)
     {
         trash.suppress();
@@ -43,24 +45,21 @@ public:
     }
 };
 
-namespace make {
-
 template <class Rule>
-DiscardRule<Rule> discard(const Rule& rule)
+Discard<Rule> discard(const Rule& rule)
 {
-    return DiscardRule<Rule>(rule);
+    return Discard<Rule>(rule);
 }
 
 template <class Input, class Token, class Rule>
-DiscardRule<Rule, Input, Token> discard(const Rule& rule)
+Discard<Rule, Input, Token> discard(const Rule& rule)
 {
-    return DiscardRule<Rule, Input, Token>(rule);
+    return Discard<Rule, Input, Token>(rule);
 }
 
-} // namespace make
-
+} // namespace rule
 } // namespace sprout
 
-#endif // SPROUT_DISCARDRULE_HEADER
+#endif // SPROUT_RULE_DISCARD_HEADER
 
 // vim: set ft=cpp ts=4 sw=4 :

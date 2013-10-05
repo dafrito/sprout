@@ -1,25 +1,25 @@
-#include "init.hpp"
+#include <rule/Discard.hpp>
+#include <rule/Literal.hpp>
+#include <rule/Multiple.hpp>
+#include <rule/Alternative.hpp>
+#include <rule/Sequence.hpp>
+#include <rule/Optional.hpp>
+#include <rule/Proxy.hpp>
 
-#include "DiscardRule.hpp"
-#include "TokenRule.hpp"
-#include "MultipleRule.hpp"
-#include "AlternativeRule.hpp"
-#include "SequenceRule.hpp"
-#include "OptionalRule.hpp"
-#include "ProxyRule.hpp"
+#include "init.hpp"
 
 using namespace sprout;
 
 BOOST_AUTO_TEST_CASE(testTrivialProxy)
 {
-    ProxyRule<char, std::string> rule(
-        OrderedTokenRule<char, std::string>("Cat", "Animal")
+    rule::Proxy<char, std::string> rule(
+        rule::OrderedLiteral<char, std::string>("Cat", "Animal")
     );
 }
 
 BOOST_AUTO_TEST_CASE(testProxyHandlesAClosure)
 {
-    ProxyRule<char, std::string> rule([](Cursor<char>& input, Result<std::string>& result) {
+    rule::Proxy<char, std::string> rule([](Cursor<char>& input, Result<std::string>& result) {
         ++input;
         return true;
     });
@@ -27,22 +27,20 @@ BOOST_AUTO_TEST_CASE(testProxyHandlesAClosure)
 
 BOOST_AUTO_TEST_CASE(testSplittingByWhitespace)
 {
-    using namespace make;
-
     auto whitespace = optional(discard(multiple(
-        AnyTokenRule<char, std::string>("_")
+        rule::AnyLiteral<char, std::string>("_")
     )));
 
     auto rule = multiple(
-        proxySequence<char, std::string>(
+        rule::proxySequence<char, std::string>(
             whitespace,
             alternative(
-                OrderedTokenRule<char, std::string>("Cat", "Heathen"),
-                OrderedTokenRule<char, std::string>("Dog", "Civilized"),
-                OrderedTokenRule<char, std::string>("Calf", "Cow")
+                rule::OrderedLiteral<char, std::string>("Cat", "Heathen"),
+                rule::OrderedLiteral<char, std::string>("Dog", "Civilized"),
+                rule::OrderedLiteral<char, std::string>("Calf", "Cow")
             ),
             whitespace,
-            OrderedTokenRule<char, std::string>(",", "Comma"),
+            rule::OrderedLiteral<char, std::string>(",", "Comma"),
             whitespace
         )
     );

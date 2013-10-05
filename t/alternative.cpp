@@ -1,27 +1,27 @@
-#include "init.hpp"
+#include <rule/Alternative.hpp>
+#include <rule/Multiple.hpp>
+#include <rule/Literal.hpp>
 
-#include "AlternativeRule.hpp"
-#include "MultipleRule.hpp"
-#include "TokenRule.hpp"
+#include "init.hpp"
 
 using namespace sprout;
 
-AlternativeRule<OrderedTokenRule<char, std::string>> createAltRule()
+rule::Alternative<rule::OrderedLiteral<char, std::string>> createAltRule()
 {
-    OrderedTokenRule<char, std::string> a;
+    rule::OrderedLiteral<char, std::string> a;
     a.setTarget("Cat");
     a.setToken("Heathen");
 
-    OrderedTokenRule<char, std::string> b;
+    rule::OrderedLiteral<char, std::string> b;
     b.setTarget("Dog");
     b.setToken("Civilized");
 
-    OrderedTokenRule<char, std::string> c;
+    rule::OrderedLiteral<char, std::string> c;
     c.setTarget("Calf");
     c.setToken("Cow");
 
-    std::vector<OrderedTokenRule<char, std::string>> rules { a, b, c };
-    return AlternativeRule<decltype(a)>(rules);
+    std::vector<rule::OrderedLiteral<char, std::string>> rules { a, b, c };
+    return rule::Alternative<decltype(a)>(rules);
 }
 
 BOOST_AUTO_TEST_CASE(matchASingleAlternative)
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(matchAnotherSingleAlternative)
 
 BOOST_AUTO_TEST_CASE(matchMultipleAlternatives)
 {
-    auto rule = make::multiple(createAltRule());
+    auto rule = rule::multiple(createAltRule());
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("CatDogDogCalfCat");
@@ -82,7 +82,7 @@ bool twoAlternative(Cursor<char>& iter, Result<std::string>& result) {
 
 BOOST_AUTO_TEST_CASE(testAlternativeWithLambda)
 {
-    auto rule = make::alternative<char, std::string, std::function<decltype(oneAlternative)>>(
+    auto rule = rule::alternative<char, std::string, std::function<decltype(oneAlternative)>>(
         oneAlternative,
         twoAlternative
     );

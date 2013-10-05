@@ -2,29 +2,31 @@
 #define SPROUT_GRAMMAR_HEADER
 
 #include "Node.hpp"
-#include "rules.hpp"
-#include "ProxyRule.hpp"
-#include "SharedRule.hpp"
-#include "ReduceRule.hpp"
-#include "StreamIterator.hpp"
-#include "TokenRule.hpp"
-#include "DiscardRule.hpp"
-#include "SharedRule.hpp"
-#include "MultipleRule.hpp"
-#include "OptionalRule.hpp"
-#include "PredicateRule.hpp"
-#include "ProxyRule.hpp"
-#include "AlternativeRule.hpp"
-#include "ReduceRule.hpp"
-#include "JoinRule.hpp"
-#include "LogRule.hpp"
-#include "RecursiveRule.hpp"
+
+#include <rule/rules.hpp>
+#include <rule/Proxy.hpp>
+#include <rule/Shared.hpp>
+#include <rule/Reduce.hpp>
+#include <rule/Literal.hpp>
+#include <rule/Discard.hpp>
+#include <rule/Shared.hpp>
+#include <rule/Multiple.hpp>
+#include <rule/Optional.hpp>
+#include <rule/Predicate.hpp>
+#include <rule/Proxy.hpp>
+#include <rule/Alternative.hpp>
+#include <rule/Reduce.hpp>
+#include <rule/Join.hpp>
+#include <rule/Recursive.hpp>
 
 #include <unordered_map>
 #include <QElapsedTimer>
 #include <QSet>
+#include <QString>
+#include <QChar>
 
 namespace sprout {
+namespace grammar {
 
 enum class TokenType {
     Unknown,
@@ -85,44 +87,46 @@ enum class TokenType {
     TokenRule
 };
 
+} // namespace grammar
 } // namespace sprout
 
 namespace std {
 
 template<>
-struct hash<sprout::TokenType> {
+struct hash<sprout::grammar::TokenType> {
 
-    int operator()(const sprout::TokenType& type) const
+    int operator()(const sprout::grammar::TokenType& type) const
     {
         return static_cast<int>(type);
     }
 };
 
-std::ostream& operator<<(std::ostream& stream, const sprout::TokenType& type);
+std::ostream& operator<<(std::ostream& stream, const sprout::grammar::TokenType& type);
 
 } // namespace std
 
 namespace sprout {
+namespace grammar {
 
 typedef Token<TokenType, QString> GToken;
 typedef Node<TokenType, QString> GNode;
-typedef ProxyRule<QChar, QString> GRule;
+typedef rule::Proxy<QChar, QString> GRule;
 
 template <class Type, class Value>
 class Grammar
 {
 public:
     typedef Node<Type, Value> PNode;
-    typedef ProxyRule<QChar, PNode> PRule;
+    typedef rule::Proxy<QChar, PNode> PRule;
 
 private:
-    typedef QHash<QString, SharedRule<GRule>> RulesMap;
+    typedef QHash<QString, rule::Shared<GRule>> RulesMap;
 
-    QHash<QString, SharedRule<PRule>> _rules;
-    ProxyRule<QChar, GNode> _grammarParser;
+    QHash<QString, rule::Shared<PRule>> _rules;
+    rule::Proxy<QChar, GNode> _grammarParser;
     QHash<QString, GNode> _parsedRules;
 
-    ProxyRule<QChar, GNode>& grammarParser()
+    rule::Proxy<QChar, GNode>& grammarParser()
     {
         if (!_grammarParser) {
             _grammarParser = createGrammarParser();
@@ -130,13 +134,13 @@ private:
         return _grammarParser;
     }
 
-    ProxyRule<QChar, GNode> createGrammarParser();
+    rule::Proxy<QChar, GNode> createGrammarParser();
 
 public:
     Grammar()
     {
 
-        _rules["alpha"] = ProxyRule<QChar, PNode>([](Cursor<QChar>& iter, Result<PNode>& result) {
+        _rules["alpha"] = rule::Proxy<QChar, PNode>([](Cursor<QChar>& iter, Result<PNode>& result) {
             if (iter && (*iter).isLetter()) {
                 result << PNode("", *iter++);
                 return true;
@@ -144,7 +148,7 @@ public:
             return false;
         });
 
-        _rules["alnum"] = ProxyRule<QChar, PNode>([](Cursor<QChar>& iter, Result<PNode>& result) {
+        _rules["alnum"] = rule::Proxy<QChar, PNode>([](Cursor<QChar>& iter, Result<PNode>& result) {
             if (iter && (*iter).isLetterOrNumber()) {
                 result << PNode("", *iter++);
                 return true;
@@ -152,28 +156,26 @@ public:
             return false;
         });
 
-        _rules["string"] = make::convert<PNode>(
-            make::rule<QChar, QString>(&rule::parseQuotedString),
+        _rules["string"] = rule::convert<PNode>(
+            rule::rule<QChar, QString>(&rule::parseQuotedString),
             [](QString& value) {
                 return PNode("string", value);
             }
         );
 
-        _rules["number"] = make::convert<PNode>(
-            make::rule<QChar, double>(&rule::parseFloating),
+        _rules["number"] = rule::convert<PNode>(
+            rule::rule<QChar, double>(&rule::parseFloating),
             [](const float& value) {
                 return PNode("number", QString::number(value));
             }
         );
     }
 
-    ProxyRule<QChar, PNode> buildRule(const GNode& node, const TokenType& ruleType)
+    rule::Proxy<QChar, PNode> buildRule(const GNode& node, const TokenType& ruleType)
     {
-        using namespace sprout::make;
-
         bool excludeWhitespace = ruleType != TokenType::TokenRule;
 
-        auto ws = discard(optional(multiple(proxyAlternative<QChar, QString>(
+        auto ws = rule::discard(rule::optional(rule::multiple(rule::proxyAlternative<QChar, QString>(
             rule::whitespace<QString>(),
             rule::lineComment("--")
         ))));
@@ -181,7 +183,7 @@ public:
         switch (node.type()) {
             case TokenType::Sequence:
             {
-                ProxySequenceRule<QChar, PNode> rule;
+                rule::ProxySequence<QChar, PNode> rule;
                 for (auto child : node.children()) {
                     auto childRule = buildRule(child, ruleType);
                     if (child.type() == TokenType::Literal) {
@@ -194,7 +196,7 @@ public:
                     }
                 }
                 if (ruleType == TokenType::TokenRule) {
-                    return reduce<PNode>(
+                    return rule::reduce<PNode>(
                         rule,
                         [](Result<PNode>& dest, Result<PNode>& src) {
                             QString cumulative;
@@ -210,14 +212,14 @@ public:
             }
             case TokenType::Recursive:
             {
-                ProxyRule<QChar, PNode> terminal = buildRule(node[0], ruleType);
+                rule::Proxy<QChar, PNode> terminal = buildRule(node[0], ruleType);
                 if (excludeWhitespace) {
-                    terminal = make::proxySequence<QChar, PNode>(
+                    terminal = rule::proxySequence<QChar, PNode>(
                         terminal,
                         ws
                     );
                 }
-                return make::recursive(
+                return rule::recursive(
                     terminal,
                     buildRule(node[1], ruleType),
                     [node](Result<PNode>& result) {
@@ -232,7 +234,7 @@ public:
             }
             case TokenType::Alternative:
             {
-                ProxyAlternativeRule<QChar, PNode> rule;
+                rule::ProxyAlternative<QChar, PNode> rule;
                 for (auto child : node.children()) {
                     rule << buildRule(child, ruleType);
                 }
@@ -246,26 +248,26 @@ public:
                     separator = discard(separator);
                 }
                 if (excludeWhitespace) {
-                    content = make::proxySequence<QChar, PNode>(content, ws);
-                    separator = make::proxySequence<QChar, PNode>(separator, ws);
+                    content = rule::proxySequence<QChar, PNode>(content, ws);
+                    separator = rule::proxySequence<QChar, PNode>(separator, ws);
                 }
-                return join(content, separator);
+                return rule::join(content, separator);
             }
             case TokenType::ZeroOrMore:
             {
-                return optional(multiple(buildRule(node[0], ruleType)));
+                return rule::optional(rule::multiple(buildRule(node[0], ruleType)));
             }
             case TokenType::Optional:
             {
-                return optional(buildRule(node[0], ruleType));
+                return rule::optional(buildRule(node[0], ruleType));
             }
             case TokenType::Discard:
             {
-                return discard(buildRule(node[0], ruleType));
+                return rule::discard(buildRule(node[0], ruleType));
             }
             case TokenType::OneOrMore:
             {
-                return multiple(buildRule(node[0], ruleType));
+                return rule::multiple(buildRule(node[0], ruleType));
             }
             case TokenType::Opaque:
             case TokenType::Name:
@@ -274,7 +276,7 @@ public:
             }
             case TokenType::Literal:
             {
-                return OrderedTokenRule<QChar, PNode>(node.value(), PNode("", node.value()));
+                return rule::OrderedLiteral<QChar, PNode>(node.value(), PNode("", node.value()));
             }
             default:
             {
@@ -306,7 +308,7 @@ public:
     void build()
     {
         for (GNode& node : _parsedRules.values()) {
-            _rules[node.value()] = make::reduce<PNode>(
+            _rules[node.value()] = rule::reduce<PNode>(
                 buildRule(node[0], node.type()),
                 [node](Result<PNode>& dest, Result<PNode>& src) {
                     switch (node.type()) {
@@ -342,7 +344,7 @@ public:
         }
     }
 
-    SharedRule<PRule> operator[](const char* name)
+    rule::Shared<PRule> operator[](const char* name)
     {
         return _rules[name];
     }
@@ -364,19 +366,18 @@ public:
 };
 
 template <class Type, class Value>
-ProxyRule<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
+rule::Proxy<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
 {
-    using namespace make;
 
-    auto whitespace = multiple(proxyAlternative<QChar, QString>(
+    auto whitespace = rule::multiple(rule::proxyAlternative<QChar, QString>(
         rule::whitespace<QString>(),
         rule::lineComment("#")
     ));
-    auto ws = discard(optional(whitespace));
+    auto ws = rule::discard(rule::optional(whitespace));
 
-    auto name = convert<GNode>(
-        aggregate<QString>(
-            multiple(simplePredicate<QChar>([](const QChar& input) {
+    auto name = rule::convert<GNode>(
+        rule::aggregate<QString>(
+            rule::multiple(rule::simplePredicate<QChar>([](const QChar& input) {
                 return input.isLetter() || input == '_';
             })),
             [](QString& target, const QChar& c) {
@@ -391,30 +392,30 @@ ProxyRule<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
         }
     );
 
-    auto literal = convert<GNode>(
-        make::rule<QChar, QString>(&rule::parseQuotedString),
+    auto literal = rule::convert<GNode>(
+        rule::rule<QChar, QString>(&rule::parseQuotedString),
         [](QString& value) {
             return GNode(TokenType::Literal, value);
         }
     );
 
-    auto expression = shared(proxyAlternative<QChar, GNode>());
+    auto expression = rule::shared(rule::proxyAlternative<QChar, GNode>());
 
-    auto singleExpression = reduce<GNode>(
-        proxySequence<QChar, GNode>(
-            optional(OrderedTokenRule<QChar, GNode>("-", TokenType::Discard)),
+    auto singleExpression = rule::reduce<GNode>(
+        rule::proxySequence<QChar, GNode>(
+            rule::optional(rule::OrderedLiteral<QChar, GNode>("-", TokenType::Discard)),
             ws,
-            proxyAlternative<QChar, GNode>(
+            rule::proxyAlternative<QChar, GNode>(
                 literal,
                 name,
-                reduce<GNode>(
-                    proxySequence<QChar, GNode>(
-                        discard(OrderedTokenRule<QChar, GNode>("{")),
+                rule::reduce<GNode>(
+                    rule::proxySequence<QChar, GNode>(
+                        rule::discard(rule::OrderedLiteral<QChar, GNode>("{")),
                         ws,
                         expression,
                         expression,
                         ws,
-                        discard(OrderedTokenRule<QChar, GNode>("}")),
+                        rule::discard(rule::OrderedLiteral<QChar, GNode>("}")),
                         ws
                     ),
                     [](Result<GNode>& dest, Result<GNode>& src) {
@@ -425,13 +426,13 @@ ProxyRule<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
                         dest.insert(joinNode);
                     }
                 ),
-                reduce<GNode>(
-                    proxySequence<QChar, GNode>(
-                        discard(OrderedTokenRule<QChar, GNode>("(")),
+                rule::reduce<GNode>(
+                    rule::proxySequence<QChar, GNode>(
+                        rule::discard(rule::OrderedLiteral<QChar, GNode>("(")),
                         ws,
-                        multiple(expression),
+                        rule::multiple(expression),
                         ws,
-                        discard(OrderedTokenRule<QChar, GNode>(")")),
+                        rule::discard(rule::OrderedLiteral<QChar, GNode>(")")),
                         ws
                     ),
                     [](Result<GNode>& dest, Result<GNode>& src) {
@@ -444,10 +445,10 @@ ProxyRule<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
                 )
             ),
             ws,
-            optional(proxyAlternative<QChar, GNode>(
-                OrderedTokenRule<QChar, GNode>("*", TokenType::ZeroOrMore),
-                OrderedTokenRule<QChar, GNode>("+", TokenType::OneOrMore),
-                OrderedTokenRule<QChar, GNode>("?", TokenType::Optional)
+            rule::optional(rule::proxyAlternative<QChar, GNode>(
+                rule::OrderedLiteral<QChar, GNode>("*", TokenType::ZeroOrMore),
+                rule::OrderedLiteral<QChar, GNode>("+", TokenType::OneOrMore),
+                rule::OrderedLiteral<QChar, GNode>("?", TokenType::Optional)
             )),
             ws
         ),
@@ -472,15 +473,15 @@ ProxyRule<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
         }
     );
 
-    expression << reduce<GNode>(
-        proxySequence<QChar, GNode>(
-            join<QChar, GNode>(
-                proxySequence<QChar, GNode>(
+    expression << rule::reduce<GNode>(
+        rule::proxySequence<QChar, GNode>(
+            rule::join<QChar, GNode>(
+                rule::proxySequence<QChar, GNode>(
                     singleExpression,
                     ws
                 ),
-                discard(proxySequence<QChar, GNode>(
-                    discard(OrderedTokenRule<QChar, QString>("|")),
+                rule::discard(rule::proxySequence<QChar, GNode>(
+                    rule::discard(rule::OrderedLiteral<QChar, QString>("|")),
                     ws
                 ))
             ),
@@ -495,21 +496,21 @@ ProxyRule<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
         }
     );
 
-    auto rule = reduce<GNode>(
-        proxySequence<QChar, GNode>(
-            proxyAlternative<QChar, GNode>(
-                OrderedTokenRule<QChar, GNode>("Rule", TokenType::Rule),
-                OrderedTokenRule<QChar, GNode>("Token", TokenType::TokenRule),
-                OrderedTokenRule<QChar, GNode>("Group", TokenType::GroupRule)
+    auto rule = rule::reduce<GNode>(
+        rule::proxySequence<QChar, GNode>(
+            rule::proxyAlternative<QChar, GNode>(
+                rule::OrderedLiteral<QChar, GNode>("Rule", TokenType::Rule),
+                rule::OrderedLiteral<QChar, GNode>("Token", TokenType::TokenRule),
+                rule::OrderedLiteral<QChar, GNode>("Group", TokenType::GroupRule)
             ),
             ws,
             name,
             ws,
-            discard(OrderedTokenRule<QChar, QString>("=")),
+            rule::discard(rule::OrderedLiteral<QChar, QString>("=")),
             ws,
-            multiple(expression),
+            rule::multiple(expression),
             ws,
-            discard(OrderedTokenRule<QChar, QString>(";")),
+            rule::discard(rule::OrderedLiteral<QChar, QString>(";")),
             ws
         ),
         [](Result<GNode>& results, Result<GNode>& subresults) {
@@ -528,13 +529,14 @@ ProxyRule<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
         }
     );
 
-    return proxySequence<QChar, GNode>(
+    return rule::proxySequence<QChar, GNode>(
         ws,
-        multiple(rule),
-        make::end<QChar, GNode>()
+        rule::multiple(rule),
+        rule::end<QChar, GNode>()
     );
 }
 
+} // namespace grammar
 } // namespace sprout
 
 #endif // SPROUT_GRAMMAR_HEADER

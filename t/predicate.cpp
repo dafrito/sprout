@@ -1,14 +1,14 @@
-#include "init.hpp"
+#include <rule/Predicate.hpp>
+#include <rule/Multiple.hpp>
+#include <rule/Reduce.hpp>
 
-#include "PredicateRule.hpp"
-#include "MultipleRule.hpp"
-#include "ReduceRule.hpp"
+#include "init.hpp"
 
 using namespace sprout;
 
 BOOST_AUTO_TEST_CASE(testPredicate)
 {
-    auto rule = make::simplePredicate<QChar, QString>([](const QChar& input) {
+    auto rule = rule::simplePredicate<QChar, QString>([](const QChar& input) {
         return input.isLetter();
     });
     Result<QString> tokens;
@@ -24,7 +24,8 @@ BOOST_AUTO_TEST_CASE(testPredicate)
 
 BOOST_AUTO_TEST_CASE(testPredicateWithMultiple)
 {
-    using namespace make;
+    using namespace rule;
+
     auto rule = aggregate<QString>(
         multiple(simplePredicate<QChar, QChar>([](const QChar& input) {
             return input.isLetter();

@@ -1,14 +1,16 @@
-#ifndef SPROUT_TOKENRULE_HEADER
-#define SPROUT_TOKENRULE_HEADER
+#ifndef SPROUT_RULE_LITERAL_HEADER
+#define SPROUT_RULE_LITERAL_HEADER
+
+#include "RuleTraits.hpp"
+
+#include "../Cursor.hpp"
+#include "../Result.hpp"
 
 #include <vector>
 #include <algorithm>
 
-#include "Cursor.hpp"
-#include "Result.hpp"
-#include "RuleTraits.hpp"
-
 namespace sprout {
+namespace rule {
 
 struct OrderedTokenMatcher
 {
@@ -44,38 +46,38 @@ struct AnyTokenMatcher
 };
 
 /**
- * TokenRule is a rule that matches inputs against a vector of tokens. It
+ * Token is a rule that matches inputs against a vector of tokens. It
  * can be parameterized to support different matching algorithms, such as
  * "Match a single input against this group of candidates" or "Match an
  * ordered sequence of inputs against an ordered sequence of tokens"
  *
  * This class is a workhorse, but it strikes me as surprisingly limited
- * in its scope. The returned token is mandated, which relegates TokenRule
+ * in its scope. The returned token is mandated, which relegates Token
  * to not being able to generate tokens with state. Since this limitation is
- * rather severe, TokenRule will likely be changed in the future with a
+ * rather severe, Token will likely be changed in the future with a
  * different API.
  */
 template <class Input, class Token, class Matcher>
-class TokenRule : public RuleTraits<Input, Token>
+class Literal : public RuleTraits<Input, Token>
 {
     std::vector<Input> _target;
     Token _token;
 
 public:
-    TokenRule() :
+    Literal() :
         _target(),
         _token()
     {
     }
 
     template <class Target>
-    TokenRule(const Target& target)
+    Literal(const Target& target)
     {
         setTarget(target);
     }
 
     template <class Target, class Output>
-    TokenRule(const Target& target, const Output& output) :
+    Literal(const Target& target, const Output& output) :
         _token(output)
     {
         setTarget(target);
@@ -122,48 +124,14 @@ public:
 };
 
 template <class Input, class Token>
-using OrderedTokenRule = TokenRule<Input, Token, OrderedTokenMatcher>;
+using OrderedLiteral = Literal<Input, Token, OrderedTokenMatcher>;
 
 template <class Input, class Token>
-using AnyTokenRule = TokenRule<Input, Token, AnyTokenMatcher>;
+using AnyLiteral = Literal<Input, Token, AnyTokenMatcher>;
 
-namespace make {
-
-template <class Input, class Token>
-bool EndRule(Cursor<Input>& iter, Result<Token>& result)
-{
-    return !iter;
-}
-
-template <class Input, class Token>
-bool AnyRule(Cursor<Input>& iter, Result<Token>& result)
-{
-    if (!iter) {
-        return false;
-    }
-    result << *iter;
-    ++iter;
-    return true;
-}
-
-template <class Input, class Token>
-Rule<Input, Token> end()
-{
-    return EndRule<Input, Token>;
-}
-
-template <class Input, class Token>
-Rule<Input, Token> any()
-{
-    return AnyRule<Input, Token>;
-}
-
-
-
-} // namespace make
-
+} // namespace rule
 } // namespace sprout
 
-#endif // SPROUT_TOKENRULE_HEADER
+#endif // SPROUT_RULE_LITERAL_HEADER
 
 // vim: set ft=cpp ts=4 sw=4 :

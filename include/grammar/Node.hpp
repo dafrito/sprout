@@ -1,13 +1,13 @@
-#ifndef SPROUT_NODE_HEADER
-#define SPROUT_NODE_HEADER
+#ifndef SPROUT_GRAMMAR_NODE_HEADER
+#define SPROUT_GRAMMAR_NODE_HEADER
 
-#include "Result.hpp"
+#include <Result.hpp>
 
 #include <vector>
 #include <sstream>
-#include <iostream>
 
 namespace sprout {
+namespace grammar {
 
 template <class Type, class Value>
 struct Token {
@@ -190,8 +190,9 @@ Node<Type, Value>& operator<<(Node<Type, Value>& parent, const T& child)
     return parent;
 }
 
+} // namespace grammar
 } // namespace sprout
 
-#endif // SPROUT_NODE_HEADER
+#endif // SPROUT_GRAMMAR_NODE_HEADER
 
 // vim: set ts=4 sw=4 :

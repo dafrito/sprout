@@ -1,15 +1,17 @@
-#ifndef SPROUT_JOINRULE_HEADER
-#define SPROUT_JOINRULE_HEADER
+#ifndef SPROUT_RULE_JOIN_HEADER
+#define SPROUT_RULE_JOIN_HEADER
+
+#include "rule/RuleTraits.hpp"
+#include "rule/Sequence.hpp"
+
+#include "../Cursor.hpp"
+#include "../Result.hpp"
 
 #include <vector>
 #include <algorithm>
 
-#include "RuleTraits.hpp"
-#include "SequenceRule.hpp"
-#include "Cursor.hpp"
-#include "Result.hpp"
-
 namespace sprout {
+namespace rule {
 
 template <
     class Rule,
@@ -17,13 +19,13 @@ template <
     class Input = typename Rule::input_type,
     class Token = typename Rule::token_type
 >
-class JoinRule : public RuleTraits<Input, Token>
+class Join : public RuleTraits<Input, Token>
 {
     const Rule _content;
     const SeparatorRule _separator;
 
 public:
-    JoinRule(const Rule& content, const SeparatorRule& separator) :
+    Join(const Rule& content, const SeparatorRule& separator) :
         _content(content),
         _separator(separator)
     {
@@ -52,26 +54,23 @@ public:
     }
 };
 
-namespace make {
-
 template <class Rule, class SeparatorRule>
-JoinRule<Rule, SeparatorRule>
+Join<Rule, SeparatorRule>
 join(const Rule& content, const SeparatorRule& separator)
 {
-    return JoinRule<Rule, SeparatorRule>(content, separator);
+    return Join<Rule, SeparatorRule>(content, separator);
 }
 
 template <class Input, class Token, class Rule, class SeparatorRule>
-JoinRule<Rule, SeparatorRule, Input, Token>
+Join<Rule, SeparatorRule, Input, Token>
 join(const Rule& content, const SeparatorRule& separator)
 {
-    return JoinRule<Rule, SeparatorRule, Input, Token>(content, separator);
+    return Join<Rule, SeparatorRule, Input, Token>(content, separator);
 }
 
-} // namespace make
-
+} // namespace rule
 } // namespace sprout
 
-#endif // SPROUT_JOINRULE_HEADER
+#endif // SPROUT_RULE_JOIN_HEADER
 
 // vim: set ft=cpp ts=4 sw=4 :

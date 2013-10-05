@@ -1,18 +1,18 @@
-#include "init.hpp"
+#include <rule/Discard.hpp>
+#include <rule/Optional.hpp>
+#include <rule/Literal.hpp>
+#include <rule/Multiple.hpp>
+#include <rule/Alternative.hpp>
+#include <rule/Sequence.hpp>
 
-#include "DiscardRule.hpp"
-#include "OptionalRule.hpp"
-#include "TokenRule.hpp"
-#include "MultipleRule.hpp"
-#include "AlternativeRule.hpp"
-#include "SequenceRule.hpp"
+#include "init.hpp"
 
 using namespace sprout;
 
 BOOST_AUTO_TEST_CASE(testOptional)
 {
-    auto rule = make::optional(
-        AnyTokenRule<char, std::string>("_-")
+    auto rule = rule::optional(
+        rule::AnyLiteral<char, std::string>("_-")
     );
 
     {
@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(testOptional)
 
 BOOST_AUTO_TEST_CASE(testOptionalWithLambda)
 {
-    auto rule = make::optional<char, std::string>(
+    auto rule = rule::optional<char, std::string>(
         [](Cursor<char>& input, Result<std::string>& result) {
             std::string str;
             while (input && *input == '_') {

@@ -316,7 +316,13 @@ Cursor<Data> makeCursor(char* stream)
     return Cursor<Data>(stream, stream + strlen(stream));
 }
 
+} // namespace sprout
+
 #ifdef HAVE_QT_CORE
+
+#include <QString>
+
+namespace sprout {
 
 template <class Data>
 Cursor<Data> makeCursor(const QString* stream)
@@ -330,9 +336,9 @@ Cursor<Data> makeCursor(QString* stream)
     return Cursor<Data>(new QStringCursorData(*stream));
 }
 
-#endif
-
 } // namespace sprout
+
+#endif
 
 #endif // SPROUT_CURSOR_HEADER
 

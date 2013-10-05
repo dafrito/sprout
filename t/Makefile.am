@@ -13,7 +13,7 @@ noinst_HEADERS = \
 runtest_SOURCES = \
 	cursor.cpp \
 	iterator.cpp \
-	tokenrule.cpp \
+	literal.cpp \
 	multiple.cpp \
 	alternative.cpp \
 	sequence.cpp \

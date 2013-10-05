@@ -1,10 +1,11 @@
 #ifndef SPROUT_RULES_HEADER
 #define SPROUT_RULES_HEADER
 
-#include "Cursor.hpp"
-#include "Result.hpp"
 #include "RuleTraits.hpp"
-#include "ProxyRule.hpp"
+#include "Proxy.hpp"
+
+#include "../Cursor.hpp"
+#include "../Result.hpp"
 
 #include <iostream>
 
@@ -45,9 +46,9 @@ bool parseNeighborhood(Cursor<QChar>& orig, Result<Token>& results)
 }
 
 template <class Token>
-auto neighborhood() -> decltype(make::rule<QChar, Token>(&parseNeighborhood<Token>))
+auto neighborhood() -> decltype(rule<QChar, Token>(&parseNeighborhood<Token>))
 {
-    return make::rule<QChar, Token>(&parseNeighborhood<Token>);
+    return rule<QChar, Token>(&parseNeighborhood<Token>);
 }
 
 template <class Token>
@@ -66,20 +67,49 @@ bool parseWhitespace(Cursor<QChar>& iter, Result<Token>& result)
 }
 
 template <class Token>
-auto whitespace() -> decltype(make::rule<QChar, Token>(&parseWhitespace<Token>))
+auto whitespace() -> decltype(rule<QChar, Token>(&parseWhitespace<Token>))
 {
-    return make::rule<QChar, Token>(&parseWhitespace<Token>);
+    return rule<QChar, Token>(&parseWhitespace<Token>);
 }
 
 bool parseQuotedString(Cursor<QChar>& input, Result<QString>& result);
 
-ProxyRule<QChar, QString> lineComment(const QString& delimiter);
+Proxy<QChar, QString> lineComment(const QString& delimiter);
 
-ProxyRule<QChar, QString> variable();
+Proxy<QChar, QString> variable();
 
 bool parseInteger(Cursor<QChar>& input, Result<long>& result);
 
 bool parseFloating(Cursor<QChar>& input, Result<double>& result);
+
+template <class Input, class Token>
+bool EndRule(Cursor<Input>& iter, Result<Token>& result)
+{
+    return !iter;
+}
+
+template <class Input, class Token>
+bool AnyRule(Cursor<Input>& iter, Result<Token>& result)
+{
+    if (!iter) {
+        return false;
+    }
+    result << *iter;
+    ++iter;
+    return true;
+}
+
+template <class Input, class Token>
+Rule<Input, Token> end()
+{
+    return EndRule<Input, Token>;
+}
+
+template <class Input, class Token>
+Rule<Input, Token> any()
+{
+    return AnyRule<Input, Token>;
+}
 
 } // namespace rule
 } // namespace sprout

@@ -1,11 +1,13 @@
-#ifndef SPROUT_REDUCERULE_HEADER
-#define SPROUT_REDUCERULE_HEADER
+#ifndef SPROUT_RULE_REDUCE_HEADER
+#define SPROUT_RULE_REDUCE_HEADER
 
-#include "Cursor.hpp"
-#include "Result.hpp"
 #include "RuleTraits.hpp"
 
+#include "../Cursor.hpp"
+#include "../Result.hpp"
+
 namespace sprout {
+namespace rule {
 
 template <
     class Rule,
@@ -14,7 +16,7 @@ template <
     class Input = typename Rule::input_type,
     class SubToken = typename Rule::token_type
 >
-class ReduceRule : public RuleTraits<Input, Token>
+class Reduce : public RuleTraits<Input, Token>
 {
     typedef SubToken subtoken_type;
 
@@ -22,7 +24,7 @@ class ReduceRule : public RuleTraits<Input, Token>
     const Reducer _reducer;
 
 public:
-    ReduceRule(const Rule& rule, const Reducer& reducer) :
+    Reduce(const Rule& rule, const Reducer& reducer) :
         _rule(rule),
         _reducer(reducer)
     {
@@ -39,18 +41,16 @@ public:
     }
 };
 
-namespace make {
-
 template <class Token, class Rule, class Reducer>
-ReduceRule<Rule, Reducer, Token> reduce(const Rule& rule, const Reducer& reducer)
+Reduce<Rule, Reducer, Token> reduce(const Rule& rule, const Reducer& reducer)
 {
-    return ReduceRule<Rule, Reducer, Token>(rule, reducer);
+    return Reduce<Rule, Reducer, Token>(rule, reducer);
 }
 
 template <class Token, class Input, class SubToken, class Rule, class Reducer>
-ReduceRule<Rule, Reducer, Token, Input, SubToken> reduce(const Rule& rule, const Reducer& reducer)
+Reduce<Rule, Reducer, Token, Input, SubToken> reduce(const Rule& rule, const Reducer& reducer)
 {
-    return ReduceRule<Rule, Reducer, Token, Input, SubToken>(rule, reducer);
+    return Reduce<Rule, Reducer, Token, Input, SubToken>(rule, reducer);
 }
 
 template <class Reducer, class Token>
@@ -75,14 +75,14 @@ public:
 };
 
 template <class Token, class Rule, class Reducer>
-ReduceRule<Rule, AggregatingReducer<Reducer, Token>, Token>
+Reduce<Rule, AggregatingReducer<Reducer, Token>, Token>
 aggregate(const Rule& rule, const Reducer& reducer)
 {
     return reduce<Token>(rule, AggregatingReducer<Reducer, Token>(reducer));
 }
 
 template <class Token, class Input, class SubToken, class Rule, class Reducer>
-ReduceRule<Rule, AggregatingReducer<Reducer, Token>, Token, Input, SubToken>
+Reduce<Rule, AggregatingReducer<Reducer, Token>, Token, Input, SubToken>
 aggregate(const Rule& rule, const Reducer& reducer)
 {
     return reduce<Token, Input, SubToken>(rule, AggregatingReducer<Reducer, Token>(reducer));
@@ -108,23 +108,22 @@ public:
 };
 
 template <class Token, class Rule, class Reducer>
-ReduceRule<Rule, ConvertingReducer<Reducer, Token>, Token>
+Reduce<Rule, ConvertingReducer<Reducer, Token>, Token>
 convert(const Rule& rule, const Reducer& reducer)
 {
     return reduce<Token>(rule, ConvertingReducer<Reducer, Token>(reducer));
 }
 
 template <class Token, class Input, class SubToken, class Rule, class Reducer>
-ReduceRule<Rule, ConvertingReducer<Reducer, Token>, Token, Input, SubToken>
+Reduce<Rule, ConvertingReducer<Reducer, Token>, Token, Input, SubToken>
 convert(const Rule& rule, const Reducer& reducer)
 {
     return reduce<Token, Input, SubToken>(rule, ConvertingReducer<Reducer, Token>(reducer));
 }
 
-} // namespace make
-
+} // namespace rule
 } // namespace sprout
 
-#endif // SPROUT_REDUCERULE_HEADER
+#endif // SPROUT_RULE_REDUCE_HEADER
 
 // vim: set ft=cpp ts=4 sw=4 :

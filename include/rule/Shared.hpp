@@ -1,32 +1,34 @@
-#ifndef SPROUT_SHAREDRULE_HEADER
-#define SPROUT_SHAREDRULE_HEADER
+#ifndef SPROUT_RULE_SHARED_HEADER
+#define SPROUT_RULE_SHARED_HEADER
+
+#include "RuleTraits.hpp"
+
+#include "../Cursor.hpp"
+#include "../Result.hpp"
 
 #include <vector>
 #include <memory>
 #include <algorithm>
 
-#include "RuleTraits.hpp"
-#include "Cursor.hpp"
-#include "Result.hpp"
-
 namespace sprout {
+namespace rule {
 
 template <
     class Rule,
     class Input = typename Rule::input_type,
     class Token = typename Rule::token_type
 >
-class SharedRule : public RuleTraits<Input, Token>
+class Shared : public RuleTraits<Input, Token>
 {
     std::shared_ptr<Rule> _rule;
 
 public:
-    SharedRule() :
+    Shared() :
         _rule(new Rule)
     {
     }
 
-    SharedRule(const Rule& rule) :
+    Shared(const Rule& rule) :
         _rule(new Rule(rule))
     {
     }
@@ -37,14 +39,14 @@ public:
     }
 
     template <class InternalRule>
-    SharedRule& operator=(const InternalRule& other)
+    Shared& operator=(const InternalRule& other)
     {
         *_rule = other;
         return *this;
     }
 
     template <class T>
-    SharedRule& operator<<(T value)
+    Shared& operator<<(T value)
     {
         (*_rule) << value;
         return *this;
@@ -66,24 +68,21 @@ public:
     }
 };
 
-namespace make {
-
 template <class Rule>
-SharedRule<Rule> shared(const Rule& rule)
+Shared<Rule> shared(const Rule& rule)
 {
-    return SharedRule<Rule>(rule);
+    return Shared<Rule>(rule);
 }
 
 template <class Input, class Token, class Rule>
-SharedRule<Rule, Input, Token> shared(const Rule& rule)
+Shared<Rule, Input, Token> shared(const Rule& rule)
 {
-    return SharedRule<Rule, Input, Token>(rule);
+    return Shared<Rule, Input, Token>(rule);
 }
 
-} // namespace make
-
+} // namespace rule
 } // namespace sprout
 
-#endif // SPROUT_SHAREDRULE_HEADER
+#endif // SPROUT_RULE_SHARED_HEADER
 
 // vim: set ft=cpp ts=4 sw=4 :

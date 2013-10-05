@@ -1,18 +1,19 @@
+#include <rule/Literal.hpp>
+#include <rule/Sequence.hpp>
+#include <rule/Proxy.hpp>
+#include <rule/Multiple.hpp>
+#include <rule/rules.hpp>
+
 #include "init.hpp"
 
 #include <iterator>
 #include <sstream>
 
-#include "TokenRule.hpp"
-#include "SequenceRule.hpp"
-#include "ProxyRule.hpp"
-#include "MultipleRule.hpp"
-
 using namespace sprout;
 
 BOOST_AUTO_TEST_CASE(checkDirectMatch)
 {
-    OrderedTokenRule<char, std::string> rule("Cat", "Animal");
+    rule::OrderedLiteral<char, std::string> rule("Cat", "Animal");
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("Cat");
@@ -24,7 +25,7 @@ BOOST_AUTO_TEST_CASE(checkDirectMatch)
 
 BOOST_AUTO_TEST_CASE(checkBadMatch)
 {
-    OrderedTokenRule<char, std::string> rule("Cat", "Animal");
+    rule::OrderedLiteral<char, std::string> rule("Cat", "Animal");
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("Dog");
@@ -34,7 +35,7 @@ BOOST_AUTO_TEST_CASE(checkBadMatch)
 
 BOOST_AUTO_TEST_CASE(checkPreemptedMatch)
 {
-    OrderedTokenRule<char, std::string> rule("Cat", "Animal");
+    rule::OrderedLiteral<char, std::string> rule("Cat", "Animal");
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("Ca");
@@ -45,7 +46,7 @@ BOOST_AUTO_TEST_CASE(checkPreemptedMatch)
 
 BOOST_AUTO_TEST_CASE(checkMatchWithTrailing)
 {
-    OrderedTokenRule<char, std::string> rule("Cat", "Animal");
+    rule::OrderedLiteral<char, std::string> rule("Cat", "Animal");
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("Catca");
@@ -57,7 +58,7 @@ BOOST_AUTO_TEST_CASE(checkMatchWithTrailing)
 
 BOOST_AUTO_TEST_CASE(checkIteratorAtNextElementWhenMatchIsGood)
 {
-    OrderedTokenRule<char, std::string> rule("Cat", "Animal");
+    rule::OrderedLiteral<char, std::string> rule("Cat", "Animal");
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("Catde");
@@ -70,7 +71,7 @@ BOOST_AUTO_TEST_CASE(checkIteratorAtNextElementWhenMatchIsGood)
 
 BOOST_AUTO_TEST_CASE(checkIteratorAtFirstElementIfMatchFails)
 {
-    OrderedTokenRule<char, std::string> rule("Cat", "Animal");
+    rule::OrderedLiteral<char, std::string> rule("Cat", "Animal");
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("Calf");
@@ -79,7 +80,7 @@ BOOST_AUTO_TEST_CASE(checkIteratorAtFirstElementIfMatchFails)
     BOOST_CHECK(!tokens);
     BOOST_CHECK_EQUAL('C', *cursor);
 
-    OrderedTokenRule<char, std::string> calfRule("Calf", "Cow");
+    rule::OrderedLiteral<char, std::string> calfRule("Calf", "Cow");
     BOOST_CHECK(calfRule(cursor, tokens));
 
     BOOST_REQUIRE(tokens);
@@ -88,7 +89,7 @@ BOOST_AUTO_TEST_CASE(checkIteratorAtFirstElementIfMatchFails)
 
 BOOST_AUTO_TEST_CASE(rulesCanBeNested)
 {
-    OrderedTokenRule<char, std::string> rule("Cat", "Animal");
+    rule::OrderedLiteral<char, std::string> rule("Cat", "Animal");
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("Cat");
@@ -101,9 +102,9 @@ BOOST_AUTO_TEST_CASE(rulesCanBeNested)
     BOOST_CHECK(!tokenCursor);
 }
 
-BOOST_AUTO_TEST_CASE(anyTokenRule)
+BOOST_AUTO_TEST_CASE(anyLiteralRule)
 {
-    AnyTokenRule<char, std::string> rule(" _", "Whitespace");
+    rule::AnyLiteral<char, std::string> rule(" _", "Whitespace");
     Result<std::string> tokens;
 
     auto cursor = makeCursor<char>("_Dog");
@@ -116,11 +117,11 @@ BOOST_AUTO_TEST_CASE(anyTokenRule)
 
 BOOST_AUTO_TEST_CASE(endTokenRule)
 {
-    auto rule = make::proxySequence<char, std::string>(
-        make::multiple(
-            AnyTokenRule<char, std::string>(" _", "Whitespace")
+    auto rule = rule::proxySequence<char, std::string>(
+        rule::multiple(
+            rule::AnyLiteral<char, std::string>(" _", "Whitespace")
         ),
-        make::end<char, std::string>()
+        rule::end<char, std::string>()
     );
 
     {

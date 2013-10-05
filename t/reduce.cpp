@@ -1,20 +1,21 @@
+#include <rule/Reduce.hpp>
+#include <rule/Multiple.hpp>
+#include <rule/Alternative.hpp>
+#include <rule/Discard.hpp>
+#include <rule/Literal.hpp>
+
 #include "init.hpp"
 
-#include "ReduceRule.hpp"
-#include "MultipleRule.hpp"
-#include "AlternativeRule.hpp"
-#include "DiscardRule.hpp"
-#include "TokenRule.hpp"
-
 using namespace sprout;
+using namespace rule;
 
 BOOST_AUTO_TEST_CASE(testReduce)
 {
-    auto rule = make::reduce<std::string>(
-        make::multiple(
-            make::alternative(
-                OrderedTokenRule<char, char>("-", '-'),
-                OrderedTokenRule<char, char>("_", '_')
+    auto rule = rule::reduce<std::string>(
+        rule::multiple(
+            rule::alternative(
+                rule::OrderedLiteral<char, char>("-", '-'),
+                rule::OrderedLiteral<char, char>("_", '_')
             )
         ),
         [](Result<std::string>& result, Result<char>& subResult) {
@@ -41,7 +42,7 @@ BOOST_AUTO_TEST_CASE(testReduce)
 
 BOOST_AUTO_TEST_CASE(testReduceWithLambda)
 {
-    auto rule = make::reduce<std::string, char, char>(
+    auto rule = rule::reduce<std::string, char, char>(
         [](Cursor<char>& iter, Result<char>& tokens) {
             bool found = false;
             while (iter) {
@@ -79,8 +80,8 @@ BOOST_AUTO_TEST_CASE(testReduceWithLambda)
 
 BOOST_AUTO_TEST_CASE(testReduceWithWrappedRule)
 {
-    auto rule = make::reduce<std::string>(
-        make::rule<char, char>([](Cursor<char>& iter, Result<char>& tokens) {
+    auto rule = rule::reduce<std::string>(
+        rule::rule<char, char>([](Cursor<char>& iter, Result<char>& tokens) {
             bool found = false;
             while (iter) {
                 auto c = *iter;

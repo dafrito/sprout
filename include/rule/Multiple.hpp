@@ -1,16 +1,18 @@
-#ifndef SPROUT_MULTIPLERULE_HEADER
-#define SPROUT_MULTIPLERULE_HEADER
+#ifndef SPROUT_RULE_MULTIPLE_HEADER
+#define SPROUT_RULE_MULTIPLE_HEADER
 
 #include "RuleTraits.hpp"
-#include "Cursor.hpp"
-#include "Result.hpp"
+
+#include "../Cursor.hpp"
+#include "../Result.hpp"
 
 namespace sprout {
+namespace rule {
 
 /**
  * \brief A rule that matches as many instance of a rule as possible.
  *
- * MultipleRule matches as many instances of a specified rule as possible,
+ * Multiple matches as many instances of a specified rule as possible,
  * concatenating results of each match. This rule must match at least once to
  * successfully match.
  *
@@ -21,12 +23,12 @@ template <
     class Input = typename Rule::input_type,
     class Token = typename Rule::token_type
 >
-class MultipleRule : public RuleTraits<Input, Token>
+class Multiple : public RuleTraits<Input, Token>
 {
     Rule _rule;
 
 public:
-    MultipleRule(const Rule& rule) :
+    Multiple(const Rule& rule) :
         _rule(rule)
     {
     }
@@ -41,27 +43,24 @@ public:
     }
 };
 
-namespace make {
-
 /**
- * Construct a MultipleRule.
+ * Construct a Multiple.
  */
 template <class Rule>
-MultipleRule<Rule> multiple(const Rule& rule)
+Multiple<Rule> multiple(const Rule& rule)
 {
-    return MultipleRule<Rule>(rule);
+    return Multiple<Rule>(rule);
 }
 
 template <class Input, class Token, class Rule>
-MultipleRule<Rule, Input, Token> multiple(const Rule& rule)
+Multiple<Rule, Input, Token> multiple(const Rule& rule)
 {
-    return MultipleRule<Rule, Input, Token>(rule);
+    return Multiple<Rule, Input, Token>(rule);
 }
 
-} // namespace make
-
+} // namespace rule
 } // namespace sprout
 
-#endif // SPROUT_MULTIPLERULE_HEADER
+#endif // SPROUT_RULE_MULTIPLE_HEADER
 
 // vim: set ft=cpp ts=4 sw=4 :

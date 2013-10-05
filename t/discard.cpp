@@ -1,17 +1,17 @@
-#include "init.hpp"
+#include <rule/Discard.hpp>
+#include <rule/Literal.hpp>
+#include <rule/Multiple.hpp>
+#include <rule/Alternative.hpp>
+#include <rule/Sequence.hpp>
 
-#include "DiscardRule.hpp"
-#include "TokenRule.hpp"
-#include "MultipleRule.hpp"
-#include "AlternativeRule.hpp"
-#include "SequenceRule.hpp"
+#include "init.hpp"
 
 using namespace sprout;
 
 BOOST_AUTO_TEST_CASE(testDiscard)
 {
-    auto rule = make::discard(
-        AnyTokenRule<char, std::string>("_-")
+    auto rule = rule::discard(
+        rule::AnyLiteral<char, std::string>("_-")
     );
     Result<std::string> tokens;
 
@@ -24,9 +24,9 @@ BOOST_AUTO_TEST_CASE(testDiscard)
 
 BOOST_AUTO_TEST_CASE(testDiscardWithMultiple)
 {
-    auto rule = make::discard(
-        make::multiple(
-            AnyTokenRule<char, std::string>("_-")
+    auto rule = rule::discard(
+        rule::multiple(
+            rule::AnyLiteral<char, std::string>("_-")
         )
     );
     Result<std::string> tokens;
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(testDiscardWithMultiple)
 
 BOOST_AUTO_TEST_CASE(testDiscardWithLambda)
 {
-    auto rule = make::discard<char, std::string>(
+    auto rule = rule::discard<char, std::string>(
         [](Cursor<char>& input, Result<std::string>& result) {
             std::string str;
             while (input && *input == '_') {
