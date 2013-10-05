@@ -29,6 +29,17 @@ sprout_LDADD = libsproutcommon.la
 sprout_SOURCES = \
 	main.cpp
 
+bin_PROGRAMS += sproutllvm
+sproutllvm_CPPFLAGS = $(libsproutcommon_la_CPPFLAGS) `llvm-config --cppflags`
+sproutllvm_LDADD = libsproutcommon.la
+sproutllvm_LDFLAGS = `llvm-config --ldflags --libs core jit native`
+
+nobase_pkginclude_HEADERS += \
+	llvm.hpp
+
+sproutllvm_SOURCES = \
+	llvm.cpp
+
 noinst_PROGRAMS = benchmark
 benchmark_CPPFLAGS = $(libsproutcommon_la_CPPFLAGS)
 benchmark_LDADD = libsproutcommon.la

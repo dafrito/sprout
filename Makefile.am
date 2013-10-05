@@ -24,6 +24,12 @@ valgrind:
 lua:
 	./src/luaparse $(top_srcdir)/src/simple.lua
 
+llvm:
+	./src/sproutllvm
+
+llvmvalgrind:
+	valgrind -v --leak-check=full --trace-children=yes ./src/sproutllvm
+
 luavalgrind:
 	valgrind -v --leak-check=full --trace-children=yes ./src/luaparse $(top_srcdir)/src/simple.lua
 
