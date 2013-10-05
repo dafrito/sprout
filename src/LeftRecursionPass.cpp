@@ -58,8 +58,8 @@ bool LeftRecursionPass::hasRecursions(const QString& name, GNode& node, QHash<QS
                 }
             }
             return false;
-        case TokenType::Fundamental:
-        case TokenType::StringLiteral:
+        case TokenType::Opaque:
+        case TokenType::Literal:
             return false;
         case TokenType::Rule:
         case TokenType::GroupRule:

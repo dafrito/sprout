@@ -28,20 +28,61 @@ namespace sprout {
 
 enum class TokenType {
     Unknown,
+
+    /**
+     * A named reference to some other rule.
+     */
     Name,
-    Fundamental,
-    StringLiteral,
+
+    /**
+     * An ordered sequence of subrules.
+     */
+    Sequence,
+
+    /**
+     * A rule to match a literal string.
+     */
+    Literal,
+
+    /**
+     * An opaque rule, usually one implmeented in C++ for primitive matching.
+     */
+    Opaque,
+
+    /**
+     * A rule that matches repeatedly. Analagous to the + in regular expressions.
+     */
+    OneOrMore,
+
+    /**
+     * A rule that will attempt to match its subrule, but will pass regardless.
+     */
+    Optional,
+
+    /**
+     * A rule that allows selection from a set of possible choices.
+     */
+    Alternative,
+
+    /**
+     * A rule that implements left-recursion. This cannot be created directly in a grammar.
+     */
+    Recursive,
+
+    /**
+     * A rule that discards the output, but forwards its subrule's result. In other words,
+     * discard does not imply optional.
+     */
+    Discard,
+
+    // Convenience rules. These could be implemented using our primitives.
+    Join,
+    ZeroOrMore,
+
+    // Rule types
     Rule,
     GroupRule,
-    TokenRule,
-    ZeroOrMore,
-    Discard,
-    OneOrMore,
-    Optional,
-    Alternative,
-    Recursive,
-    Join,
-    Sequence
+    TokenRule
 };
 
 } // namespace sprout
@@ -143,7 +184,7 @@ public:
                 ProxySequenceRule<QChar, PNode> rule;
                 for (auto child : node.children()) {
                     auto childRule = buildRule(child, ruleType);
-                    if (child.type() == TokenType::StringLiteral) {
+                    if (child.type() == TokenType::Literal) {
                         rule << discard(childRule);
                     } else {
                         rule << childRule;
@@ -201,7 +242,7 @@ public:
             {
                 auto content = buildRule(node[0], ruleType);
                 auto separator = buildRule(node[1], ruleType);
-                if (node[1].type() == TokenType::StringLiteral) {
+                if (node[1].type() == TokenType::Literal) {
                     separator = discard(separator);
                 }
                 if (excludeWhitespace) {
@@ -226,12 +267,12 @@ public:
             {
                 return multiple(buildRule(node[0], ruleType));
             }
-            case TokenType::Fundamental:
+            case TokenType::Opaque:
             case TokenType::Name:
             {
                 return _rules[node.value()];
             }
-            case TokenType::StringLiteral:
+            case TokenType::Literal:
             {
                 return OrderedTokenRule<QChar, PNode>(node.value(), PNode("", node.value()));
             }
@@ -344,16 +385,16 @@ ProxyRule<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
         ),
         [this](QString& value) {
             if (_rules.contains(value)) {
-                return GNode(TokenType::Fundamental, value);
+                return GNode(TokenType::Opaque, value);
             }
             return GNode(TokenType::Name, value);
         }
     );
 
-    auto stringLiteral = convert<GNode>(
+    auto literal = convert<GNode>(
         make::rule<QChar, QString>(&rule::parseQuotedString),
         [](QString& value) {
-            return GNode(TokenType::StringLiteral, value);
+            return GNode(TokenType::Literal, value);
         }
     );
 
@@ -364,7 +405,7 @@ ProxyRule<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
             optional(OrderedTokenRule<QChar, GNode>("-", TokenType::Discard)),
             ws,
             proxyAlternative<QChar, GNode>(
-                stringLiteral,
+                literal,
                 name,
                 reduce<GNode>(
                     proxySequence<QChar, GNode>(
