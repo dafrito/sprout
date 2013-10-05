@@ -1,5 +1,5 @@
-#ifndef SPROUT_TOKENS_HEADER
-#define SPROUT_TOKENS_HEADER
+#ifndef SPROUT_NODE_HEADER
+#define SPROUT_NODE_HEADER
 
 #include "Result.hpp"
 
@@ -192,6 +192,6 @@ Node<Type, Value>& operator<<(Node<Type, Value>& parent, const T& child)
 
 } // namespace sprout
 
-#endif // SPROUT_TOKENS_HEADER
+#endif // SPROUT_NODE_HEADER
 
 // vim: set ts=4 sw=4 :

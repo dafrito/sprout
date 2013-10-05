@@ -1,7 +1,7 @@
 #ifndef SPROUT_GRAMMAR_HEADER
 #define SPROUT_GRAMMAR_HEADER
 
-#include "tokens.hpp"
+#include "Node.hpp"
 #include "rules.hpp"
 #include "ProxyRule.hpp"
 #include "SharedRule.hpp"

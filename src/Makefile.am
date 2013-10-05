@@ -12,7 +12,6 @@ libsproutcommon_la_LDFLAGS = -version-info 0:0:0
 
 nobase_pkginclude_HEADERS = \
 	rules.hpp \
-	tokens.hpp \
 	Grammar.hpp \
 	LeftRecursionPass.hpp \
 	FlattenPass.hpp
