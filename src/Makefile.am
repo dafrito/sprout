@@ -14,7 +14,7 @@ nobase_pkginclude_HEADERS = \
 	rules.hpp \
 	tokens.hpp \
 	Grammar.hpp \
-	LeftRecursionPass.hpp
+	LeftRecursionPass.hpp \
 	FlattenPass.hpp
 
 libsproutcommon_la_SOURCES = \
