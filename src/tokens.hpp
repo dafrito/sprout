@@ -151,6 +151,11 @@ struct Node {
         return _children;
     }
 
+    unsigned int size() const
+    {
+        return children().size();
+    }
+
     void dump(std::stringstream& str, const std::string& indent) const
     {
         str << typeName();
