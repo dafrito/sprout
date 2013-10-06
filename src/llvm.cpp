@@ -8,6 +8,7 @@
 #include <rule/Shared.hpp>
 #include <rule/Multiple.hpp>
 #include <rule/Optional.hpp>
+#include <rule/Operation.hpp>
 #include <rule/Predicate.hpp>
 #include <rule/Proxy.hpp>
 #include <rule/Alternative.hpp>
@@ -82,17 +83,7 @@ std::unordered_map<ASTType, int> operatorPrecedence = {
     { ASTType::Exponent, 4 },
 };
 
-int sprout::compare(const ASTType& left, const ASTType& right)
-{
-    return operatorPrecedence[left] - operatorPrecedence[right];
-}
-
 typedef grammar::Node<ASTType, QString> ASTNode;
-
-int compare(const ASTNode& left, const ASTNode& right)
-{
-    return sprout::compare(left.type(), right.type());
-}
 
 rule::Proxy<QChar, ASTNode> buildParser()
 {
@@ -120,7 +111,7 @@ rule::Proxy<QChar, ASTNode> buildParser()
         name
     ));
 
-    auto expression = reduce<ASTNode>(join(
+    auto expression = rule::operation(
         single,
         proxySequence<QChar, ASTNode>(
             optional(ws),
@@ -134,39 +125,9 @@ rule::Proxy<QChar, ASTNode> buildParser()
                 rule::OrderedLiteral<QChar, ASTNode>("^", ASTType::Exponent)
             ),
             optional(ws)
-        )),
-        [](Result<ASTNode>& dest, Result<ASTNode>& src) {
-            ASTNode left = *src++;
-            if (!src) {
-                dest << left;
-                return;
-            }
-
-            ASTNode tmp = *src++;
-            tmp << left;
-            left = tmp;
-            left << *src++;
-
-            ASTNode* pos = &left;
-            while (src) {
-                ASTNode rightOp(*src++);
-
-                if (compare(left, rightOp) < 0) {
-                    // e.g. 2 + 3 / 4
-                    // (+ 2 3) -> (+ 2 (/ 3 4))
-                    rightOp << pos->at(1) << *src++;
-                    pos->erase(1);
-                    *pos << rightOp;
-                    pos = &pos->at(1);
-                } else {
-                    // e.g. 2 / 3 + 4
-                    // (/ 2 3) -> (+ (/ 2 3) 4)
-                    rightOp << left << *src++;
-                    left = rightOp;
-                    pos = &left;
-                }
-            }
-            dest << left;
+        ),
+        [](const ASTNode& left, const ASTNode& right) {
+            return operatorPrecedence[left.type()] < operatorPrecedence[right.type()];
         }
     );
 

@@ -22,8 +22,6 @@ enum class ASTType {
     If
 };
 
-int compare(const ASTType& left, const ASTType& right);
-
 } // namespace sprout
 
 namespace std {
