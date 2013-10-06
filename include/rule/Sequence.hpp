@@ -65,6 +65,7 @@ public:
             result.moveHead(head);
             return false;
         }
+        orig = iter;
         return true;
     }
 };
