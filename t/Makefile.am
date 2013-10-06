@@ -8,9 +8,12 @@ runtest_CXXFLAGS = -Wall -Werror @QT_CXXFLAGS@ $(AM_CXXFLAGS) -I$(top_srcdir)/in
 runtest_LDADD = ../src/libsprout.la @QT_LIBS@ @BOOST_UNIT_TEST_FRAMEWORK_LIB@
 
 noinst_HEADERS = \
-	init.hpp
+	init.hpp \
+	node.hpp
 
 runtest_SOURCES = \
+	init.cpp \
+	node.cpp \
 	cursor.cpp \
 	iterator.cpp \
 	literal.cpp \
@@ -23,4 +26,5 @@ runtest_SOURCES = \
 	predicate.cpp \
 	catching.cpp \
 	reduce.cpp \
+	recursive.cpp \
 	main.cpp
