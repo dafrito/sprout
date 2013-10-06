@@ -4,8 +4,15 @@
 enum class TType {
     Unknown,
     Name,
-    Access
+    Access,
+    Add,
+    Subtract,
+    Multiply,
+    Divide,
+    Exponent
 };
+
+int operatorPrecedence(const TType& type);
 
 namespace std {
 
