@@ -22,6 +22,7 @@ runtest_SOURCES = \
 	sequence.cpp \
 	discard.cpp \
 	optional.cpp \
+	operation.cpp \
 	proxy.cpp \
 	predicate.cpp \
 	catching.cpp \

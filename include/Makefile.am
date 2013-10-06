@@ -20,7 +20,8 @@ nobase_pkginclude_HEADERS += \
 	rule/Join.hpp \
 	rule/Shared.hpp \
 	rule/Lazy.hpp \
-	rule/Multiple.hpp
+	rule/Multiple.hpp \
+	rule/Operation.hpp
 
 # Grammar headers
 nobase_pkginclude_HEADERS += \
