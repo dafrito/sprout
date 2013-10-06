@@ -116,13 +116,13 @@ rule::Proxy<QChar, ASTNode> buildParser()
         proxySequence<QChar, ASTNode>(
             optional(ws),
             proxyAlternative<QChar, ASTNode>(
-                rule::OrderedLiteral<QChar, ASTNode>("||", ASTType::Or),
-                rule::OrderedLiteral<QChar, ASTNode>("&&", ASTType::And),
-                rule::OrderedLiteral<QChar, ASTNode>("+", ASTType::Add),
-                rule::OrderedLiteral<QChar, ASTNode>("-", ASTType::Subtract),
-                rule::OrderedLiteral<QChar, ASTNode>("/", ASTType::Divide),
-                rule::OrderedLiteral<QChar, ASTNode>("*", ASTType::Multiply),
-                rule::OrderedLiteral<QChar, ASTNode>("^", ASTType::Exponent)
+                rule::qLiteral<ASTNode>("||", ASTType::Or),
+                rule::qLiteral<ASTNode>("&&", ASTType::And),
+                rule::qLiteral<ASTNode>("+", ASTType::Add),
+                rule::qLiteral<ASTNode>("-", ASTType::Subtract),
+                rule::qLiteral<ASTNode>("/", ASTType::Divide),
+                rule::qLiteral<ASTNode>("*", ASTType::Multiply),
+                rule::qLiteral<ASTNode>("^", ASTType::Exponent)
             ),
             optional(ws)
         ),
@@ -132,11 +132,11 @@ rule::Proxy<QChar, ASTNode> buildParser()
     );
 
     single << proxySequence<QChar, ASTNode>(
-        discard(rule::OrderedLiteral<QChar, ASTNode>("(")),
+        discard(rule::qLiteral("(")),
         optional(ws),
         expression,
         optional(ws),
-        discard(rule::OrderedLiteral<QChar, ASTNode>(")"))
+        discard(rule::qLiteral(")"))
     );
 
     auto statement = shared(proxyAlternative<QChar, ASTNode>());
@@ -145,7 +145,7 @@ rule::Proxy<QChar, ASTNode> buildParser()
         proxySequence<QChar, ASTNode>(
             name,
             optional(ws),
-            discard(rule::OrderedLiteral<QChar, QChar>("(")),
+            discard(rule::qLiteral("(")),
             optional(ws),
             optional(join(
                 proxySequence<QChar, ASTNode>(
@@ -153,9 +153,9 @@ rule::Proxy<QChar, ASTNode> buildParser()
                     expression,
                     optional(ws)
                 ),
-                discard(rule::OrderedLiteral<QChar, ASTNode>(","))
+                discard(rule::qLiteral(","))
             )),
-            discard(rule::OrderedLiteral<QChar, QChar>(")"))
+            discard(rule::qLiteral(")"))
         ),
         [](Result<ASTNode>& dest, Result<ASTNode>& src) {
             ASTNode funcNode(ASTType::Call, src[0].value());
@@ -170,17 +170,17 @@ rule::Proxy<QChar, ASTNode> buildParser()
 
     auto ifStatement = reduce<ASTNode>(
         proxySequence<QChar, ASTNode>(
-            discard(rule::OrderedLiteral<QChar, QChar>("if")),
+            discard(rule::qLiteral("if")),
             optional(ws),
             expression,
             optional(ws),
-            discard(rule::OrderedLiteral<QChar, QChar>("then")),
+            discard(rule::qLiteral("then")),
             optional(ws),
             expression,
             optional(ws),
             optional(proxySequence<QChar, ASTNode>(
                 optional(ws),
-                discard(rule::OrderedLiteral<QChar, QChar>("else")),
+                discard(rule::qLiteral("else")),
                 optional(ws),
                 expression
             )),
@@ -196,11 +196,11 @@ rule::Proxy<QChar, ASTNode> buildParser()
 
     auto functionDeclaration = reduce<ASTNode>(
         proxySequence<QChar, ASTNode>(
-            discard(rule::OrderedLiteral<QChar, QChar>("def")),
+            discard(rule::qLiteral("def")),
             ws,
             name,
             optional(ws),
-            discard(rule::OrderedLiteral<QChar, QChar>("(")),
+            discard(rule::qLiteral("(")),
             optional(ws),
             reduce<ASTNode>(
                 optional(join(
@@ -209,7 +209,7 @@ rule::Proxy<QChar, ASTNode> buildParser()
                         name,
                         optional(ws)
                     ),
-                    discard(rule::OrderedLiteral<QChar, ASTNode>(","))
+                    discard(rule::qLiteral(","))
                 )),
                 [](Result<ASTNode>& dest, Result<ASTNode>& src) {
                     ASTNode args(ASTType::ArgumentList);
@@ -217,7 +217,7 @@ rule::Proxy<QChar, ASTNode> buildParser()
                     dest << args;
                 }
             ),
-            discard(rule::OrderedLiteral<QChar, QChar>(")")),
+            discard(rule::qLiteral(")")),
             optional(ws),
             proxyAlternative<QChar, ASTNode>(
                 statement,

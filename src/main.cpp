@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
     grammar.build();
 
     auto lineComment = proxySequence<QChar, PNode>(
-        rule::OrderedLiteral<QChar, PNode>("--"),
+        rule::qLiteral<PNode>("--"),
         [](Cursor<QChar>& iter, Result<PNode>& result) {
             while (iter && *iter++ != '\n') {
                 ;

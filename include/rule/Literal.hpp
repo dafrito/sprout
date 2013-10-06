@@ -6,6 +6,10 @@
 #include "../Cursor.hpp"
 #include "../Result.hpp"
 
+#ifdef HAVE_QT_CORE
+#include <QChar>
+#endif
+
 #include <vector>
 #include <algorithm>
 
@@ -125,6 +129,22 @@ public:
 
 template <class Input, class Token>
 using OrderedLiteral = Literal<Input, Token, OrderedTokenMatcher>;
+
+#ifdef HAVE_QT_CORE
+
+template <class Token = QChar>
+OrderedLiteral<QChar, Token> qLiteral(const QString& str)
+{
+    return OrderedLiteral<QChar, Token>(str);
+}
+
+template <class Token>
+OrderedLiteral<QChar, Token> qLiteral(const QString& str, const Token& token)
+{
+    return OrderedLiteral<QChar, Token>(str, token);
+}
+
+#endif
 
 template <class Input, class Token>
 using AnyLiteral = Literal<Input, Token, AnyTokenMatcher>;

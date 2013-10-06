@@ -273,7 +273,7 @@ public:
             }
             case TokenType::Literal:
             {
-                return rule::OrderedLiteral<QChar, PNode>(node.value(), PNode("", node.value()));
+                return rule::qLiteral(node.value(), PNode("", node.value()));
             }
             default:
             {
@@ -400,19 +400,19 @@ rule::Proxy<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
 
     auto singleExpression = rule::reduce<GNode>(
         rule::tupleSequence<QChar, GNode>(
-            rule::optional(rule::OrderedLiteral<QChar, GNode>("-", TokenType::Discard)),
+            rule::optional(rule::qLiteral<GNode>("-", TokenType::Discard)),
             ws,
             rule::tupleAlternative<QChar, GNode>(
                 literal,
                 name,
                 rule::reduce<GNode>(
                     rule::tupleSequence<QChar, GNode>(
-                        rule::discard(rule::OrderedLiteral<QChar, GNode>("{")),
+                        rule::discard(rule::qLiteral("{")),
                         ws,
                         expression,
                         expression,
                         ws,
-                        rule::discard(rule::OrderedLiteral<QChar, GNode>("}")),
+                        rule::discard(rule::qLiteral("}")),
                         ws
                     ),
                     [](Result<GNode>& dest, Result<GNode>& src) {
@@ -425,11 +425,11 @@ rule::Proxy<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
                 ),
                 rule::reduce<GNode>(
                     rule::tupleSequence<QChar, GNode>(
-                        rule::discard(rule::OrderedLiteral<QChar, GNode>("(")),
+                        rule::discard(rule::qLiteral("(")),
                         ws,
                         rule::multiple(expression),
                         ws,
-                        rule::discard(rule::OrderedLiteral<QChar, GNode>(")")),
+                        rule::discard(rule::qLiteral(")")),
                         ws
                     ),
                     [](Result<GNode>& dest, Result<GNode>& src) {
@@ -443,9 +443,9 @@ rule::Proxy<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
             ),
             ws,
             rule::optional(rule::tupleAlternative<QChar, GNode>(
-                rule::OrderedLiteral<QChar, GNode>("*", TokenType::ZeroOrMore),
-                rule::OrderedLiteral<QChar, GNode>("+", TokenType::OneOrMore),
-                rule::OrderedLiteral<QChar, GNode>("?", TokenType::Optional)
+                rule::qLiteral<GNode>("*", TokenType::ZeroOrMore),
+                rule::qLiteral<GNode>("+", TokenType::OneOrMore),
+                rule::qLiteral<GNode>("?", TokenType::Optional)
             )),
             ws
         ),
@@ -478,7 +478,7 @@ rule::Proxy<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
                     ws
                 ),
                 rule::discard(rule::tupleSequence<QChar, GNode>(
-                    rule::discard(rule::OrderedLiteral<QChar, QString>("|")),
+                    rule::discard(rule::qLiteral("|")),
                     ws
                 ))
             ),
@@ -496,18 +496,18 @@ rule::Proxy<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
     auto rule = rule::reduce<GNode>(
         rule::tupleSequence<QChar, GNode>(
             rule::tupleAlternative<QChar, GNode>(
-                rule::OrderedLiteral<QChar, GNode>("Rule", TokenType::Rule),
-                rule::OrderedLiteral<QChar, GNode>("Token", TokenType::TokenRule),
-                rule::OrderedLiteral<QChar, GNode>("Group", TokenType::GroupRule)
+                rule::qLiteral<GNode>("Rule", TokenType::Rule),
+                rule::qLiteral<GNode>("Token", TokenType::TokenRule),
+                rule::qLiteral<GNode>("Group", TokenType::GroupRule)
             ),
             ws,
             name,
             ws,
-            rule::discard(rule::OrderedLiteral<QChar, QString>("=")),
+            rule::discard(rule::qLiteral("=")),
             ws,
             rule::multiple(expression),
             ws,
-            rule::discard(rule::OrderedLiteral<QChar, QString>(";")),
+            rule::discard(rule::qLiteral(";")),
             ws
         ),
         [](Result<GNode>& results, Result<GNode>& subresults) {

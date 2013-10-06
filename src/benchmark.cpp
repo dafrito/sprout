@@ -96,7 +96,7 @@ int main()
 
         {
             auto benchmark = tupleSequence<QChar, QString>(
-                discard(OrderedLiteral<QChar, QString>("var")),
+                discard(qLiteral("var")),
                 rule::whitespace<QString>(),
                 name
             );
@@ -116,7 +116,7 @@ int main()
 
         {
             auto benchmark = tupleSequence<QChar, QString>(
-                discard(OrderedLiteral<QChar, QString>("var")),
+                discard(qLiteral("var")),
                 rule::whitespace<QString>(),
                 fastName
             );
@@ -171,7 +171,7 @@ int main()
         }
 
         {
-            auto benchmark = OrderedLiteral<QChar, QString>("var", "var");
+            auto benchmark = qLiteral<QString>("var", "var");
             auto orig = makeCursor<QChar>(&inputString);
             Result<QString> results;
             auto head = results.head();
@@ -259,7 +259,7 @@ int main()
 
         {
             auto benchmark = tupleSequence<QChar, QString>(
-                discard(OrderedLiteral<QChar, QString>("var")),
+                discard(qLiteral("var")),
                 name
             );
 
@@ -278,7 +278,7 @@ int main()
 
         {
             auto benchmark = tupleSequence<QChar, QString>(
-                discard(OrderedLiteral<QChar, QString>("var")),
+                discard(qLiteral("var")),
                 fastName
             );
 
@@ -348,7 +348,7 @@ int main()
                         return input.isSpace();
                     }))
                 ),
-                OrderedLiteral<QChar, QString>("foo", "foo")
+                qLiteral<QString>("foo", "foo")
             );
 
             auto orig = makeCursor<QChar>(&inputString);
@@ -367,7 +367,7 @@ int main()
         {
             auto benchmark = tupleSequence<QChar, QString>(
                 rule::whitespace<QString>(),
-                OrderedLiteral<QChar, QString>("foo", "foo")
+                qLiteral<QString>("foo", "foo")
             );
 
             Result<QString> results;
@@ -429,14 +429,14 @@ int main()
 
         {
             auto benchmark = tupleSequence<QChar, QString>(
-                OrderedLiteral<QChar, QString>("foo", "foo"),
+                qLiteral<QString>("foo", "foo"),
                 rule::discard(rule::whitespace<QString>()),
                 rule::discard(tupleSequence<QChar, QString>(
-                    OrderedLiteral<QChar, QString>("#"),
+                    qLiteral<QString>("#"),
                     rule::lazy<QChar, QString>(
                         rule::any<QChar, QString>(),
                         tupleAlternative<QChar, QString>(
-                            OrderedLiteral<QChar, QString>("\n"),
+                            qLiteral<QString>("\n"),
                             rule::end<QChar, QString>()
                         )
                     )
@@ -458,7 +458,7 @@ int main()
 
         {
             auto benchmark = tupleSequence<QChar, QString>(
-                OrderedLiteral<QChar, QString>("foo", "foo"),
+                qLiteral<QString>("foo", "foo"),
                 discard(optional(rule::whitespace<QString>())),
                 [](Cursor<QChar>& iter, Result<QString>& result) {
                     if (!iter || *iter != '#') {
