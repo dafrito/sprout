@@ -109,6 +109,12 @@ public:
     }
 };
 
+template <class Rule>
+Alternative<Rule> alternative()
+{
+    return Alternative<Rule>();
+}
+
 template <class Rule, typename... Rules>
 Alternative<Rule> alternative(const Rule& rule, Rules... rest)
 {
