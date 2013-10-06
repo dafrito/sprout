@@ -484,7 +484,11 @@ void parseLine(LLVMBuilder& builder, rule::Proxy<QChar, ASTNode> parser, QString
 
     auto cursor = makeCursor<QChar>(&lineStream);
     Result<ASTNode> nodes;
+
+    QElapsedTimer timer;
+    timer.start();
     auto parseSuccessful = parser(cursor, nodes);
+    std::cout << "Parsing completed in " << timer.nsecsElapsed() << " ns\n";
 
     if (parseSuccessful) {
         while (nodes) {
