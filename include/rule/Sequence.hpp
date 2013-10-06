@@ -8,9 +8,66 @@
 #include "../Result.hpp"
 
 #include <vector>
+#include <tuple>
 
 namespace sprout {
 namespace rule {
+
+template <class Tuple, class Input, class Token, int remaining>
+struct SequenceIterator
+{
+    static bool iterate(const Tuple& rules, Cursor<Input>& iter, Result<Token>& result)
+    {
+        if (!std::get<std::tuple_size<Tuple>::value - remaining>(rules)(iter, result)) {
+            return false;
+        }
+        return SequenceIterator<Tuple, Input, Token, remaining - 1>::iterate(rules, iter, result);
+    }
+};
+
+template <class Tuple, class Input, class Token>
+struct SequenceIterator<Tuple, Input, Token, 0>
+{
+    static bool iterate(const Tuple& rules, Cursor<Input>& iter, Result<Token>& result)
+    {
+        return true;
+    }
+};
+
+template <
+    class Input,
+    class Token,
+    class... Rules
+>
+class TupleSequence : public RuleTraits<Input, Token>
+{
+    std::tuple<Rules...> _rules;
+
+public:
+    TupleSequence(Rules... rules) :
+        _rules(rules...)
+    {
+    }
+
+    bool operator()(Cursor<Input>& orig, Result<Token>& result) const
+    {
+        auto iter = orig;
+        auto head = result.head();
+        auto matched = SequenceIterator<
+                const decltype(_rules),
+                Input,
+                Token,
+                std::tuple_size<decltype(_rules)>::value
+            >::iterate(
+            _rules, iter, result
+        );
+        if (!matched) {
+            result.moveHead(head);
+            return false;
+        }
+        return true;
+    }
+};
 
 /**
  * \brief An ordered list of subrules.
@@ -63,6 +120,12 @@ public:
         return true;
     }
 };
+
+template <class Input, class Token, typename... Rules>
+TupleSequence<Input, Token, Rules...> tupleSequence(Rules... rules)
+{
+    return TupleSequence<Input, Token, Rules...>(rules...);
+}
 
 template <class Input, class Token, class Rule, typename... Rules>
 Sequence<Rule, Input, Token> sequence(const Rule& rule, Rules... rest)

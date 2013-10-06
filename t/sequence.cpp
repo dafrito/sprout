@@ -41,6 +41,22 @@ BOOST_AUTO_TEST_CASE(sequencesFailCompletely)
     BOOST_CHECK_EQUAL('D', *cursor);
 }
 
+BOOST_AUTO_TEST_CASE(checkTupleSequence)
+{
+    auto rule = rule::tupleSequence<char, std::string>(
+        rule::OrderedLiteral<char, std::string>("Cat", "Heathen"),
+        rule::OrderedLiteral<char, std::string>("Dog", "Civilized"),
+        rule::OrderedLiteral<char, std::string>("Zebra", "Cow")
+    );
+    Result<std::string> tokens;
+
+    auto cursor = makeCursor<char>("DogCat");
+    BOOST_CHECK(!rule(cursor, tokens));
+
+    BOOST_CHECK(!tokens);
+    BOOST_CHECK_EQUAL('D', *cursor);
+}
+
 BOOST_AUTO_TEST_CASE(partialSequencesAlsoFailCompletely)
 {
     auto rule = createRule();

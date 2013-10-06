@@ -12,6 +12,56 @@
 namespace sprout {
 namespace rule {
 
+template <class Tuple, class Input, class Token, int remaining>
+struct AlternativeIterator
+{
+    static bool iterate(const Tuple& rules, Cursor<Input>& iter, Result<Token>& result)
+    {
+        if (std::get<std::tuple_size<Tuple>::value - remaining>(rules)(iter, result)) {
+            return true;
+        }
+        return AlternativeIterator<Tuple, Input, Token, remaining - 1>::iterate(rules, iter, result);
+    }
+};
+
+template <class Tuple, class Input, class Token>
+struct AlternativeIterator<Tuple, Input, Token, 0>
+{
+    static bool iterate(const Tuple& rules, Cursor<Input>& iter, Result<Token>& result)
+    {
+        return false;
+    }
+};
+
+template <
+    class Input,
+    class Token,
+    class... Rules
+>
+class TupleAlternative : public RuleTraits<Input, Token>
+{
+    std::tuple<Rules...> _rules;
+
+public:
+    TupleAlternative(Rules... rules) :
+        _rules(rules...)
+    {
+    }
+
+
+    bool operator()(Cursor<Input>& iter, Result<Token>& result) const
+    {
+        return AlternativeIterator<
+                const decltype(_rules),
+                Input,
+                Token,
+                std::tuple_size<decltype(_rules)>::value
+            >::iterate(
+            _rules, iter, result
+        );
+    }
+};
+
 /**
  * \brief A rule that provides multiple choices for matching.
  *
@@ -73,6 +123,12 @@ Alternative<Rule, Input, Token> alternative(const Rule& rule, Rules... rest)
     Alternative<Rule, Input, Token> alternative;
     populate(alternative, rule, rest...);
     return alternative;
+}
+
+template <class Input, class Token, typename... Rules>
+TupleAlternative<Input, Token, Rules...> tupleAlternative(Rules... rules)
+{
+    return TupleAlternative<Input, Token, Rules...>(rules...);
 }
 
 } // namespace rule
