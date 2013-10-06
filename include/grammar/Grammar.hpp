@@ -127,9 +127,6 @@ private:
 
     rule::Proxy<QChar, GNode>& grammarParser()
     {
-        if (!_grammarParser) {
-            _grammarParser = createGrammarParser();
-        }
         return _grammarParser;
     }
 
@@ -168,6 +165,8 @@ public:
                 return PNode("number", QString::number(value));
             }
         );
+
+        _grammarParser = createGrammarParser();
     }
 
     rule::Proxy<QChar, PNode> buildRule(const GNode& node, const TokenType& ruleType)
