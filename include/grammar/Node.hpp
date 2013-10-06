@@ -10,10 +10,14 @@ namespace sprout {
 namespace grammar {
 
 template <class Type, class Value>
-struct Node {
+class Node {
     Type _type;
     Value _value;
     std::vector<Node<Type, Value>> _children;
+
+public:
+    typedef Type type_type;
+    typedef Value value_type;
 
     Node()
     {
