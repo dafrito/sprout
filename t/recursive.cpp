@@ -21,20 +21,12 @@ typedef grammar::Node<TType, QString> TNode;
 
 BOOST_AUTO_TEST_CASE(testRecursive)
 {
-
     auto name = rule::convert<TNode>(
         rule::variable(),
         [](const QString& name) {
             return TNode(TType::Name, name);
         }
     );
-
-    // foo.bar.baz
-    // Access:baz [
-    //     Access:bar [
-    //         Name:foo
-    //     ]
-    // ]
 
     auto rule = rule::recursive(
         name,
