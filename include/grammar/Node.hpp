@@ -10,63 +10,47 @@ namespace sprout {
 namespace grammar {
 
 template <class Type, class Value>
-struct Token {
-    Type type;
-    Value value;
-
-    Token() :
-        type(),
-        value()
-    {
-    }
-
-    Token(const Type& type) :
-        type(type),
-        value()
-    {
-    }
-
-    Token(const Type& type, const Value& value) :
-        type(type),
-        value(value)
-    {
-    }
-};
-
-template <class Type, class Value>
 struct Node {
-    Token<Type, Value> token;
+    Type _type;
+    Value _value;
     std::vector<Node<Type, Value>> _children;
 
-    Node() :
-        Node(Token<Type, Value>())
+    Node()
     {
     }
 
-    Node(const Token<Type, Value>& token) :
-        token(token)
+    Node(const Type& type) :
+        _type(type)
     {
     }
 
-    Node(const Token<Type, Value>& token, std::vector<Node<Type, Value>> children) :
-        token(token),
+    Node(const Type& type, const std::vector<Node<Type, Value>>& children) :
+        _type(type),
         _children(children)
     {
     }
 
     Node(const Type& type, const Value& value) :
-        token(Token<Type, Value>(type, value))
+        _type(type),
+        _value(value)
+    {
+    }
+
+    Node(const Type& type, const Value& value, const std::vector<Node<Type, Value>>& children) :
+        _type(type),
+        _value(value),
+        _children(children)
     {
     }
 
     const Type& type() const
     {
-        return token.type;
+        return _type;
     }
 
     void setType(const Type& type)
     {
-        token.type = type;
+        _type = type;
     }
 
     std::string typeName() const
@@ -78,12 +62,12 @@ struct Node {
 
     const Value& value() const
     {
-        return token.value;
+        return _value;
     }
 
     void setValue(const Value& value)
     {
-        token.value = value;
+        _value = value;
     }
 
     std::string valueString() const
@@ -136,7 +120,8 @@ struct Node {
         if (this == &other) {
             return *this;
         }
-        token = other.token;
+        _type = other._type;
+        _value = other._value;
         _children = other._children;
         return *this;
     }

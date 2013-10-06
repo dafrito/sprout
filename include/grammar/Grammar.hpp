@@ -107,7 +107,6 @@ std::ostream& operator<<(std::ostream& stream, const sprout::grammar::TokenType&
 namespace sprout {
 namespace grammar {
 
-typedef Token<TokenType, QString> GToken;
 typedef Node<TokenType, QString> GNode;
 typedef rule::Proxy<QChar, QString> GRule;
 
