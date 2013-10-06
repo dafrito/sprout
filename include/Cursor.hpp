@@ -148,6 +148,41 @@ public:
     }
 };
 
+class StdStringCursorData : public CursorData<char>
+{
+    const std::string& _str;
+
+public:
+    StdStringCursorData(const std::string& str) :
+        _str(str)
+    {
+    }
+
+    int head() const
+    {
+        return _str.size();
+    }
+
+    char get(int pos)
+    {
+        return _str.at(pos);
+    }
+
+    void advanceTo(int pos)
+    {
+        if (pos < 0) {
+            std::stringstream str;
+            str << "pos must be non-negative, but I was given " << pos << ". ";
+            throw std::range_error(str.str());
+        }
+    }
+
+    bool atEnd()
+    {
+        return true;
+    }
+};
+
 template <class Data>
 class Cursor
 {
@@ -292,15 +327,16 @@ makeCursor(Stream* stream)
 template <class Data>
 Cursor<Data> makeCursor(const std::string* stream)
 {
-    return Cursor<Data>(stream->begin(), stream->end());
+    return Cursor<Data>(
+        new StdStringCursorData(*stream)
+    );
 }
 
 template <class Data>
 Cursor<Data> makeCursor(std::string* stream)
 {
-    return makeCursor<Data>(
-        stream->begin(),
-        stream->end()
+    return Cursor<Data>(
+        new StdStringCursorData(*stream)
     );
 }
 
