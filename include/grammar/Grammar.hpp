@@ -173,7 +173,7 @@ public:
     {
         bool excludeWhitespace = ruleType != TokenType::TokenRule;
 
-        auto ws = rule::discard(rule::optional(rule::multiple(rule::proxyAlternative<QChar, QString>(
+        auto ws = rule::discard(rule::optional(rule::multiple(rule::tupleAlternative<QChar, QString>(
             rule::whitespace<QString>(),
             rule::lineComment("--")
         ))));
@@ -212,7 +212,7 @@ public:
             {
                 rule::Proxy<QChar, PNode> terminal = buildRule(node[0], ruleType);
                 if (excludeWhitespace) {
-                    terminal = rule::proxySequence<QChar, PNode>(
+                    terminal = rule::tupleSequence<QChar, PNode>(
                         terminal,
                         ws
                     );
@@ -246,8 +246,8 @@ public:
                     separator = discard(separator);
                 }
                 if (excludeWhitespace) {
-                    content = rule::proxySequence<QChar, PNode>(content, ws);
-                    separator = rule::proxySequence<QChar, PNode>(separator, ws);
+                    content = rule::tupleSequence<QChar, PNode>(content, ws);
+                    separator = rule::tupleSequence<QChar, PNode>(separator, ws);
                 }
                 return rule::join(content, separator);
             }
@@ -367,7 +367,7 @@ template <class Type, class Value>
 rule::Proxy<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
 {
 
-    auto whitespace = rule::multiple(rule::proxyAlternative<QChar, QString>(
+    auto whitespace = rule::multiple(rule::tupleAlternative<QChar, QString>(
         rule::whitespace<QString>(),
         rule::lineComment("#")
     ));
@@ -400,14 +400,14 @@ rule::Proxy<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
     auto expression = rule::shared(rule::proxyAlternative<QChar, GNode>());
 
     auto singleExpression = rule::reduce<GNode>(
-        rule::proxySequence<QChar, GNode>(
+        rule::tupleSequence<QChar, GNode>(
             rule::optional(rule::OrderedLiteral<QChar, GNode>("-", TokenType::Discard)),
             ws,
-            rule::proxyAlternative<QChar, GNode>(
+            rule::tupleAlternative<QChar, GNode>(
                 literal,
                 name,
                 rule::reduce<GNode>(
-                    rule::proxySequence<QChar, GNode>(
+                    rule::tupleSequence<QChar, GNode>(
                         rule::discard(rule::OrderedLiteral<QChar, GNode>("{")),
                         ws,
                         expression,
@@ -425,7 +425,7 @@ rule::Proxy<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
                     }
                 ),
                 rule::reduce<GNode>(
-                    rule::proxySequence<QChar, GNode>(
+                    rule::tupleSequence<QChar, GNode>(
                         rule::discard(rule::OrderedLiteral<QChar, GNode>("(")),
                         ws,
                         rule::multiple(expression),
@@ -443,7 +443,7 @@ rule::Proxy<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
                 )
             ),
             ws,
-            rule::optional(rule::proxyAlternative<QChar, GNode>(
+            rule::optional(rule::tupleAlternative<QChar, GNode>(
                 rule::OrderedLiteral<QChar, GNode>("*", TokenType::ZeroOrMore),
                 rule::OrderedLiteral<QChar, GNode>("+", TokenType::OneOrMore),
                 rule::OrderedLiteral<QChar, GNode>("?", TokenType::Optional)
@@ -472,13 +472,13 @@ rule::Proxy<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
     );
 
     expression << rule::reduce<GNode>(
-        rule::proxySequence<QChar, GNode>(
+        rule::tupleSequence<QChar, GNode>(
             rule::join<QChar, GNode>(
-                rule::proxySequence<QChar, GNode>(
+                rule::tupleSequence<QChar, GNode>(
                     singleExpression,
                     ws
                 ),
-                rule::discard(rule::proxySequence<QChar, GNode>(
+                rule::discard(rule::tupleSequence<QChar, GNode>(
                     rule::discard(rule::OrderedLiteral<QChar, QString>("|")),
                     ws
                 ))
@@ -495,8 +495,8 @@ rule::Proxy<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
     );
 
     auto rule = rule::reduce<GNode>(
-        rule::proxySequence<QChar, GNode>(
-            rule::proxyAlternative<QChar, GNode>(
+        rule::tupleSequence<QChar, GNode>(
+            rule::tupleAlternative<QChar, GNode>(
                 rule::OrderedLiteral<QChar, GNode>("Rule", TokenType::Rule),
                 rule::OrderedLiteral<QChar, GNode>("Token", TokenType::TokenRule),
                 rule::OrderedLiteral<QChar, GNode>("Group", TokenType::GroupRule)
@@ -527,7 +527,7 @@ rule::Proxy<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
         }
     );
 
-    return rule::proxySequence<QChar, GNode>(
+    return rule::tupleSequence<QChar, GNode>(
         ws,
         rule::multiple(rule),
         rule::end<QChar, GNode>()
