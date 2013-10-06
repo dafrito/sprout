@@ -6,7 +6,6 @@
 #include <rule/Discard.hpp>
 #include <rule/Multiple.hpp>
 #include <rule/Predicate.hpp>
-#include <rule/Proxy.hpp>
 #include <rule/Alternative.hpp>
 #include <rule/Lazy.hpp>
 #include <rule/Reduce.hpp>
@@ -49,14 +48,6 @@ void runBenchmark(const char* name, Runner runner)
 int main()
 {
     using namespace rule;
-
-    auto fastWhitespace = whitespace<QString>();
-
-    auto whitespace = discard(
-        multiple(predicate<QChar, QString>([](const QChar& input, QString&) {
-            return input.isSpace();
-        }))
-    );
 
     auto name = aggregate<QString>(
         multiple(simplePredicate<QChar>([](const QChar& input) {
@@ -104,32 +95,42 @@ int main()
         }
 
         {
-            auto benchmark = proxySequence<QChar, QString>(
+            auto benchmark = tupleSequence<QChar, QString>(
                 discard(OrderedLiteral<QChar, QString>("var")),
-                whitespace,
+                rule::whitespace<QString>(),
                 name
             );
-            runBenchmark("Sprout", [&]() {
-                auto cursor = makeCursor<QChar>(&inputString);
-                Result<QString> results;
 
-                assert(benchmark(cursor, results));
+            auto orig = makeCursor<QChar>(&inputString);
+            Result<QString> results;
+            auto head = results.head();
+
+            runBenchmark("Sprout", [&]() {
+                results.moveHead(head);
+                auto iter = orig;
+
+                assert(benchmark(iter, results));
                 assert(targetString == *results);
             });
         }
 
         {
-            auto benchmark = proxySequence<QChar, QString>(
+            auto benchmark = tupleSequence<QChar, QString>(
                 discard(OrderedLiteral<QChar, QString>("var")),
-                fastWhitespace,
+                rule::whitespace<QString>(),
                 fastName
             );
-            runBenchmark("Spfast", [&]() {
-                auto cursor = makeCursor<QChar>(&inputString);
-                Result<QString> results;
 
-                assert(benchmark(cursor, results));
-                assert(targetString == *results);
+            auto orig = makeCursor<QChar>(&inputString);
+            Result<QString> results;
+            auto head = results.head();
+
+            runBenchmark("Spfast", [&]() {
+                results.moveHead(head);
+                auto iter = orig;
+
+                assert(benchmark(iter, results));
+                assert(targetString == results.get());
             });
         }
 
@@ -171,12 +172,16 @@ int main()
 
         {
             auto benchmark = OrderedLiteral<QChar, QString>("var", "var");
-            runBenchmark("Sprout", [&]() {
-                auto cursor = makeCursor<QChar>(&inputString);
-                Result<QString> results;
+            auto orig = makeCursor<QChar>(&inputString);
+            Result<QString> results;
+            auto head = results.head();
 
-                assert(benchmark(cursor, results));
-                assert(*results == targetString);
+            runBenchmark("Sprout", [&]() {
+                results.moveHead(head);
+                auto iter = orig;
+
+                assert(benchmark(iter, results));
+                assert(results.get() == targetString);
             });
         }
 
@@ -193,12 +198,17 @@ int main()
                 results.insert(varStr);
                 return true;
             };
-            runBenchmark("Spfast", [&]() {
-                auto cursor = makeCursor<QChar>(&inputString);
-                Result<QString> results;
 
-                assert(benchmark(cursor, results));
-                assert(*results == targetString);
+            auto orig = makeCursor<QChar>(&inputString);
+            Result<QString> results;
+            auto head = results.head();
+
+            runBenchmark("Spfast", [&]() {
+                auto iter = orig;
+                results.moveHead(head);
+
+                assert(benchmark(iter, results));
+                assert(results.get() == targetString);
             });
         }
 
@@ -248,32 +258,40 @@ int main()
         }
 
         {
-            auto benchmark = proxySequence<QChar, QString>(
+            auto benchmark = tupleSequence<QChar, QString>(
                 discard(OrderedLiteral<QChar, QString>("var")),
                 name
             );
 
-            runBenchmark("Sprout", [&]() {
-                auto cursor = makeCursor<QChar>(&inputString);
-                Result<QString> results;
+            auto orig = makeCursor<QChar>(&inputString);
+            Result<QString> results;
+            auto head = results.head();
 
-                assert(benchmark(cursor, results));
-                assert(*results == targetString);
+            runBenchmark("Sprout", [&]() {
+                results.moveHead(head);
+                auto iter = orig;
+
+                assert(benchmark(iter, results));
+                assert(results.get() == targetString);
             });
         }
 
         {
-            auto benchmark = proxySequence<QChar, QString>(
+            auto benchmark = tupleSequence<QChar, QString>(
                 discard(OrderedLiteral<QChar, QString>("var")),
                 fastName
             );
 
-            runBenchmark("Spfast", [&]() {
-                auto cursor = makeCursor<QChar>(&inputString);
-                Result<QString> results;
+            auto orig = makeCursor<QChar>(&inputString);
+            Result<QString> results;
+            auto head = results.head();
 
-                assert(benchmark(cursor, results));
-                assert(*results == targetString);
+            runBenchmark("Spfast", [&]() {
+                results.moveHead(head);
+                auto iter = orig;
+
+                assert(benchmark(iter, results));
+                assert(results.get() == targetString);
             });
         }
 
@@ -324,31 +342,43 @@ int main()
         }
 
         {
-            auto benchmark = proxySequence<QChar, QString>(
-                whitespace,
+            auto benchmark = tupleSequence<QChar, QString>(
+                discard(
+                    multiple(predicate<QChar, QString>([](const QChar& input, QString&) {
+                        return input.isSpace();
+                    }))
+                ),
                 OrderedLiteral<QChar, QString>("foo", "foo")
             );
 
-            runBenchmark("Sprout", [&]() {
-                auto cursor = makeCursor<QChar>(&inputString);
-                Result<QString> results;
+            auto orig = makeCursor<QChar>(&inputString);
+            Result<QString> results;
+            auto head = results.head();
 
-                assert(benchmark(cursor, results));
-                assert(*results == targetString);
+            runBenchmark("Sprout", [&]() {
+                auto iter = orig;
+                results.moveHead(head);
+
+                assert(benchmark(iter, results));
+                assert(results.get() == targetString);
             });
         }
 
         {
-            auto benchmark = proxySequence<QChar, QString>(
-                fastWhitespace,
+            auto benchmark = tupleSequence<QChar, QString>(
+                rule::whitespace<QString>(),
                 OrderedLiteral<QChar, QString>("foo", "foo")
             );
 
-            runBenchmark("Spfast", [&]() {
-                auto cursor = makeCursor<QChar>(&inputString);
-                Result<QString> results;
+            Result<QString> results;
+            auto head = results.head();
+            auto orig = makeCursor<QChar>(&inputString);
 
-                assert(benchmark(cursor, results));
+            runBenchmark("Spfast", [&]() {
+                results.moveHead(head);
+                auto iter = orig;
+
+                assert(benchmark(iter, results));
                 assert(*results == targetString);
             });
         }
@@ -398,14 +428,14 @@ int main()
         }
 
         {
-            auto benchmark = proxySequence<QChar, QString>(
+            auto benchmark = tupleSequence<QChar, QString>(
                 OrderedLiteral<QChar, QString>("foo", "foo"),
                 rule::discard(rule::whitespace<QString>()),
-                discard(proxySequence<QChar, QString>(
+                rule::discard(tupleSequence<QChar, QString>(
                     OrderedLiteral<QChar, QString>("#"),
-                    proxyLazy<QChar, QString>(
+                    rule::lazy<QChar, QString>(
                         rule::any<QChar, QString>(),
-                        proxyAlternative<QChar, QString>(
+                        tupleAlternative<QChar, QString>(
                             OrderedLiteral<QChar, QString>("\n"),
                             rule::end<QChar, QString>()
                         )
@@ -413,19 +443,23 @@ int main()
                 ))
             );
 
-            runBenchmark("Sprout", [&]() {
-                auto cursor = makeCursor<QChar>(&inputString);
-                Result<QString> results;
+            auto orig = makeCursor<QChar>(&inputString);
+            Result<QString> results;
+            auto head = results.head();
 
-                assert(benchmark(cursor, results));
-                assert(*results == targetString);
+            runBenchmark("Sprout", [&]() {
+                results.moveHead(head);
+                auto iter = orig;
+
+                assert(benchmark(iter, results));
+                assert(results.get() == targetString);
             });
         }
 
         {
-            auto benchmark = proxySequence<QChar, QString>(
+            auto benchmark = tupleSequence<QChar, QString>(
                 OrderedLiteral<QChar, QString>("foo", "foo"),
-                discard(optional(fastWhitespace)),
+                discard(optional(rule::whitespace<QString>())),
                 [](Cursor<QChar>& iter, Result<QString>& result) {
                     if (!iter || *iter != '#') {
                         return false;
@@ -438,12 +472,16 @@ int main()
                 }
             );
 
-            runBenchmark("Spfast", [&]() {
-                auto cursor = makeCursor<QChar>(&inputString);
-                Result<QString> results;
+            auto orig = makeCursor<QChar>(&inputString);
+            Result<QString> results;
+            auto head = results.head();
 
-                assert(benchmark(cursor, results));
-                assert(*results == targetString);
+            runBenchmark("Spfast", [&]() {
+                auto iter = orig;
+                results.moveHead(head);
+
+                assert(benchmark(iter, results));
+                assert(results.get() == targetString);
             });
         }
 
