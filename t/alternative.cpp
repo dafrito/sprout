@@ -8,20 +8,11 @@ using namespace sprout;
 
 rule::Alternative<rule::OrderedLiteral<char, std::string>> createAltRule()
 {
-    rule::OrderedLiteral<char, std::string> a;
-    a.setTarget("Cat");
-    a.setToken("Heathen");
-
-    rule::OrderedLiteral<char, std::string> b;
-    b.setTarget("Dog");
-    b.setToken("Civilized");
-
-    rule::OrderedLiteral<char, std::string> c;
-    c.setTarget("Calf");
-    c.setToken("Cow");
-
-    std::vector<rule::OrderedLiteral<char, std::string>> rules { a, b, c };
-    return rule::Alternative<decltype(a)>(rules);
+    return rule::alternative(
+        rule::OrderedLiteral<char, std::string>("Cat", "Heathen"),
+        rule::OrderedLiteral<char, std::string>("Dog", "Civilized"),
+        rule::OrderedLiteral<char, std::string>("Zebra", "Cow")
+    );
 }
 
 BOOST_AUTO_TEST_CASE(matchASingleAlternative)
@@ -29,7 +20,7 @@ BOOST_AUTO_TEST_CASE(matchASingleAlternative)
     auto alternative = createAltRule();
     Result<std::string> tokens;
 
-    auto cursor = makeCursor<char>("CatDogDogCalfCat");
+    auto cursor = makeCursor<char>("CatDogDogZebraCat");
     BOOST_CHECK(alternative(cursor, tokens));
 
     BOOST_REQUIRE(tokens);
@@ -42,13 +33,13 @@ BOOST_AUTO_TEST_CASE(matchAnotherSingleAlternative)
     auto rule = createAltRule();
     Result<std::string> tokens;
 
-    auto cursor = makeCursor<char>("DogCalfCat");
+    auto cursor = makeCursor<char>("DogZebraCat");
     BOOST_CHECK(rule(cursor, tokens));
 
     BOOST_REQUIRE(tokens);
     BOOST_CHECK_EQUAL("Civilized", *tokens++);
     BOOST_CHECK(!tokens);
-    BOOST_CHECK_EQUAL('C', *cursor);
+    BOOST_CHECK_EQUAL('Z', *cursor);
 }
 
 BOOST_AUTO_TEST_CASE(matchMultipleAlternatives)
@@ -56,7 +47,7 @@ BOOST_AUTO_TEST_CASE(matchMultipleAlternatives)
     auto rule = rule::multiple(createAltRule());
     Result<std::string> tokens;
 
-    auto cursor = makeCursor<char>("CatDogDogCalfCat");
+    auto cursor = makeCursor<char>("CatDogDogZebraCat");
     BOOST_CHECK(rule(cursor, tokens));
 
     BOOST_REQUIRE(tokens);
