@@ -166,6 +166,31 @@ struct Node {
         dump(str, "");
         return str.str();
     }
+
+    bool operator==(const Node<Type, Value>& other) const
+    {
+        if (this == &other) {
+            return true;
+        }
+        if (type() != other.type() || value() != other.value()) {
+            return false;
+        }
+        if (size() != other.size()) {
+            return false;
+        }
+        for (int i = 0; i < size(); ++i) {
+            auto child = at(i);
+            if (child != other[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool operator!=(const Node<Type, Value>& other) const
+    {
+        return !(*this == other);
+    }
 };
 
 template <class Type, class Value, class T>
