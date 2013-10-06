@@ -13,7 +13,6 @@
 #include <rule/Multiple.hpp>
 #include <rule/Optional.hpp>
 #include <rule/Predicate.hpp>
-#include <rule/Proxy.hpp>
 #include <rule/Alternative.hpp>
 #include <rule/Reduce.hpp>
 #include <rule/Join.hpp>
