@@ -203,6 +203,16 @@ Node<Type, Value>& operator<<(Node<Type, Value>& parent, const T& child)
 } // namespace grammar
 } // namespace sprout
 
+namespace std {
+
+template <class Type, class Value>
+std::ostream& operator<<(std::ostream& stream, const sprout::grammar::Node<Type, Value>& node)
+{
+    return stream << node.dump();
+}
+
+} // namespace std
+
 #endif // SPROUT_GRAMMAR_NODE_HEADER
 
 // vim: set ts=4 sw=4 :
