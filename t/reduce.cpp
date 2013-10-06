@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(testReduceWithLambda)
 BOOST_AUTO_TEST_CASE(testReduceWithWrappedRule)
 {
     auto rule = rule::reduce<std::string>(
-        rule::rule<char, char>([](Cursor<char>& iter, Result<char>& tokens) {
+        rule::wrap<char, char>([](Cursor<char>& iter, Result<char>& tokens) {
             bool found = false;
             while (iter) {
                 auto c = *iter;

@@ -112,7 +112,7 @@ rule::Proxy<QChar, ASTNode> buildParser()
 
     auto single = shared(proxyAlternative<QChar, ASTNode>(
         convert<ASTNode>(
-            rule::rule<QChar, double>(&rule::parseFloating),
+            rule::wrap<QChar, double>(&rule::parseFloating),
             [](const double& value) {
                 return ASTNode(ASTType::NumberLiteral, QString::number(value));
             }

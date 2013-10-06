@@ -157,14 +157,14 @@ public:
         });
 
         _rules["string"] = rule::convert<PNode>(
-            rule::rule<QChar, QString>(&rule::parseQuotedString),
+            rule::wrap<QChar, QString>(&rule::parseQuotedString),
             [](QString& value) {
                 return PNode("string", value);
             }
         );
 
         _rules["number"] = rule::convert<PNode>(
-            rule::rule<QChar, double>(&rule::parseFloating),
+            rule::wrap<QChar, double>(&rule::parseFloating),
             [](const float& value) {
                 return PNode("number", QString::number(value));
             }
@@ -393,7 +393,7 @@ rule::Proxy<QChar, GNode> Grammar<Type, Value>::createGrammarParser()
     );
 
     auto literal = rule::convert<GNode>(
-        rule::rule<QChar, QString>(&rule::parseQuotedString),
+        rule::wrap<QChar, QString>(&rule::parseQuotedString),
         [](QString& value) {
             return GNode(TokenType::Literal, value);
         }

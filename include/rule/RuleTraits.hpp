@@ -37,7 +37,7 @@ public:
 };
 
 template <class Input, class Token, class Rule>
-InlineRule<Rule, Input, Token> rule(const Rule& rule)
+InlineRule<Rule, Input, Token> wrap(const Rule& rule)
 {
     return InlineRule<Rule, Input, Token>(rule);
 }

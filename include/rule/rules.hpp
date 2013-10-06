@@ -46,9 +46,9 @@ bool parseNeighborhood(Cursor<QChar>& orig, Result<Token>& results)
 }
 
 template <class Token>
-auto neighborhood() -> decltype(rule<QChar, Token>(&parseNeighborhood<Token>))
+auto neighborhood() -> decltype(wrap<QChar, Token>(&parseNeighborhood<Token>))
 {
-    return rule<QChar, Token>(&parseNeighborhood<Token>);
+    return wrap<QChar, Token>(&parseNeighborhood<Token>);
 }
 
 template <class Token>
@@ -67,9 +67,9 @@ bool parseWhitespace(Cursor<QChar>& iter, Result<Token>& result)
 }
 
 template <class Token>
-auto whitespace() -> decltype(rule<QChar, Token>(&parseWhitespace<Token>))
+auto whitespace() -> decltype(rule::wrap<QChar, Token>(&parseWhitespace<Token>))
 {
-    return rule<QChar, Token>(&parseWhitespace<Token>);
+    return rule::wrap<QChar, Token>(&parseWhitespace<Token>);
 }
 
 bool parseQuotedString(Cursor<QChar>& input, Result<QString>& result);
