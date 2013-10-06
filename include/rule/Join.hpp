@@ -2,7 +2,6 @@
 #define SPROUT_RULE_JOIN_HEADER
 
 #include "rule/RuleTraits.hpp"
-#include "rule/Sequence.hpp"
 
 #include "../Cursor.hpp"
 #include "../Result.hpp"
