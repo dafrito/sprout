@@ -41,22 +41,6 @@ BOOST_AUTO_TEST_CASE(sequencesFailCompletely)
     BOOST_CHECK_EQUAL('D', *cursor);
 }
 
-BOOST_AUTO_TEST_CASE(checkTupleSequence)
-{
-    auto rule = rule::tupleSequence<char, std::string>(
-        rule::OrderedLiteral<char, std::string>("Cat", "Heathen"),
-        rule::OrderedLiteral<char, std::string>("Dog", "Civilized"),
-        rule::OrderedLiteral<char, std::string>("Zebra", "Cow")
-    );
-    Result<std::string> tokens;
-
-    auto cursor = makeCursor<char>("DogCat");
-    BOOST_CHECK(!rule(cursor, tokens));
-
-    BOOST_CHECK(!tokens);
-    BOOST_CHECK_EQUAL('D', *cursor);
-}
-
 BOOST_AUTO_TEST_CASE(partialSequencesAlsoFailCompletely)
 {
     auto rule = createRule();
@@ -84,4 +68,74 @@ BOOST_AUTO_TEST_CASE(sequenceWorksWithLambdas)
             return false;
         }
     );
+}
+
+BOOST_AUTO_TEST_CASE(checkEmptySequence)
+{
+    auto rule = rule::sequence<rule::OrderedLiteral<char, std::string>>();
+
+    Result<std::string> tokens;
+    auto cursor = makeCursor<char>("DogCat");
+    BOOST_CHECK(rule(cursor, tokens));
+
+    BOOST_CHECK(!tokens);
+    BOOST_CHECK_EQUAL('D', *cursor);
+}
+
+BOOST_AUTO_TEST_CASE(checkTupleSequence)
+{
+    auto rule = rule::tupleSequence<char, std::string>(
+        rule::OrderedLiteral<char, std::string>("Cat", "Heathen"),
+        rule::OrderedLiteral<char, std::string>("Dog", "Civilized"),
+        rule::OrderedLiteral<char, std::string>("Zebra", "Cow")
+    );
+
+    {
+        Result<std::string> tokens;
+        auto cursor = makeCursor<char>("DogCat");
+        BOOST_CHECK(!rule(cursor, tokens));
+
+        BOOST_CHECK(!tokens);
+        BOOST_CHECK_EQUAL('D', *cursor);
+    }
+
+    {
+        Result<std::string> tokens;
+        auto cursor = makeCursor<char>("CatDogZebra");
+        BOOST_CHECK(rule(cursor, tokens));
+
+        BOOST_CHECK(!cursor);
+        BOOST_CHECK(tokens);
+        BOOST_CHECK_EQUAL("Heathen", *tokens++);
+        BOOST_CHECK_EQUAL("Civilized", *tokens++);
+        BOOST_CHECK_EQUAL("Cow", *tokens++);
+        BOOST_CHECK(!tokens);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(checkPartialTupleSequenceFailsCompletely)
+{
+    auto rule = rule::tupleSequence<char, std::string>(
+        rule::OrderedLiteral<char, std::string>("Cat", "Heathen"),
+        rule::OrderedLiteral<char, std::string>("Dog", "Civilized"),
+        rule::OrderedLiteral<char, std::string>("Zebra", "Cow")
+    );
+
+    Result<std::string> tokens;
+    auto cursor = makeCursor<char>("CatZebraDog");
+    BOOST_CHECK(!rule(cursor, tokens));
+    BOOST_CHECK(!tokens);
+    BOOST_CHECK_EQUAL('C', *cursor);
+}
+
+BOOST_AUTO_TEST_CASE(checkEmptyTupleSequence)
+{
+    auto rule = rule::tupleSequence<char, std::string>();
+
+    Result<std::string> tokens;
+    auto cursor = makeCursor<char>("DogCat");
+    BOOST_CHECK(rule(cursor, tokens));
+
+    BOOST_CHECK(!tokens);
+    BOOST_CHECK_EQUAL('D', *cursor);
 }

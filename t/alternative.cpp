@@ -78,3 +78,53 @@ BOOST_AUTO_TEST_CASE(testAlternativeWithLambda)
         twoAlternative
     );
 }
+
+BOOST_AUTO_TEST_CASE(testEmptyAlternative)
+{
+    auto rule = rule::alternative<rule::OrderedLiteral<char, std::string>>();
+
+    Result<std::string> tokens;
+    auto cursor = makeCursor<char>("ZebraDog");
+    BOOST_CHECK(!rule(cursor, tokens));
+    BOOST_CHECK(!tokens);
+    BOOST_CHECK_EQUAL('Z', *cursor);
+}
+
+BOOST_AUTO_TEST_CASE(testTupleAlternative)
+{
+    auto rule = rule::tupleAlternative<char, std::string>(
+        rule::OrderedLiteral<char, std::string>("Cat", "Heathen"),
+        rule::OrderedLiteral<char, std::string>("Dog", "Civilized")
+    );
+
+    {
+        Result<std::string> tokens;
+        auto cursor = makeCursor<char>("CatZebraDog");
+        BOOST_CHECK(rule(cursor, tokens));
+        BOOST_REQUIRE(tokens);
+        BOOST_CHECK_EQUAL("Heathen", *tokens++);
+        BOOST_CHECK(!tokens);
+
+        BOOST_CHECK_EQUAL('Z', *cursor);
+    }
+
+    {
+        Result<std::string> tokens;
+        auto cursor = makeCursor<char>("ZebraDog");
+        BOOST_CHECK(!rule(cursor, tokens));
+        BOOST_CHECK(!tokens);
+        BOOST_CHECK_EQUAL('Z', *cursor);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(testEmptyTupleAlternative)
+{
+    auto rule = rule::tupleAlternative<char, std::string>();
+
+    Result<std::string> tokens;
+    auto cursor = makeCursor<char>("ZebraDog");
+    BOOST_CHECK(!rule(cursor, tokens));
+    BOOST_CHECK(!tokens);
+    BOOST_CHECK_EQUAL('Z', *cursor);
+}
+
