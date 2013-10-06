@@ -13,17 +13,18 @@ namespace sprout {
 namespace rule {
 
 template <
-    class Rule,
-    class Input = typename Rule::input_type,
-    class Token = typename Rule::token_type
+    class Consumer,
+    class Condition,
+    class Input = typename Consumer::input_type,
+    class Token = typename Consumer::token_type
 >
 class Lazy : public RuleTraits<Input, Token>
 {
-    Rule _consumer;
-    Rule _condition;
+    Consumer _consumer;
+    Condition _condition;
 
 public:
-    Lazy(const Rule& consumer, const Rule& condition) :
+    Lazy(const Consumer& consumer, const Condition& condition) :
         _consumer(consumer),
         _condition(condition)
     {
@@ -45,16 +46,16 @@ public:
     }
 };
 
-template <class Input, class Token, class Rule>
-Lazy<Rule, Input, Token> lazy(const Rule& consumer, const Rule& condition)
+template <class Input, class Token, class Consumer, class Condition>
+Lazy<Consumer, Condition, Input, Token> lazy(const Consumer& consumer, const Condition& condition)
 {
-    return Lazy<Rule, Input, Token>(consumer, condition);
+    return Lazy<Consumer, Condition, Input, Token>(consumer, condition);
 }
 
-template <class Rule>
-Lazy<Rule> lazy(const Rule& consumer, const Rule& condition)
+template <class Consumer, class Condition>
+Lazy<Consumer, Condition> lazy(const Consumer& consumer, const Condition& condition)
 {
-    return Lazy<Rule>(consumer, condition);
+    return Lazy<Consumer, Condition>(consumer, condition);
 }
 
 } // namespace rule

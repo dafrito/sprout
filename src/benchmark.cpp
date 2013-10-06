@@ -8,6 +8,7 @@
 #include <rule/Predicate.hpp>
 #include <rule/Proxy.hpp>
 #include <rule/Alternative.hpp>
+#include <rule/Lazy.hpp>
 #include <rule/Reduce.hpp>
 
 #include <StreamIterator.hpp>

@@ -3,7 +3,6 @@
 
 #include "Sequence.hpp"
 #include "Alternative.hpp"
-#include "Lazy.hpp"
 #include "RuleTraits.hpp"
 
 #include "../Cursor.hpp"
@@ -105,15 +104,6 @@ ProxyAlternative<Input, Token> proxyAlternative(Rules... rest)
     ProxyAlternative<Input, Token> alternative;
     populate(alternative, rest...);
     return alternative;
-}
-
-template <class Input, class Token>
-using ProxyLazy = Lazy<Proxy<Input, Token>>;
-
-template <class Input, class Token, class Consumer, class Condition>
-ProxyLazy<Input, Token> proxyLazy(Consumer consumer, Condition condition)
-{
-    return ProxyLazy<Input, Token>(consumer, condition);
 }
 
 } // namespace rule
