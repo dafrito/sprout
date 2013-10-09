@@ -89,13 +89,17 @@ int main(int argc, char* argv[])
         grammar.readGrammar(cursor);
     }
 
-    pass::Flatten()(grammar);
+    auto flattenPass = pass::Flatten<TokenType, QString>({
+        TokenType::Alternative,
+        TokenType::Sequence
+    });
+    flattenPass(grammar);
 
     for (auto node : grammar) {
         std::cout << node.dump() << std::endl;
     }
     pass::LeftRecursion()(grammar);
-    pass::Flatten()(grammar);
+    flattenPass(grammar);
     grammar.build();
 
     auto lineComment = proxySequence<QChar, PNode>(

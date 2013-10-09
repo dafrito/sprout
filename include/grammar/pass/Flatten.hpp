@@ -2,23 +2,41 @@
 #define SPROUT_GRAMMAR_PASS_FLATTEN_HEADER
 
 #include "../Grammar.hpp"
+#include <unordered_set>
 
 namespace sprout {
 namespace grammar {
 namespace pass {
 
+template <class Type, class Value>
 class Flatten
 {
-    void flatten(GNode& node);
+    std::unordered_set<Type> _targets;
 public:
-    template <class Type, class Value>
-    void operator()(Grammar<Type, Value>& grammar)
+    Flatten(const std::unordered_set<Type>& targets) :
+        _targets(targets)
+    {
+    }
+
+    template <class OType, class OToken>
+    void operator()(Grammar<OType, OToken>& grammar)
     {
         for (GNode& node : grammar) {
-            flatten(node);
+            operator()(node);
         }
     }
 
+    void operator()(Node<Type, Value>& node)
+    {
+        for (Node<Type, Value>& child : node.children()) {
+            operator()(child);
+        }
+        if (_targets.find(node.type()) != _targets.end()) {
+            if (node.children().size() == 1) {
+                node = node[0];
+            }
+        }
+    }
 };
 
 } // namespace pass
