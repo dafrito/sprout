@@ -27,4 +27,5 @@ nobase_pkginclude_HEADERS += \
 nobase_pkginclude_HEADERS += \
 	grammar/Grammar.hpp \
 	grammar/pass/LeftRecursion.hpp \
+	grammar/pass/Remove.hpp \
 	grammar/pass/Flatten.hpp

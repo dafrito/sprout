@@ -29,4 +29,5 @@ runtest_SOURCES = \
 	reduce.cpp \
 	recursive.cpp \
 	grammar/pass_flatten.cpp \
+	grammar/pass_remove.cpp \
 	main.cpp
