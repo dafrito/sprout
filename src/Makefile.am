@@ -1,5 +1,5 @@
 lib_LTLIBRARIES = libsprout.la
-libsprout_la_CPPFLAGS = -Wall -Werror @QT_CXXFLAGS@ -I$(top_srcdir)/include
+libsprout_la_CPPFLAGS = -Wall @QT_CXXFLAGS@ -I$(top_srcdir)/include
 libsprout_la_LIBADD = @QT_LIBS@
 libsprout_la_LDFLAGS = -version-info 0:0:0
 
