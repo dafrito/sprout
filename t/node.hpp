@@ -1,6 +1,8 @@
 #ifndef SPROUT_TEST_NODE_HEADER
 #define SPROUT_TEST_NODE_HEADER
 
+#include <functional>
+
 enum class TType {
     Unknown,
     Name,
@@ -9,12 +11,22 @@ enum class TType {
     Subtract,
     Multiply,
     Divide,
-    Exponent
+    Exponent,
+    Noop
 };
+
 
 int operatorPrecedence(const TType& type);
 
 namespace std {
+
+template<>
+struct hash<TType> {
+    int operator()(const TType& type) const
+    {
+        return static_cast<int>(type);
+    }
+};
 
 std::ostream& operator<<(std::ostream& stream, const TType& type);
 

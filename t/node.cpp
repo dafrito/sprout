@@ -68,6 +68,7 @@ std::ostream& operator<<(std::ostream& stream, const TType& type)
         case TType::Multiply: return stream << "Multiply";
         case TType::Divide: return stream << "Divide";
         case TType::Exponent: return stream << "Exponent";
+        case TType::Noop: return stream << "Noop";
         default:
             std::stringstream str;
             str << "Unhandled type " << static_cast<int>(type) << std::endl;
