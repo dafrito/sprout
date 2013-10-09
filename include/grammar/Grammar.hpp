@@ -93,7 +93,6 @@ namespace std {
 
 template<>
 struct hash<sprout::grammar::TokenType> {
-
     int operator()(const sprout::grammar::TokenType& type) const
     {
         return static_cast<int>(type);
