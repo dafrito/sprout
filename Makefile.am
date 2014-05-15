@@ -1,5 +1,5 @@
 ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = src t
+SUBDIRS = src src/tests
 
 pkgdata_DATA = \
 	sprout.m4
@@ -37,7 +37,7 @@ doc: sprout.doxygen
 sprout.doxygen: sprout.doxygen.in Makefile.am
 	rm -f $@.tmp;
 	cat $< >> $@.tmp;
-	echo "INPUT += $(top_srcdir)/include $(top_srcdir)/src" >> $@.tmp;
+	echo "INPUT += $(top_srcdir)/src" >> $@.tmp;
 	echo "INPUT += $(top_srcdir)/sprout.doc" >>$@.tmp
 	mv $@.tmp $@
 

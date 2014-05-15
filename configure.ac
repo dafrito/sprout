@@ -5,7 +5,7 @@ AC_INIT([sprout], [1.0], [dafrito@gmail.com], [sprout], [http://www.dafrito.com]
 AC_SUBST([PACKAGE_RELEASE], [1])
 AM_INIT_AUTOMAKE([-Wall foreign])
 AC_CONFIG_SRCDIR([src/main.cpp])
-AC_CONFIG_HEADERS([include/config.h])
+AC_CONFIG_HEADERS([src/config.hpp])
 AC_CONFIG_MACRO_DIR([m4])
 
 # Check for build programs
@@ -34,5 +34,5 @@ AX_BOOST_UNIT_TEST_FRAMEWORK
 # Check for Qt
 AX_HAVE_QT_CORE
 
-AC_CONFIG_FILES([sprout.m4 Makefile src/Makefile include/Makefile t/Makefile rpm.spec])
+AC_CONFIG_FILES([sprout.m4 Makefile src/Makefile src/tests/Makefile rpm.spec])
 AC_OUTPUT

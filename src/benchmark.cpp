@@ -1,4 +1,4 @@
-#include "config.h"
+#include "config.hpp"
 
 #include <rule/rules.hpp>
 #include <rule/Literal.hpp>

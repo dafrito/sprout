@@ -1,7 +1,7 @@
 #ifndef SPROUT_STREAMITERATOR_HEADER
 #define SPROUT_STREAMITERATOR_HEADER
 
-#include "config.h"
+#include "config.hpp"
 
 #ifdef HAVE_QT_CORE
 #include <QTextStream>
